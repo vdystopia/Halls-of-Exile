@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    name: Types, lint, tests, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Lint
+        run: npm run lint
+      - name: Unit tests
+        run: npm test
+      - name: Production build
+        run: npm run build
+
+  image:
+    name: Docker image boots and serves
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: halls:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      # Catches what a source build cannot: a missing native module, a file the
+      # standalone trace dropped, a broken migration on an empty database.
+      - name: Start the container
+        run: docker run -d --name halls-ci -p 3000:3000 halls:ci
+      - name: Wait for health
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3000/api/health | tee /tmp/health.json | grep -q '"status":"ok"'; then
+              echo "healthy after ${attempt} attempts"
+              cat /tmp/health.json
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "container never reported healthy"
+          docker logs halls-ci
+          exit 1
+      - name: Seeded league catalogue is present
+        run: |
+          leagues=$(curl -fsS http://127.0.0.1:3000/api/health | grep -o '"leagues":[0-9]*' | cut -d: -f2)
+          echo "leagues: ${leagues}"
+          test "${leagues}" -ge 41
+      - name: Every page renders
+        run: |
+          for path in / /players /players/new; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:3000${path}")
+            echo "${code} ${path}"
+            test "${code}" = "200"
+          done
+      - if: always()
+        run: docker rm -f halls-ci

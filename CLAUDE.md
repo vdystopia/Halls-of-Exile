@@ -1,0 +1,95 @@
+# Halls of the Champions — working notes
+
+An archive of a Path of Exile player's entire back catalogue of characters, organised by
+league. Self-hosted; runs on the owner's Windows home server in Docker. See `README.md`
+for what it does and how it deploys.
+
+## Commands
+
+```bash
+npm run dev          # dev server on :3001 (prod container uses :3000)
+npm test             # node --test via tsx — parser and catalogue invariants
+npm run lint         # eslint
+npx tsc --noEmit     # typecheck
+npm run build        # production build (also what CI and Docker run)
+npm run seed:demo    # demo players; -- --reset wipes users/characters first
+```
+
+Deploy is `.\update.ps1` on the server, never a bare `docker compose up -d --build`:
+it backs up, pulls, rebuilds, health-checks and rolls back on failure.
+
+## Shape of the code
+
+```
+src/app/                      routes; every data page is force-dynamic
+src/app/api/health/route.ts   health probe (Docker healthcheck + CI + update.ps1 all use it)
+src/components/               UI; forms are client components, everything else is server
+src/lib/db.ts                 connection, schema, migrations, league catalogue sync
+src/lib/leagues.ts            the league catalogue itself
+src/lib/pob.ts                Path of Building code decode + XML parse
+src/lib/items.ts              PoB item-text parser, paper-doll layout
+src/lib/stats.ts              which stats are displayed, ordered, formatted
+src/lib/queries.ts            reads
+src/lib/actions.ts            writes — server actions only
+tests/                        node:test files
+```
+
+Data flow: a PoB share code is base64+deflate over XML. `parsePob` turns it into a
+`BuildData`, which is stored as JSON in `characters.data` alongside the original code,
+so a character page never depends on an external link staying alive.
+
+## Rules that must hold
+
+- **The league catalogue is code-owned.** Rows with `is_custom = 0` are re-synced from
+  `LEAGUE_SEED` on every boot, so editing a built-in league in the database is pointless.
+  User-added leagues (`is_custom = 1`) are never touched by the sync.
+- **Every new column needs a migration.** SQLite has no `ADD COLUMN IF NOT EXISTS`, and
+  live archives exist. Add the column to `SCHEMA` *and* to the `additions` list in
+  `migrate()` in `src/lib/db.ts`. Verify against a copy of a populated pre-change database.
+- **Only the newest league may carry `endDateEstimated`.** A test enforces this. When a
+  real end date is announced, replace the estimate and clear the flag.
+- **Each league ends where the next begins.** A test enforces this too.
+- **`BuildData` changes stay additive.** Rows written by older versions must still render;
+  `mapCharacter` merges parsed JSON over `emptyBuild()` for exactly this reason.
+- **better-sqlite3 stays in `serverExternalPackages`.** It is a native module; bundling it
+  breaks the standalone Docker output.
+- **Fonts are vendored** in `src/app/fonts` and loaded with `next/font/local`. Do not
+  reintroduce `next/font/google` — it makes the Docker build depend on reaching Google.
+- **No auth exists, by design.** Anything reachable can be edited by anyone. Do not add
+  features that assume a trusted caller without saying so.
+- **Do not bind-mount the SQLite file to a Windows path.** WSL2 file-share locking is
+  unreliable for SQLite. The named volume is deliberate.
+
+## Before pushing
+
+Run `npm test`, `npm run lint`, `npx tsc --noEmit` and `npm run build`. For anything
+visual, start the app and screenshot the affected page rather than assuming — several
+real defects in this project (a clipped resistance label, a missing CSS chunk from a
+stale server, an over-eager dirty-tree guard) were only visible when actually looked at.
+For schema changes, exercise the migration against a populated pre-change database.
+CI runs the same checks plus a container boot, so a red build means do not deploy.
+
+## Working with the owner
+
+- Wants scientific, critical, objective answers. No preamble, no restating the question,
+  no flattery. Recommend one option rather than surveying five.
+- Flag guesses as guesses and put uncertainty in the data model rather than hiding it —
+  the tentative-end-date flag exists because of this.
+- Runs the site on a Windows PC home server (`X:\halls`) with Docker Desktop, Pi-hole,
+  Jellyfin and Immich. Answers involving that box should be PowerShell, not bash.
+- **Periodically offer concrete ways to brief you better.** The owner explicitly asked for
+  this and found it valuable: when a request would have been faster to act on with
+  different framing — batching several items, stating acceptance criteria, attaching a
+  screenshot, saying which facts are uncertain — say so briefly and move on. Do it when it
+  would actually have changed the work, not as a recurring ritual, and never at the expense
+  of just doing the task.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

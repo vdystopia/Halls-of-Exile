@@ -48,7 +48,7 @@ and no database to provision.
 | Follow the logs | `docker compose logs -f` |
 | Status and health | `docker compose ps` |
 | Stop / start | `docker compose down` / `docker compose up -d` |
-| Update after a `git pull` | `docker compose up -d --build` |
+| Update to the latest code | `.\update.ps1` (see below) |
 | Back up the archive | `docker compose exec halls node scripts/backup.mjs /data/backups` |
 | Shell in | `docker compose exec halls sh` |
 
@@ -83,15 +83,51 @@ your architecture has no prebuilt binary (Raspberry Pi included), and only the N
 output plus its traced dependencies land in the `node:22-bookworm-slim` runtime image (~440 MB).
 Fonts are vendored in `src/app/fonts`, so the build needs no outbound network beyond npm.
 
-## Running it without Docker
+## Deploying an update
 
-```bash
-npm install
-npm run seed:demo     # optional: two demo players with imported builds
-npm run dev           # http://localhost:3000
+```powershell
+.\update.ps1
 ```
 
-Production: `npm run build && npm start`.
+Use this instead of `docker compose up -d --build`. It refuses to run with uncommitted changes,
+takes a consistent backup, pulls, rebuilds, waits for `/api/health`, and **rolls back to the
+previous image and commit if the build fails or the new container never reports healthy** — so a
+bad push leaves the running site untouched. The previous image is kept as
+`halls-of-the-champions:rollback`.
+
+Windows blocks unsigned scripts by default. Either `Set-ExecutionPolicy -Scope CurrentUser
+RemoteSigned` once, or run `powershell -ExecutionPolicy Bypass -File .\update.ps1`.
+
+## Development loop
+
+Do not rebuild the Docker image to look at a change. Run the dev server alongside the container:
+
+```bash
+npm install       # once
+npm run dev       # http://localhost:3001, hot reload
+```
+
+The dev server listens on **3001** so it never collides with the deployed container on 3000, and
+it uses `data/archive.db` in the working copy while the container uses its Docker volume — two
+separate databases, so dev data can be wrecked freely. `npm run seed:demo` fills it with demo
+players and imported builds (`-- --reset` wipes first). To work against real data, drop a backup
+in as `data/archive.db`.
+
+With the dev server running, `git pull` is enough to see a change — Next.js hot-reloads. Only run
+`.\update.ps1` when the change is worth promoting to the instance the household uses.
+
+Checks, all of which CI also runs:
+
+```bash
+npm test            # parser and league-catalogue invariants
+npm run lint
+npx tsc --noEmit
+npm run build
+```
+
+CI additionally builds the Docker image, boots it, and fails unless the container serves
+`/api/health` and renders its pages — which catches what a source build cannot, such as a missing
+native module or a broken migration.
 
 The database is a single SQLite file at `data/archive.db`, overridable with `ARCHIVE_DB=/path/to.db`.
 Because state is a local file, this wants a host with a persistent disk rather than a serverless
@@ -144,6 +180,10 @@ src/app/api/health/route.ts    health probe used by the Docker healthcheck
 scripts/seed-demo.ts           demo archive, imported through the real parser
 scripts/backup.mjs             consistent online backup of the SQLite archive
 Dockerfile, docker-compose.yml self-hosting setup
+update.ps1                     safe deploy: backup, pull, build, health-check, rollback
+CLAUDE.md                      architecture notes and invariants for future sessions
+ROADMAP.md                     working backlog
+.github/workflows/ci.yml       typecheck, lint, tests, build, container smoke test
 ```
 
 Not affiliated with Grinding Gear Games.
