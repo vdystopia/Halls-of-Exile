@@ -1,0 +1,137 @@
+@import "tailwindcss";
+
+@theme {
+  --color-abyss: #0a0908;
+  --color-surface: #131110;
+  --color-surface-2: #1a1714;
+  --color-surface-3: #221d18;
+  --color-line: #2e2823;
+  --color-line-strong: #4a3f31;
+  --color-gold: #c8aa6e;
+  --color-gold-bright: #e8d9a8;
+  --color-parchment: #cfc6b4;
+  --color-muted: #8b8272;
+
+  --color-rarity-normal: #c8c8c8;
+  --color-rarity-magic: #8888ff;
+  --color-rarity-rare: #ffff77;
+  --color-rarity-unique: #d08b3a;
+  --color-rarity-gem: #1ba29b;
+
+  --color-life: #e0605f;
+  --color-mana: #6f92e0;
+  --color-es: #7fbfff;
+
+  --color-res-fire: #e05c3e;
+  --color-res-cold: #58a6e0;
+  --color-res-lightning: #e8d54e;
+  --color-res-chaos: #d16fd1;
+
+  --color-socket-r: #c94f4f;
+  --color-socket-g: #4fb04f;
+  --color-socket-b: #4f6fd4;
+  --color-socket-w: #d8d8d8;
+  --color-socket-a: #9a5fd0;
+  --color-socket-d: #b08040;
+
+  --font-display: var(--font-cinzel), Georgia, serif;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-abyss);
+  background-image:
+    radial-gradient(900px 500px at 15% -5%, rgba(200, 170, 110, 0.09), transparent 60%),
+    radial-gradient(700px 400px at 90% 0%, rgba(90, 120, 190, 0.07), transparent 55%),
+    linear-gradient(180deg, #0d0b09 0%, #0a0908 45%, #080706 100%);
+  background-attachment: fixed;
+  color: var(--color-parchment);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+@layer components {
+  .panel {
+    @apply rounded border border-line bg-surface/85 shadow-[0_1px_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-20px_rgba(0,0,0,0.9)];
+  }
+
+  .panel-header {
+    @apply flex items-center justify-between gap-3 border-b border-line px-4 py-2.5;
+  }
+
+  .panel-title {
+    @apply font-display text-[0.72rem] tracking-[0.22em] text-gold uppercase;
+  }
+
+  .eyebrow {
+    @apply font-display text-[0.68rem] tracking-[0.28em] text-muted uppercase;
+  }
+
+  .display {
+    @apply font-display tracking-wide text-gold-bright;
+  }
+
+  .stat-row {
+    @apply flex items-baseline justify-between gap-4 px-4 py-1.5 text-sm odd:bg-white/[0.015];
+  }
+
+  .stat-label {
+    @apply text-muted;
+  }
+
+  .stat-value {
+    @apply font-medium tabular-nums text-parchment;
+  }
+
+  .btn {
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded border border-line-strong bg-surface-2
+           px-4 py-2 text-sm text-parchment transition-colors hover:border-gold hover:text-gold-bright
+           disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-gold {
+    @apply border-gold/70 bg-gradient-to-b from-[#3a2f1d] to-[#241d13] text-gold-bright hover:border-gold hover:from-[#4a3c25];
+  }
+
+  .btn-ghost {
+    @apply border-transparent bg-transparent text-muted hover:text-gold;
+  }
+
+  .input {
+    @apply w-full rounded border border-line bg-abyss/70 px-3 py-2 text-sm text-parchment outline-none
+           placeholder:text-muted/60 focus:border-gold/70;
+  }
+
+  .label {
+    @apply mb-1.5 block text-[0.7rem] tracking-[0.16em] text-muted uppercase;
+  }
+
+  .tag {
+    @apply inline-flex items-center gap-1.5 rounded border border-line bg-surface-2 px-2 py-0.5
+           text-[0.7rem] tracking-wider text-muted uppercase;
+  }
+
+  .link-gold {
+    @apply text-gold transition-colors hover:text-gold-bright;
+  }
+}
+
+.hover-card { position: relative; }
+.hover-card > .hover-card-panel {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 120ms ease;
+  pointer-events: none;
+}
+.hover-card:hover > .hover-card-panel,
+.hover-card:focus-within > .hover-card-panel {
+  visibility: visible;
+  opacity: 1;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0908; }
+::-webkit-scrollbar-thumb { background: #2e2823; border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: #4a3f31; }
