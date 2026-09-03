@@ -107,6 +107,22 @@ npm install       # once
 npm run dev       # http://localhost:3001, hot reload
 ```
 
+**On Windows, install with `--ignore-scripts`:**
+
+```powershell
+npm install --ignore-scripts
+npm rebuild esbuild unrs-resolver
+npm run dev
+```
+
+better-sqlite3 carries N-API prebuilt binaries for every platform inside the npm package, so
+nothing needs compiling. Some npm/Node combinations on Windows run `node-gyp rebuild` anyway
+because the package contains a `binding.gyp`, and that fails without Python and the Visual Studio
+build tools. `--ignore-scripts` skips it and the bundled `prebuilds/win32-x64.node` is used, which
+is what happens on Linux regardless. The second line re-runs the two postinstalls that are actually
+needed — esbuild (used by `npm test`) and unrs-resolver (used by `npm run lint`). Neither is needed
+by the dev server itself, so skip that line if it gives trouble.
+
 The dev server listens on **3001** so it never collides with the deployed container on 3000, and
 it uses `data/archive.db` in the working copy while the container uses its Docker volume — two
 separate databases, so dev data can be wrecked freely. `npm run seed:demo` fills it with demo

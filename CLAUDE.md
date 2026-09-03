@@ -76,7 +76,10 @@ CI runs the same checks plus a container boot, so a red build means do not deplo
 - Flag guesses as guesses and put uncertainty in the data model rather than hiding it —
   the tentative-end-date flag exists because of this.
 - Runs the site on a Windows PC home server (`X:\halls`) with Docker Desktop, Pi-hole,
-  Jellyfin and Immich. Answers involving that box should be PowerShell, not bash.
+  Jellyfin and Immich, on Node 24. Answers involving that box should be PowerShell, not bash.
+  Local installs there need `npm install --ignore-scripts` — npm otherwise runs `node-gyp
+  rebuild` on better-sqlite3, which has no toolchain to build with and does not need one
+  (the package ships N-API prebuilds). See the README's development-loop section.
 - **Periodically offer concrete ways to brief you better.** The owner explicitly asked for
   this and found it valuable: when a request would have been faster to act on with
   different framing — batching several items, stating acceptance criteria, attaching a
