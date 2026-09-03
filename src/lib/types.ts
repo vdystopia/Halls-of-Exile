@@ -12,6 +12,8 @@ export type League = {
   expansion: string | null;
   startDate: string | null;
   endDate: string | null;
+  /** 1 when endDate is a projection rather than an announced date. */
+  endDateEstimated: number;
   challengeTotal: number;
   isCustom: number;
   sortOrder: number;

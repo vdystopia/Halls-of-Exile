@@ -25,7 +25,7 @@ export default async function NewCharacterPage({ params }: Props) {
         </Link>
         <h1 className="display mt-3 text-3xl">Add a character</h1>
         <p className="mt-2 text-sm text-muted">
-          {user.username} · {league.patch} {league.name} · {leagueWindow(league.startDate, league.endDate)}
+          {user.username} · {league.patch} {league.name} · {leagueWindow(league.startDate, league.endDate, Boolean(league.endDateEstimated))}
         </p>
       </div>
       <AddCharacterForm username={user.username} patch={league.patch} />

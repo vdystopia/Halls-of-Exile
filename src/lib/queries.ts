@@ -17,6 +17,7 @@ function mapLeague(row: Row): League {
     expansion: row.expansion,
     startDate: row.start_date,
     endDate: row.end_date,
+    endDateEstimated: row.end_date_estimated,
     challengeTotal: row.challenge_total,
     isCustom: row.is_custom,
     sortOrder: row.sort_order,

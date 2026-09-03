@@ -46,6 +46,10 @@ export function AddLeagueForm({ returnTo }: { returnTo: string }) {
             </label>
             <input id="endDate" name="endDate" type="date" className="input" />
           </div>
+          <label className="flex items-center gap-2 self-end pb-2 text-sm text-muted">
+            <input type="checkbox" name="endDateEstimated" className="accent-[#c8aa6e]" />
+            End date is an estimate
+          </label>
           <div>
             <label className="label" htmlFor="challengeTotal">
               Challenge total

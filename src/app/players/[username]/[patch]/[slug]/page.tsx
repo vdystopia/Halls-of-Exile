@@ -70,7 +70,9 @@ export default async function CharacterPage({ params }: Props) {
             </div>
           </div>
           <div className="flex flex-col items-end gap-2 text-right">
-            <p className="text-xs text-muted">{leagueWindow(league.startDate, league.endDate)}</p>
+            <p className="text-xs text-muted">
+              {leagueWindow(league.startDate, league.endDate, Boolean(league.endDateEstimated))}
+            </p>
             <div className="flex flex-wrap justify-end gap-2">
               {character.pobUrl ? (
                 <a href={character.pobUrl} target="_blank" rel="noreferrer" className="btn px-3 py-1.5 text-xs">

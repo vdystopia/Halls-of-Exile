@@ -17,6 +17,8 @@ export type LeagueSeed = {
   startDate: string | null;
   endDate: string | null;
   challengeTotal: number;
+  /** The end date is a projection, not an announced date: the league is still running. */
+  endDateEstimated?: boolean;
 };
 
 export const LEAGUE_SEED: LeagueSeed[] = [
@@ -59,7 +61,17 @@ export const LEAGUE_SEED: LeagueSeed[] = [
   { patch: "3.25", name: "Settlers of Kalguur", startDate: "2024-07-26", endDate: "2025-06-13", challengeTotal: 40 },
   { patch: "3.26", name: "Mercenaries of Trarthus", expansion: "Secrets of the Atlas", startDate: "2025-06-13", endDate: "2025-10-31", challengeTotal: 40 },
   { patch: "3.27", name: "Keepers of the Flame", startDate: "2025-10-31", endDate: "2026-03-05", challengeTotal: 40 },
-  { patch: "3.28", name: "Mirage", startDate: "2026-03-05", endDate: null, challengeTotal: 40 },
+  { patch: "3.28", name: "Mirage", startDate: "2026-03-05", endDate: "2026-07-24", challengeTotal: 40 },
+  {
+    patch: "3.29",
+    name: "Curse of the Allflame",
+    startDate: "2026-07-24",
+    // Grinding Gear Games has not announced an end date. Four months is the
+    // recent cadence, so this is a placeholder and is shown as tentative.
+    endDate: "2026-11-24",
+    endDateEstimated: true,
+    challengeTotal: 40,
+  },
 ];
 
 export const ASCENDANCIES: Record<string, string[]> = {

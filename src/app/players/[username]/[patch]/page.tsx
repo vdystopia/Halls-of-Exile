@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ChallengeMeter } from "@/components/ChallengeMeter";
 import { CharacterCard } from "@/components/CharacterCard";
 import { LeagueRecordForm } from "@/components/LeagueRecordForm";
-import { leagueDuration, leagueWindow } from "@/lib/format";
+import { isLeagueRunning, leagueDuration, leagueWindow } from "@/lib/format";
 import { getCharacterCountByClass } from "@/lib/insights";
 import {
   getAdjacentLeagues,
@@ -33,6 +33,7 @@ export default async function LeaguePage({ params }: Props) {
   const progress = getLeagueProgress(user.id, league.id);
   const total = progress?.challengeTotal ?? league.challengeTotal;
   const duration = leagueDuration(league.startDate, league.endDate);
+  const running = isLeagueRunning(league.startDate, league.endDate);
   const classes = getCharacterCountByClass(characters);
   const { previous, next } = getAdjacentLeagues(user.id, league.sortOrder);
 
@@ -60,12 +61,20 @@ export default async function LeaguePage({ params }: Props) {
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div>
             <p className="eyebrow">Patch {league.patch}</p>
-            <h1 className="display mt-2 text-3xl">{league.name}</h1>
+            <h1 className="display mt-2 flex flex-wrap items-baseline gap-3 text-3xl">
+              {league.name}
+              {running ? <span className="tag border-gold/50 text-gold">live now</span> : null}
+            </h1>
             <p className="mt-2 text-sm text-muted">
-              {leagueWindow(league.startDate, league.endDate)}
+              {leagueWindow(league.startDate, league.endDate, Boolean(league.endDateEstimated))}
               {duration ? ` · ${duration}` : ""}
               {league.expansion ? ` · ${league.expansion} expansion` : ""}
             </p>
+            {league.endDateEstimated ? (
+              <p className="mt-1 text-xs text-muted/70">
+                End date has not been announced — showing four months from launch as a placeholder.
+              </p>
+            ) : null}
             {classes.length ? (
               <p className="mt-3 flex flex-wrap gap-2">
                 {classes.map((entry) => (

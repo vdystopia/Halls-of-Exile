@@ -272,6 +272,7 @@ export async function addLeagueAction(_prev: ActionState, formData: FormData): P
   const startDate = text(formData, "startDate") || null;
   const endDate = text(formData, "endDate") || null;
   const challengeTotal = integer(formData, "challengeTotal") ?? 40;
+  const endDateEstimated = formData.get("endDateEstimated") ? 1 : 0;
   const returnTo = text(formData, "returnTo");
 
   if (!/^\d+(\.\d+)*[a-z]?$/i.test(patch)) return { error: "Patch should look like 3.29 or 3.25.3." };
@@ -283,9 +284,10 @@ export async function addLeagueAction(_prev: ActionState, formData: FormData): P
   const maxOrder = (db.prepare(`SELECT MAX(sort_order) AS value FROM leagues`).get() as { value: number | null })
     .value;
   db.prepare(
-    `INSERT INTO leagues (patch, name, expansion, start_date, end_date, challenge_total, is_custom, sort_order)
-     VALUES (?, ?, NULL, ?, ?, ?, 1, ?)`,
-  ).run(patch, name, startDate, endDate, challengeTotal, (maxOrder ?? 0) + 10);
+    `INSERT INTO leagues
+       (patch, name, expansion, start_date, end_date, end_date_estimated, challenge_total, is_custom, sort_order)
+     VALUES (?, ?, NULL, ?, ?, ?, ?, 1, ?)`,
+  ).run(patch, name, startDate, endDate, endDateEstimated, challengeTotal, (maxOrder ?? 0) + 10);
 
   revalidatePath(returnTo || "/players");
   return { ok: true };

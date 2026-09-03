@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS leagues (
   expansion       TEXT,
   start_date      TEXT,
   end_date        TEXT,
+  end_date_estimated INTEGER NOT NULL DEFAULT 0,
   challenge_total INTEGER NOT NULL DEFAULT 40,
   is_custom       INTEGER NOT NULL DEFAULT 0,
   sort_order      INTEGER NOT NULL DEFAULT 0
@@ -59,17 +60,36 @@ CREATE INDEX IF NOT EXISTS idx_characters_user ON characters(user_id);
 CREATE INDEX IF NOT EXISTS idx_characters_league ON characters(user_id, league_id);
 `;
 
+/**
+ * Add columns introduced after a database was first created. SQLite has no
+ * "ADD COLUMN IF NOT EXISTS", and archives are long-lived, so every new column
+ * is declared here as well as in the schema above.
+ */
+function migrate(db: Database.Database) {
+  const additions: [string, string, string][] = [
+    ["leagues", "end_date_estimated", "INTEGER NOT NULL DEFAULT 0"],
+  ];
+  for (const [table, column, definition] of additions) {
+    const columns = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
+    if (columns.some((existing) => existing.name === column)) continue;
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+}
+
 function syncLeagueCatalogue(db: Database.Database) {
   const insert = db.prepare(`
-    INSERT INTO leagues (patch, name, expansion, start_date, end_date, challenge_total, is_custom, sort_order)
-    VALUES (@patch, @name, @expansion, @startDate, @endDate, @challengeTotal, 0, @sortOrder)
+    INSERT INTO leagues
+      (patch, name, expansion, start_date, end_date, end_date_estimated, challenge_total, is_custom, sort_order)
+    VALUES
+      (@patch, @name, @expansion, @startDate, @endDate, @endDateEstimated, @challengeTotal, 0, @sortOrder)
     ON CONFLICT(patch) DO UPDATE SET
-      name            = excluded.name,
-      expansion       = excluded.expansion,
-      start_date      = excluded.start_date,
-      end_date        = excluded.end_date,
-      challenge_total = excluded.challenge_total,
-      sort_order      = excluded.sort_order
+      name               = excluded.name,
+      expansion          = excluded.expansion,
+      start_date         = excluded.start_date,
+      end_date           = excluded.end_date,
+      end_date_estimated = excluded.end_date_estimated,
+      challenge_total    = excluded.challenge_total,
+      sort_order         = excluded.sort_order
     WHERE leagues.is_custom = 0
   `);
   const run = db.transaction(() => {
@@ -80,6 +100,7 @@ function syncLeagueCatalogue(db: Database.Database) {
         expansion: league.expansion ?? null,
         startDate: league.startDate,
         endDate: league.endDate,
+        endDateEstimated: league.endDateEstimated ? 1 : 0,
         challengeTotal: league.challengeTotal,
         sortOrder: (index + 1) * 10,
       });
@@ -95,6 +116,7 @@ function create(): Database.Database {
   db.pragma("journal_mode = WAL");
   db.pragma("foreign_keys = ON");
   db.exec(SCHEMA);
+  migrate(db);
   syncLeagueCatalogue(db);
   return db;
 }

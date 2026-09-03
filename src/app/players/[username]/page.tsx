@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { AddLeagueForm } from "@/components/AddLeagueForm";
 import { ChallengeMeter } from "@/components/ChallengeMeter";
 import { CharacterCard } from "@/components/CharacterCard";
-import { leagueWindow } from "@/lib/format";
+import { isLeagueRunning, leagueWindow } from "@/lib/format";
 import { getUser, getUserTotals, listLeaguesForUser, listRecentCharacters } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -90,6 +90,7 @@ export default async function PlayerPage({ params, searchParams }: Props) {
           {visible.map((league) => {
             const total = league.challengeTotalOverride ?? league.challengeTotal;
             const empty = league.characterCount === 0;
+            const running = isLeagueRunning(league.startDate, league.endDate);
             return (
               <Link
                 key={league.id}
@@ -100,9 +101,15 @@ export default async function PlayerPage({ params, searchParams }: Props) {
               >
                 <span className="w-16 shrink-0 font-display text-lg text-gold tabular-nums">{league.patch}</span>
                 <span className="min-w-[14rem] flex-1">
-                  <span className="block font-display text-base text-parchment">{league.name}</span>
+                  <span className="flex items-baseline gap-2 font-display text-base text-parchment">
+                    {league.name}
+                    {running ? (
+                      <span className="tag border-gold/50 text-gold">live</span>
+                    ) : null}
+                  </span>
                   <span className="block text-xs text-muted">
-                    {leagueWindow(league.startDate, league.endDate)}
+                    {leagueWindow(league.startDate, league.endDate, Boolean(league.endDateEstimated))}
+                    {league.endDateEstimated ? " · end date tentative" : ""}
                     {league.expansion ? ` · ${league.expansion}` : ""}
                   </span>
                 </span>
