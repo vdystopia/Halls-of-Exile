@@ -42,6 +42,7 @@ function mapCharacter(row: Row): Character {
     level: row.level,
     mainSkill: row.main_skill,
     notes: row.notes,
+    playedMinutes: row.played_minutes ?? null,
     isFavorite: row.is_favorite,
     pobCode: row.pob_code,
     pobUrl: row.pob_url,
@@ -194,26 +195,17 @@ export function getUserTotals(userId: number) {
       `SELECT COUNT(*)                     AS characters,
               COUNT(DISTINCT league_id)    AS leagues,
               MAX(level)                   AS highest_level,
+              SUM(COALESCE(played_minutes, 0)) AS played_minutes,
               SUM(CASE WHEN level >= 90 THEN 1 ELSE 0 END) AS level_90s
        FROM characters WHERE user_id = ?`,
-    )
-    .get(userId) as Row;
-  const challenges = db
-    .prepare(
-      `SELECT SUM(COALESCE(challenges_completed, 0)) AS completed,
-              SUM(CASE WHEN COALESCE(r.challenges_completed, 0) >= COALESCE(r.challenge_total, l.challenge_total)
-                       THEN 1 ELSE 0 END) AS full_clears
-       FROM league_records r JOIN leagues l ON l.id = r.league_id
-       WHERE r.user_id = ?`,
     )
     .get(userId) as Row;
   return {
     characters: row.characters as number,
     leagues: row.leagues as number,
     highestLevel: row.highest_level as number | null,
+    playedMinutes: (row.played_minutes as number) ?? 0,
     level90s: (row.level_90s as number) ?? 0,
-    challengesCompleted: (challenges?.completed as number) ?? 0,
-    fullClears: (challenges?.full_clears as number) ?? 0,
   };
 }
 
@@ -222,7 +214,8 @@ export function getArchiveTotals() {
     .prepare(
       `SELECT (SELECT COUNT(*) FROM users)      AS users,
               (SELECT COUNT(*) FROM characters) AS characters,
-              (SELECT COUNT(*) FROM leagues)    AS leagues`,
+              -- leagues someone has actually archived a character in, not the catalogue size
+              (SELECT COUNT(DISTINCT league_id) FROM characters) AS leagues`,
     )
     .get() as Row;
   return { users: row.users as number, characters: row.characters as number, leagues: row.leagues as number };

@@ -20,7 +20,6 @@ export function CreatePlayerForm() {
           id="username"
           name="username"
           className="input"
-          placeholder="TheBlastPath"
           autoComplete="off"
           required
         />
@@ -32,7 +31,7 @@ export function CreatePlayerForm() {
         <label className="label" htmlFor="firstName">
           First name
         </label>
-        <input id="firstName" name="firstName" className="input" placeholder="Kirac" autoComplete="off" required />
+        <input id="firstName" name="firstName" className="input" autoComplete="off" required />
       </div>
       <div>
         <label className="label" htmlFor="tagline">
@@ -42,7 +41,6 @@ export function CreatePlayerForm() {
           id="tagline"
           name="tagline"
           className="input"
-          placeholder="Righteous Fire enjoyer since Talisman"
           autoComplete="off"
         />
       </div>

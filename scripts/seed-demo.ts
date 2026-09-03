@@ -8,6 +8,7 @@
  */
 import zlib from "node:zlib";
 import { db } from "../src/lib/db";
+import { parsePlayed } from "../src/lib/format";
 import { parsePob } from "../src/lib/pob";
 
 type ItemSpec = { slot: string; text: string };
@@ -25,6 +26,7 @@ type BuildSpec = {
   mainSocketGroup?: number;
   favorite?: boolean;
   memories?: string;
+  played?: string;
   stats: Record<string, number>;
   groups: GroupSpec[];
   items: ItemSpec[];
@@ -141,6 +143,7 @@ const BUILDS: BuildSpec[] = [
     bandit: "Alira",
     favorite: true,
     memories: "First character to ever kill Sirus at awakening 8. Died to the meteor twice before it clicked.",
+    played: "9d 4h",
     stats: {
       Life: 5482,
       LifeUnreserved: 3702,
@@ -393,6 +396,7 @@ Knocks Back Enemies in an Area when you use a Flask`,
     bandit: "Alira",
     favorite: true,
     memories: "Ran the entire Settlers league on this one. Kingsmarch paid for every upgrade.",
+    played: "14d 11h",
     stats: {
       Life: 7412,
       LifeUnreserved: 4218,
@@ -643,6 +647,7 @@ Implicits: 1
     ascendancy: "Pathfinder",
     bandit: "Kill all",
     memories: "Wildwood charms made this thing absurd. Deleted it the second the league ended anyway.",
+    played: "6d 2h",
     stats: {
       Life: 4820,
       LifeUnreserved: 3120,
@@ -874,6 +879,7 @@ const MANUAL_CHARACTERS = [
     ascendancy: "Inquisitor",
     level: 89,
     mainSkill: "Winter Orb",
+    played: "7d 18h",
     memories:
       "No build export survives from this one — only the memory of farming Aisling every night for a T1 suffix.",
     stats: { Life: 4210, EnergyShield: 1180, FullDPS: 820000 },
@@ -886,6 +892,7 @@ const MANUAL_CHARACTERS = [
     ascendancy: "Necromancer",
     level: 92,
     mainSkill: "Skeleton Mages",
+    played: "11d 6h",
     memories: "Mostly used to run Kingsmarch. Barely mapped, still hit level 92 somehow.",
     stats: { Life: 5120, EnergyShield: 2400, FullDPS: 1450000 },
   },
@@ -923,11 +930,13 @@ function main() {
 
   const insertCharacter = db.prepare(
     `INSERT INTO characters
-       (user_id, league_id, slug, name, class_name, ascendancy, level, main_skill, notes, is_favorite, pob_code, pob_url, data)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       (user_id, league_id, slug, name, class_name, ascendancy, level, main_skill, notes, played_minutes,
+        is_favorite, pob_code, pob_url, data)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(user_id, league_id, slug) DO UPDATE SET
        name = excluded.name, class_name = excluded.class_name, ascendancy = excluded.ascendancy,
        level = excluded.level, main_skill = excluded.main_skill, notes = excluded.notes,
+       played_minutes = excluded.played_minutes,
        is_favorite = excluded.is_favorite, pob_code = excluded.pob_code, data = excluded.data`,
   );
 
@@ -944,6 +953,7 @@ function main() {
       spec.level,
       data.mainSkill ?? null,
       spec.memories ?? null,
+      parsePlayed(spec.played ?? ""),
       spec.favorite ? 1 : 0,
       code,
       null,
@@ -979,6 +989,7 @@ function main() {
       manual.level,
       manual.mainSkill,
       manual.memories,
+      parsePlayed(manual.played ?? ""),
       0,
       null,
       null,

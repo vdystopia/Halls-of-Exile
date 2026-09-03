@@ -14,6 +14,7 @@ export function CharacterAdmin({
   name,
   level,
   notes,
+  played,
   isFavorite,
 }: {
   username: string;
@@ -22,6 +23,7 @@ export function CharacterAdmin({
   name: string;
   level: number | null;
   notes: string | null;
+  played: string | null;
   isFavorite: boolean;
 }) {
   const [state, formAction] = useActionState(updateCharacterAction, INITIAL);
@@ -61,6 +63,15 @@ export function CharacterAdmin({
             </div>
           </div>
           <div>
+            <label className="label" htmlFor="edit-played">
+              Time played
+            </label>
+            <input id="edit-played" name="played" className="input" defaultValue={played ?? ""} />
+            <p className="mt-1 text-xs text-muted">
+              From <span className="font-mono">/played</span> in game. Leaving this blank clears it.
+            </p>
+          </div>
+          <div>
             <label className="label" htmlFor="edit-notes">
               Memories
             </label>
@@ -75,7 +86,6 @@ export function CharacterAdmin({
               name="pobInput"
               rows={3}
               className="input resize-y font-mono text-xs"
-              placeholder="Paste a newer export code or pobb.in link to replace the build data"
             />
           </div>
           <label className="flex items-center gap-2 text-sm text-muted">

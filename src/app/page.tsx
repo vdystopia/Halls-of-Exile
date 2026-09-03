@@ -12,7 +12,7 @@ export default function HomePage() {
       <section className="panel relative overflow-hidden px-8 py-14 text-center">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(600px_240px_at_50%_-20%,rgba(200,170,110,0.18),transparent_70%)]" />
         <p className="eyebrow relative">Every exile you have ever rolled</p>
-        <h1 className="display relative mt-4 text-4xl leading-tight sm:text-5xl">Halls of the Champions</h1>
+        <h1 className="display relative mt-4 text-4xl leading-tight sm:text-5xl">Halls of Exile</h1>
         <p className="relative mx-auto mt-5 max-w-2xl text-parchment/80">
           Leagues end. Characters get migrated to Standard and never touched again. This is where they keep
           their gear, their gems, their tree and their story — sorted by league, ready for the next time you feel
@@ -32,7 +32,7 @@ export default function HomePage() {
         {[
           { label: "Exiles archived", value: totals.characters },
           { label: "Players", value: totals.users },
-          { label: "Leagues catalogued", value: totals.leagues },
+          { label: "Leagues played", value: totals.leagues },
         ].map((stat) => (
           <div key={stat.label} className="bg-surface px-4 py-6 text-center">
             <p className="display text-3xl">{stat.value}</p>

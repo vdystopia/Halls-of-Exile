@@ -34,7 +34,7 @@ const displayExt = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Halls of the Champions",
+  title: "Halls of Exile",
   description: "An archive of every Path of Exile character you have ever played, league by league.",
 };
 
@@ -48,7 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <header className="sticky top-0 z-40 border-b border-line bg-abyss/85 backdrop-blur">
             <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-6 px-5 py-3">
               <Link href="/" className="group flex items-baseline gap-3">
-                <span className="display text-lg leading-none">Halls of the Champions</span>
+                <span className="display text-lg leading-none">Halls of Exile</span>
                 <span className="hidden text-[0.68rem] tracking-[0.24em] text-muted uppercase sm:inline">
                   Path of Exile archive
                 </span>
@@ -65,7 +65,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </header>
           <main className="mx-auto w-full max-w-[1400px] flex-1 px-5 py-8">{children}</main>
           <footer className="border-t border-line px-5 py-6 text-center text-xs text-muted">
-            Halls of the Champions — a fan-made archive. Not affiliated with Grinding Gear Games.
+            Halls of Exile — a fan-made archive. Not affiliated with Grinding Gear Games.
           </footer>
         </div>
       </body>

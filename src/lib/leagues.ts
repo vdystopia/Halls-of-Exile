@@ -40,7 +40,7 @@ export const LEAGUE_SEED: LeagueSeed[] = [
   { patch: "3.4", name: "Delve", startDate: "2018-08-31", endDate: "2018-12-07", challengeTotal: 40 },
   { patch: "3.5", name: "Betrayal", startDate: "2018-12-07", endDate: "2019-03-08", challengeTotal: 40 },
   { patch: "3.6", name: "Synthesis", startDate: "2019-03-08", endDate: "2019-06-07", challengeTotal: 40 },
-  { patch: "3.7", name: "Legion", expansion: "Legion", startDate: "2019-06-07", endDate: "2019-09-06", challengeTotal: 40 },
+  { patch: "3.7", name: "Legion", startDate: "2019-06-07", endDate: "2019-09-06", challengeTotal: 40 },
   { patch: "3.8", name: "Blight", startDate: "2019-09-06", endDate: "2019-12-13", challengeTotal: 40 },
   { patch: "3.9", name: "Metamorph", expansion: "Conquerors of the Atlas", startDate: "2019-12-13", endDate: "2020-03-13", challengeTotal: 40 },
   { patch: "3.10", name: "Delirium", startDate: "2020-03-13", endDate: "2020-06-19", challengeTotal: 40 },

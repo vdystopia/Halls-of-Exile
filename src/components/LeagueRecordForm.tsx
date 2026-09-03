@@ -44,7 +44,6 @@ export function LeagueRecordForm({
               min={0}
               className="input"
               defaultValue={challengesCompleted ?? ""}
-              placeholder="32"
             />
           </div>
           <div>
@@ -71,7 +70,6 @@ export function LeagueRecordForm({
             rows={3}
             className="input resize-y"
             defaultValue={notes ?? ""}
-            placeholder="Hit 40/40 the week before Kalandra. Best mapping league of my life."
           />
         </div>
         <FormError message={state.error} />

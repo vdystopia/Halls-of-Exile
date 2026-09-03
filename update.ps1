@@ -31,7 +31,7 @@ $PSNativeCommandUseErrorActionPreference = $false
 Set-Location -Path $PSScriptRoot
 
 $Service = 'halls'
-$Image = 'halls-of-the-champions'
+$Image = 'halls-of-exile'
 $RollbackImage = "${Image}:rollback"
 
 function Write-Step { param([string]$Message) Write-Host "==> $Message" -ForegroundColor Cyan }

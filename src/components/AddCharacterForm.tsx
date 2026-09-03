@@ -44,7 +44,6 @@ export function AddCharacterForm({ username, patch }: { username: string; patch:
             name="pobInput"
             rows={6}
             className="input resize-y font-mono text-xs"
-            placeholder="https://pobb.in/abc123   —or—   eNrtvVlz2zi2..."
           />
           <p className="mt-2 text-xs text-muted">
             Accepts a raw export code, or a link from pobb.in, pastebin or poe.ninja. Gear, gems, tree and every
@@ -88,25 +87,31 @@ export function AddCharacterForm({ username, patch }: { username: string; patch:
             <label className="label" htmlFor="mainSkill">
               Main skill
             </label>
-            <input id="mainSkill" name="mainSkill" className="input" placeholder="Righteous Fire" />
+            <input id="mainSkill" name="mainSkill" className="input" />
+          </div>
+          <div>
+            <label className="label" htmlFor="level">
+              Level
+            </label>
+            <input id="level" name="level" type="number" min={1} max={100} className="input" />
           </div>
           <div>
             <label className="label" htmlFor="life">
               Life
             </label>
-            <input id="life" name="life" type="number" min={0} className="input" placeholder="5400" />
+            <input id="life" name="life" type="number" min={0} className="input" />
           </div>
           <div>
             <label className="label" htmlFor="energyShield">
               Energy shield
             </label>
-            <input id="energyShield" name="energyShield" type="number" min={0} className="input" placeholder="0" />
+            <input id="energyShield" name="energyShield" type="number" min={0} className="input" />
           </div>
           <div>
             <label className="label" htmlFor="dps">
               DPS
             </label>
-            <input id="dps" name="dps" type="number" min={0} className="input" placeholder="1200000" />
+            <input id="dps" name="dps" type="number" min={0} className="input" />
           </div>
         </div>
       )}
@@ -116,22 +121,21 @@ export function AddCharacterForm({ username, patch }: { username: string; patch:
           <label className="label" htmlFor="name">
             Character name
           </label>
-          <input
-            id="name"
-            name="name"
-            className="input"
-            placeholder="Zizarans_Regret"
-            required={mode === "manual"}
-          />
+          <input id="name" name="name" className="input" required={mode === "manual"} />
           {mode === "pob" ? (
-            <p className="mt-1 text-xs text-muted">Optional — the main skill is used if you leave it blank.</p>
+            <p className="mt-1 text-xs text-muted">
+              Optional — the main skill is used if you leave it blank. Level comes from the import.
+            </p>
           ) : null}
         </div>
         <div>
-          <label className="label" htmlFor="level">
-            Level
+          <label className="label" htmlFor="played">
+            Time played <span className="text-muted/60">(optional)</span>
           </label>
-          <input id="level" name="level" type="number" min={1} max={100} className="input" placeholder="94" />
+          <input id="played" name="played" className="input" />
+          <p className="mt-1 text-xs text-muted">
+            From <span className="font-mono">/played</span> in game. &ldquo;5d 3h&rdquo; or &ldquo;12h30m&rdquo;.
+          </p>
         </div>
         <div className="sm:col-span-2">
           <label className="label" htmlFor="notes">
@@ -142,7 +146,6 @@ export function AddCharacterForm({ username, patch }: { username: string; patch:
             name="notes"
             rows={3}
             className="input resize-y"
-            placeholder="First character to ever kill Sirus. Died to the meteor twice first."
           />
         </div>
         <label className="flex items-center gap-2 text-sm text-muted sm:col-span-2">

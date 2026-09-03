@@ -72,7 +72,7 @@ export async function fetchPobCode(url: string): Promise<string> {
   if (!builder) throw new PobError("Unsupported link. Paste a pobb.in, pastebin or poe.ninja build link.");
   const id = builder.test.exec(trimmed)![1];
   const response = await fetch(builder.raw(id), {
-    headers: { "User-Agent": "halls-of-the-champions" },
+    headers: { "User-Agent": "halls-of-exile" },
     cache: "no-store",
   });
   if (!response.ok) throw new PobError(`Could not read that link (HTTP ${response.status}).`);

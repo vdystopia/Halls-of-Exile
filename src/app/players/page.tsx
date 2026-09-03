@@ -3,7 +3,7 @@ import { listUsers } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Players · Halls of the Champions" };
+export const metadata = { title: "Players · Halls of Exile" };
 
 export default function PlayersPage() {
   const players = listUsers();

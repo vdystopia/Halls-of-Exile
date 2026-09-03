@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "./db";
 import { emptyBuild, fetchPobCode, isPobUrl, parsePob, PobError } from "./pob";
+import { parsePlayed } from "./format";
 import { getLeagueByPatch, getUser } from "./queries";
 import type { BuildData } from "./types";
 
@@ -117,6 +118,7 @@ export async function addCharacterAction(_prev: ActionState, formData: FormData)
   const level = integer(formData, "level") ?? data.level ?? null;
   const mainSkill = text(formData, "mainSkill") || data.mainSkill || null;
   const notes = text(formData, "notes") || null;
+  const playedMinutes = parsePlayed(text(formData, "played"));
   const favorite = formData.get("favorite") ? 1 : 0;
 
   if (data.source === "manual") {
@@ -131,8 +133,9 @@ export async function addCharacterAction(_prev: ActionState, formData: FormData)
 
   db.prepare(
     `INSERT INTO characters
-       (user_id, league_id, slug, name, class_name, ascendancy, level, main_skill, notes, is_favorite, pob_code, pob_url, data)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (user_id, league_id, slug, name, class_name, ascendancy, level, main_skill, notes, played_minutes,
+        is_favorite, pob_code, pob_url, data)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).run(
     user.id,
     league.id,
@@ -143,6 +146,7 @@ export async function addCharacterAction(_prev: ActionState, formData: FormData)
     level,
     mainSkill,
     notes,
+    playedMinutes,
     favorite,
     parsed.code,
     parsed.url,
@@ -185,6 +189,7 @@ export async function updateCharacterAction(_prev: ActionState, formData: FormDa
   const name = text(formData, "name");
   const level = integer(formData, "level");
   const notes = text(formData, "notes");
+  const playedMinutes = parsePlayed(text(formData, "played"));
   const favorite = formData.get("favorite") ? 1 : 0;
 
   db.prepare(
@@ -194,8 +199,9 @@ export async function updateCharacterAction(_prev: ActionState, formData: FormDa
        main_skill  = COALESCE(NULLIF(?, ''), main_skill),
        class_name  = COALESCE(NULLIF(?, ''), class_name),
        ascendancy  = COALESCE(NULLIF(?, ''), ascendancy),
-       notes       = ?,
-       is_favorite = ?,
+       notes          = ?,
+       played_minutes = ?,
+       is_favorite    = ?,
        pob_code    = COALESCE(?, pob_code),
        pob_url     = COALESCE(?, pob_url),
        data        = COALESCE(?, data)
@@ -207,6 +213,7 @@ export async function updateCharacterAction(_prev: ActionState, formData: FormDa
     data?.className ?? "",
     data?.ascendClassName ?? "",
     notes || null,
+    playedMinutes,
     favorite,
     code,
     url,

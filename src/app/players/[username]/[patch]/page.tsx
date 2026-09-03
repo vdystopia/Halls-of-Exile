@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ChallengeMeter } from "@/components/ChallengeMeter";
 import { CharacterCard } from "@/components/CharacterCard";
 import { LeagueRecordForm } from "@/components/LeagueRecordForm";
-import { isLeagueRunning, leagueDuration, leagueWindow } from "@/lib/format";
+import { isLeagueRunning, leagueDuration, leagueTitle, leagueWindow } from "@/lib/format";
 import { getCharacterCountByClass } from "@/lib/insights";
 import {
   getAdjacentLeagues,
@@ -61,14 +61,13 @@ export default async function LeaguePage({ params }: Props) {
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div>
             <p className="eyebrow">Patch {league.patch}</p>
-            <h1 className="display mt-2 flex flex-wrap items-baseline gap-3 text-3xl">
-              {league.name}
+            <h1 className="font-display mt-2 flex flex-wrap items-baseline gap-3 text-3xl tracking-wide text-aubergine">
+              {leagueTitle(league.name, league.expansion)}
               {running ? <span className="tag border-gold/50 text-gold">live now</span> : null}
             </h1>
-            <p className="mt-2 text-sm text-muted">
+            <p className="mt-2 text-sm text-forest">
               {leagueWindow(league.startDate, league.endDate, Boolean(league.endDateEstimated))}
               {duration ? ` · ${duration}` : ""}
-              {league.expansion ? ` · ${league.expansion} expansion` : ""}
             </p>
             {league.endDateEstimated ? (
               <p className="mt-1 text-xs text-muted/70">

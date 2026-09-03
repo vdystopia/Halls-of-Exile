@@ -7,7 +7,7 @@ mattering.
 ## Now
 
 - [ ] Decide whether the site is renamed **Halls of Exile** to match the repository, or
-      stays **Halls of the Champions**. Touches the page title, header, footer, compose
+      stays **Halls of Exile**. Touches the page title, header, footer, compose
       `container_name` and image tag.
 - [ ] Populate the archive with the owner's real characters, and note anything the import
       flow makes awkward while doing it — that friction is the best source of the next few
@@ -41,6 +41,8 @@ mattering.
       every computed stat.
 - [x] League catalogue 1.0 → 3.29, with challenge totals and per-player challenge records.
 - [x] Docker packaging, health endpoint, online backup script.
+- [x] Renamed to **Halls of Exile**, matching the repository.
+- [x] Per-character `/played` time, summed into the player header.
 - [x] `update.ps1`: backup, pull, rebuild, health-check, automatic rollback.
 - [x] CI on every push: typecheck, lint, tests, build, and a container that must boot and
       serve before a build is called green.

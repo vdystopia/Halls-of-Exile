@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS characters (
   level        INTEGER,
   main_skill   TEXT,
   notes        TEXT,
+  played_minutes INTEGER,
   is_favorite  INTEGER NOT NULL DEFAULT 0,
   pob_code     TEXT,
   pob_url      TEXT,
@@ -68,6 +69,7 @@ CREATE INDEX IF NOT EXISTS idx_characters_league ON characters(user_id, league_i
 function migrate(db: Database.Database) {
   const additions: [string, string, string][] = [
     ["leagues", "end_date_estimated", "INTEGER NOT NULL DEFAULT 0"],
+    ["characters", "played_minutes", "INTEGER"],
   ];
   for (const [table, column, definition] of additions) {
     const columns = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];

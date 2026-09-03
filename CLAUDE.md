@@ -1,4 +1,4 @@
-# Halls of the Champions — working notes
+# Halls of Exile — working notes
 
 An archive of a Path of Exile player's entire back catalogue of characters, organised by
 league. Self-hosted; runs on the owner's Windows home server in Docker. See `README.md`

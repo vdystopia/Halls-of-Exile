@@ -112,6 +112,8 @@ export type Character = {
   level: number | null;
   mainSkill: string | null;
   notes: string | null;
+  /** In-game /played time in minutes, entered by hand — no export carries it. */
+  playedMinutes: number | null;
   isFavorite: number;
   pobCode: string | null;
   pobUrl: string | null;

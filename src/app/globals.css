@@ -8,6 +8,9 @@
   --color-line: #2e2823;
   --color-line-strong: #4a3f31;
   --color-gold: #c8aa6e;
+  /* Contrast-checked against the panel background: aubergine 5.6:1, forest 6.9:1. */
+  --color-aubergine: #a97bb5;
+  --color-forest: #6faa7c;
   --color-gold-bright: #e8d9a8;
   --color-parchment: #cfc6b4;
   --color-muted: #8b8272;

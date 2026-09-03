@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { AddLeagueForm } from "@/components/AddLeagueForm";
 import { ChallengeMeter } from "@/components/ChallengeMeter";
 import { CharacterCard } from "@/components/CharacterCard";
-import { isLeagueRunning, leagueWindow } from "@/lib/format";
+import { formatPlayed, isLeagueRunning, leagueTitle, leagueWindow } from "@/lib/format";
 import { getUser, getUserTotals, listLeaguesForUser, listRecentCharacters } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +15,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props) {
   const { username } = await params;
-  return { title: `${username} · Halls of the Champions` };
+  return { title: `${username} · Halls of Exile` };
 }
 
 export default async function PlayerPage({ params, searchParams }: Props) {
@@ -37,8 +37,8 @@ export default async function PlayerPage({ params, searchParams }: Props) {
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div>
             <p className="eyebrow">Archive of</p>
-            <h1 className="display mt-2 text-3xl">{user.username}</h1>
-            <p className="mt-1 text-sm text-muted">{user.firstName}</p>
+            <h1 className="font-display mt-2 text-3xl tracking-wide text-forest">{user.username}</h1>
+            <p className="mt-1 text-sm text-aubergine">{user.firstName}</p>
             {user.tagline ? <p className="mt-3 max-w-xl text-sm text-parchment/75 italic">“{user.tagline}”</p> : null}
           </div>
           <dl className="grid grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-4">
@@ -46,7 +46,7 @@ export default async function PlayerPage({ params, searchParams }: Props) {
               { label: "Characters", value: totals.characters },
               { label: "Leagues played", value: totals.leagues },
               { label: "Highest level", value: totals.highestLevel ?? "—" },
-              { label: "Full clears", value: totals.fullClears },
+              { label: "Total /played", value: formatPlayed(totals.playedMinutes) ?? "—" },
             ].map((stat) => (
               <div key={stat.label} className="text-right">
                 <dt className="eyebrow">{stat.label}</dt>
@@ -101,16 +101,15 @@ export default async function PlayerPage({ params, searchParams }: Props) {
               >
                 <span className="w-16 shrink-0 font-display text-lg text-gold tabular-nums">{league.patch}</span>
                 <span className="min-w-[14rem] flex-1">
-                  <span className="flex items-baseline gap-2 font-display text-base text-parchment">
-                    {league.name}
+                  <span className="flex items-baseline gap-2 font-display text-base text-aubergine">
+                    {leagueTitle(league.name, league.expansion)}
                     {running ? (
                       <span className="tag border-gold/50 text-gold">live</span>
                     ) : null}
                   </span>
-                  <span className="block text-xs text-muted">
+                  <span className="block text-xs text-forest">
                     {leagueWindow(league.startDate, league.endDate, Boolean(league.endDateEstimated))}
                     {league.endDateEstimated ? " · end date tentative" : ""}
-                    {league.expansion ? ` · ${league.expansion}` : ""}
                   </span>
                 </span>
                 <span className="w-28 shrink-0 text-sm text-muted">

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { isLeagueRunning, leagueDuration, leagueWindow } from "../src/lib/format";
+import { formatPlayed, isLeagueRunning, leagueDuration, leagueWindow, parsePlayed } from "../src/lib/format";
 import { LEAGUE_SEED } from "../src/lib/leagues";
 
 test("league catalogue has unique patches in chronological order", () => {
@@ -48,4 +48,23 @@ test("a league is running until its end date passes", () => {
   assert.equal(isLeagueRunning(future, null), false, "a league that has not launched is not running");
   assert.match(leagueDuration(older, future)!, /days so far$/);
   assert.equal(leagueDuration("2021-01-15", "2021-04-16"), "91 days");
+});
+
+test("parses the /played times people actually type", () => {
+  assert.equal(parsePlayed("5d 3h 22m"), 5 * 1440 + 3 * 60 + 22);
+  assert.equal(parsePlayed("5 days, 3 hours, 22 minutes"), 5 * 1440 + 3 * 60 + 22);
+  assert.equal(parsePlayed("12h30m"), 750);
+  assert.equal(parsePlayed("90m"), 90);
+  assert.equal(parsePlayed("36"), 2160, "a bare number is hours");
+  assert.equal(parsePlayed(""), null);
+  assert.equal(parsePlayed("whenever"), null);
+});
+
+test("renders played time the way the game talks about it", () => {
+  assert.equal(formatPlayed(5 * 1440 + 3 * 60), "5d 3h");
+  assert.equal(formatPlayed(5 * 1440), "5d");
+  assert.equal(formatPlayed(750), "12h 30m");
+  assert.equal(formatPlayed(45), "45m");
+  assert.equal(formatPlayed(0), null);
+  assert.equal(formatPlayed(null), null);
 });

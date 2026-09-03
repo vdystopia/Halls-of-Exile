@@ -1,4 +1,4 @@
-# Halls of the Champions
+# Halls of Exile
 
 An archive for a Path of Exile player's entire back catalogue of characters.
 
@@ -16,6 +16,8 @@ were built in.
   Nemesis to the current league, with league dates, characters archived, and challenge progress.
 - **A league page** (`/players/<username>/<patch>`) with that league's characters, the player's
   challenge completion (`32/40`), the league window and a note about how the league went.
+- **Per-character `/played` time**, typed in by hand — no export carries it — summed into the
+  player header as the archive's total time played.
 - **A character sheet** (`/players/<username>/<patch>/<character>`) laid out like pobb.in: defence
   and offence panels, resistances, the full paper-doll of gear with hover tooltips showing every
   mod, the gem setup by socket group, the passive tree summary, the build configuration, and a
@@ -93,7 +95,7 @@ Use this instead of `docker compose up -d --build`. It refuses to run with uncom
 takes a consistent backup, pulls, rebuilds, waits for `/api/health`, and **rolls back to the
 previous image and commit if the build fails or the new container never reports healthy** — so a
 bad push leaves the running site untouched. The previous image is kept as
-`halls-of-the-champions:rollback`.
+`halls-of-exile:rollback`.
 
 Windows blocks unsigned scripts by default. Either `Set-ExecutionPolicy -Scope CurrentUser
 RemoteSigned` once, or run `powershell -ExecutionPolicy Bypass -File .\update.ps1`.
@@ -180,7 +182,7 @@ catalogue is refreshed. Per-player challenge totals can also be overridden on th
 | `users` | username (unique, case-insensitive), first name, optional tagline |
 | `leagues` | patch, name, expansion, start/end dates, challenge total, custom flag |
 | `league_records` | one row per player per league: challenges completed, total override, notes |
-| `characters` | name, slug, class, ascendancy, level, main skill, memories, the PoB code and the parsed build JSON |
+| `characters` | name, slug, class, ascendancy, level, main skill, memories, `/played` time, the PoB code and the parsed build JSON |
 
 ## Layout
 

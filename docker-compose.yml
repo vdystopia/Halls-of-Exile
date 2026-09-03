@@ -1,8 +1,8 @@
 services:
   halls:
     build: .
-    image: halls-of-the-champions
-    container_name: halls-of-the-champions
+    image: halls-of-exile
+    container_name: halls-of-exile
     restart: unless-stopped
     ports:
       # Change the left-hand port if 3000 is taken on the host.

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CreatePlayerForm } from "@/components/CreatePlayerForm";
 
-export const metadata = { title: "Create a profile · Halls of the Champions" };
+export const metadata = { title: "Create a profile · Halls of Exile" };
 
 export default function NewPlayerPage() {
   return (

@@ -26,13 +26,13 @@ export function AddLeagueForm({ returnTo }: { returnTo: string }) {
             <label className="label" htmlFor="patch">
               Patch
             </label>
-            <input id="patch" name="patch" className="input" placeholder="3.29" required />
+            <input id="patch" name="patch" className="input" required />
           </div>
           <div>
             <label className="label" htmlFor="leagueName">
               League name
             </label>
-            <input id="leagueName" name="name" className="input" placeholder="Name of the league" required />
+            <input id="leagueName" name="name" className="input" required />
           </div>
           <div>
             <label className="label" htmlFor="startDate">

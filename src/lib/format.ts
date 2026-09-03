@@ -38,7 +38,58 @@ export function leagueDuration(start: string | null, end: string | null): string
   return running ? `${days} days so far` : `${days} days`;
 }
 
+/** "Archnemesis (Siege of the Atlas)" when the league shipped with an expansion. */
+export function leagueTitle(name: string, expansion: string | null): string {
+  return expansion ? `${name} (${expansion})` : name;
+}
+
 export function classLine(className: string | null, ascendancy: string | null): string {
   if (ascendancy && className && ascendancy !== className) return `${ascendancy} · ${className}`;
   return ascendancy || className || "Unknown class";
+}
+
+/**
+ * Parse an in-game /played time into minutes. Accepts what the game prints
+ * ("5 days, 3 hours, 22 minutes") and the shorthand people actually type
+ * ("5d 3h", "12h30m", "90m"). A bare number is read as hours.
+ * Returns null when there is nothing usable in the input.
+ */
+export function parsePlayed(input: string): number | null {
+  const text = input.trim().toLowerCase();
+  if (!text) return null;
+
+  if (/^\d+(\.\d+)?$/.test(text)) {
+    const hours = Number(text);
+    return Number.isFinite(hours) ? Math.round(hours * 60) : null;
+  }
+
+  const units: [RegExp, number][] = [
+    [/(\d+(?:\.\d+)?)\s*(?:d|days?)(?![a-z])/, 24 * 60],
+    [/(\d+(?:\.\d+)?)\s*(?:h|hrs?|hours?)(?![a-z])/, 60],
+    [/(\d+(?:\.\d+)?)\s*(?:m|mins?|minutes?)(?![a-z])/, 1],
+  ];
+
+  let minutes = 0;
+  let matched = false;
+  for (const [pattern, multiplier] of units) {
+    const match = pattern.exec(text);
+    if (!match) continue;
+    matched = true;
+    minutes += Number(match[1]) * multiplier;
+  }
+
+  if (!matched) return null;
+  const rounded = Math.round(minutes);
+  return rounded > 0 ? rounded : null;
+}
+
+/** Render minutes the way the game talks about time played: "5d 3h". */
+export function formatPlayed(minutes: number | null | undefined): string | null {
+  if (!minutes || minutes <= 0) return null;
+  const days = Math.floor(minutes / (24 * 60));
+  const hours = Math.floor((minutes % (24 * 60)) / 60);
+  const rest = minutes % 60;
+  if (days) return hours ? `${days}d ${hours}h` : `${days}d`;
+  if (hours) return rest ? `${hours}h ${rest}m` : `${hours}h`;
+  return `${rest}m`;
 }

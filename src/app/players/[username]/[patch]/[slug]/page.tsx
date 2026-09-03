@@ -5,7 +5,7 @@ import { CopyButton } from "@/components/CopyButton";
 import { GearGrid } from "@/components/GearGrid";
 import { SkillGroups } from "@/components/SkillGroups";
 import { AllStatsTable, AttributeStrip, ResistanceBar, StatColumn } from "@/components/StatPanels";
-import { classLine, leagueWindow } from "@/lib/format";
+import { classLine, formatPlayed, leagueWindow } from "@/lib/format";
 import { getCharacter, getLeagueByPatch, getUser } from "@/lib/queries";
 import { DEFENCE_PANELS, humanizeStatKey, OFFENCE_PANELS } from "@/lib/stats";
 
@@ -33,6 +33,7 @@ export default async function CharacterPage({ params }: Props) {
   const stats = build.stats ?? {};
   const tree = build.trees?.[build.activeTree] ?? build.trees?.[0];
   const hasStats = Object.keys(stats).length > 0;
+  const played = formatPlayed(character.playedMinutes);
 
   return (
     <div className="space-y-6">
@@ -64,6 +65,7 @@ export default async function CharacterPage({ params }: Props) {
               <span className="tag">
                 {league.patch} {league.name}
               </span>
+              {played ? <span className="tag">/played {played}</span> : null}
               {build.bandit ? <span className="tag">bandit: {build.bandit}</span> : null}
               {build.pobVersion ? <span className="tag">PoB target {build.pobVersion}</span> : null}
               {tree?.treeVersion ? <span className="tag">tree {tree.treeVersion}</span> : null}
@@ -220,6 +222,7 @@ export default async function CharacterPage({ params }: Props) {
         name={character.name}
         level={character.level}
         notes={character.notes}
+        played={played}
         isFavorite={character.isFavorite === 1}
       />
     </div>
