@@ -1,0 +1,32 @@
+services:
+  halls:
+    build: .
+    image: halls-of-the-champions
+    container_name: halls-of-the-champions
+    restart: unless-stopped
+    ports:
+      # Change the left-hand port if 3000 is taken on the host.
+      - "${HOST_PORT:-3000}:3000"
+    environment:
+      # Where the SQLite archive lives inside the container.
+      ARCHIVE_DB: /data/archive.db
+      TZ: ${TZ:-UTC}
+    volumes:
+      # Named volume: `docker volume inspect halls-data` shows where it sits on
+      # the host. Swap for a bind mount (./data:/data) if you would rather keep
+      # the file in this folder - then run `sudo chown -R 1000:1000 ./data` once,
+      # because the container runs as the unprivileged `node` user (uid 1000).
+      - halls-data:/data
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+
+volumes:
+  halls-data:

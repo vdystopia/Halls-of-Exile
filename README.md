@@ -31,7 +31,59 @@ Next.js 16 (App Router, server actions) · React 19 · Tailwind CSS 4 · SQLite 
 No client-side state library, no ORM, no auth provider — the whole app is server-rendered with a
 handful of server actions.
 
-## Running it
+## Running it on a home server (Docker)
+
+```bash
+git clone <this repo> && cd Halls-of-the-Champions
+cp .env.example .env        # optional: change the port or timezone
+docker compose up -d --build
+```
+
+The site is then on `http://<server-ip>:3000` from anywhere on your LAN. That is the whole setup —
+the schema is created and the league catalogue seeded on first boot, so there is no migration step
+and no database to provision.
+
+| Task | Command |
+| --- | --- |
+| Follow the logs | `docker compose logs -f` |
+| Status and health | `docker compose ps` |
+| Stop / start | `docker compose down` / `docker compose up -d` |
+| Update after a `git pull` | `docker compose up -d --build` |
+| Back up the archive | `docker compose exec halls node scripts/backup.mjs /data/backups` |
+| Shell in | `docker compose exec halls sh` |
+
+**Where the data lives.** The SQLite archive sits on the `halls-data` named volume, mounted at
+`/data` in the container, so rebuilding the image never touches it. `docker volume inspect
+halls-data` prints the path on the host. To keep the file next to the repo instead, swap the volume
+line in `docker-compose.yml` for `- ./data:/data` and run `sudo chown -R 1000:1000 ./data` once —
+the container runs as the unprivileged `node` user (uid 1000), not root.
+
+**Backups.** SQLite runs in WAL mode, so copying `archive.db` on its own can miss data still in the
+`-wal` file. `scripts/backup.mjs` uses SQLite's online backup API and writes one consistent file
+while the server keeps running. To restore: `docker compose down`, copy a backup over
+`/data/archive.db` (deleting any `-wal`/`-shm` beside it), `docker compose up -d`. Worth a weekly
+cron entry on the host:
+
+```
+0 4 * * 0 docker compose -f /path/to/docker-compose.yml exec -T halls node scripts/backup.mjs /data/backups
+```
+
+**Health.** `GET /api/health` returns `{"status":"ok", users, characters, leagues, uptime}` and is
+wired to Docker's healthcheck, so `docker compose ps` shows `healthy` only when the app can read
+the database. Point Uptime Kuma or similar at it if you run one.
+
+**No login, by design.** There are no passwords and no sessions — anyone who can reach the site can
+create a profile and edit or delete any character on it. That is fine on a home LAN. Do not port
+forward it to the open internet as-is; put it behind Tailscale, a VPN, or a reverse proxy with
+authentication (Caddy `basic_auth`, Authelia, Cloudflare Access) if you want to reach it from
+outside.
+
+**Image notes.** Multi-stage build: the full `node:22-bookworm` image compiles better-sqlite3 if
+your architecture has no prebuilt binary (Raspberry Pi included), and only the Next.js standalone
+output plus its traced dependencies land in the `node:22-bookworm-slim` runtime image (~440 MB).
+Fonts are vendored in `src/app/fonts`, so the build needs no outbound network beyond npm.
+
+## Running it without Docker
 
 ```bash
 npm install
@@ -39,17 +91,11 @@ npm run seed:demo     # optional: two demo players with imported builds
 npm run dev           # http://localhost:3000
 ```
 
-Production:
+Production: `npm run build && npm start`.
 
-```bash
-npm run build
-npm start
-```
-
-The database is a single SQLite file at `data/archive.db` (override with `ARCHIVE_DB=/path/to.db`).
-It is created and migrated on first use, and the league catalogue is seeded and kept in sync
-automatically. Because state is a local file, deploy this on a host with a persistent disk (a VPS,
-Fly.io, Railway, Docker with a volume) rather than on a serverless platform.
+The database is a single SQLite file at `data/archive.db`, overridable with `ARCHIVE_DB=/path/to.db`.
+Because state is a local file, this wants a host with a persistent disk rather than a serverless
+platform.
 
 ## Importing a build
 
@@ -94,7 +140,10 @@ src/lib/pob.ts                 PoB code decoding and XML parsing
 src/lib/items.ts               PoB item-text parser and the paper-doll layout
 src/lib/stats.ts               which stats are shown, in what order, formatted how
 src/lib/actions.ts             server actions (create player, add/update/delete character, …)
+src/app/api/health/route.ts    health probe used by the Docker healthcheck
 scripts/seed-demo.ts           demo archive, imported through the real parser
+scripts/backup.mjs             consistent online backup of the SQLite archive
+Dockerfile, docker-compose.yml self-hosting setup
 ```
 
 Not affiliated with Grinding Gear Games.

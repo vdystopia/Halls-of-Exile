@@ -34,7 +34,7 @@
   --color-socket-a: #9a5fd0;
   --color-socket-d: #b08040;
 
-  --font-display: var(--font-cinzel), Georgia, serif;
+  --font-display: var(--font-cinzel), var(--font-cinzel-ext), Georgia, serif;
 }
 
 html {
@@ -49,7 +49,7 @@ body {
     linear-gradient(180deg, #0d0b09 0%, #0a0908 45%, #080706 100%);
   background-attachment: fixed;
   color: var(--color-parchment);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-geist), var(--font-geist-ext), system-ui, sans-serif;
 }
 
 @layer components {

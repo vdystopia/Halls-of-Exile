@@ -1,11 +1,37 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Cinzel, Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
-const cinzel = Cinzel({ variable: "--font-cinzel", subsets: ["latin"], weight: ["400", "600", "700"] });
+// Fonts are vendored rather than fetched from Google at build time, so the
+// image builds (and rebuilds) on a home server with no outbound access, and
+// nothing is requested from a third party at runtime. Each family is split
+// into latin and latin-ext; the browser only pulls the ext file if a name on
+// the page needs a glyph the latin subset does not carry.
+const sans = localFont({
+  src: "./fonts/geist-latin.woff2",
+  variable: "--font-geist",
+  weight: "100 900",
+  display: "swap",
+});
+const sansExt = localFont({
+  src: "./fonts/geist-latin-ext.woff2",
+  variable: "--font-geist-ext",
+  weight: "100 900",
+  display: "swap",
+});
+const display = localFont({
+  src: "./fonts/cinzel-latin.woff2",
+  variable: "--font-cinzel",
+  weight: "400 700",
+  display: "swap",
+});
+const displayExt = localFont({
+  src: "./fonts/cinzel-latin-ext.woff2",
+  variable: "--font-cinzel-ext",
+  weight: "400 700",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Halls of the Champions",
@@ -15,7 +41,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} ${cinzel.variable} antialiased`}>
+      <body
+        className={`${sans.variable} ${sansExt.variable} ${display.variable} ${displayExt.variable} antialiased`}
+      >
         <div className="flex min-h-screen flex-col">
           <header className="sticky top-0 z-40 border-b border-line bg-abyss/85 backdrop-blur">
             <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-6 px-5 py-3">
