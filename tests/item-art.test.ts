@@ -48,3 +48,11 @@ test("the longest matching base wins", () => {
 test("an unknown base has no art rather than a wrong one", () => {
   assert.equal(findItemArt({ name: "Nonsense", base: "Not A Real Base" }), null);
 });
+
+test("flask art is flagged as a three-layer sheet, other art is not", () => {
+  const flask = findItemArt({ name: "Granite Flask", base: "Granite Flask" });
+  const ring = findItemArt({ name: "Amethyst Ring", base: "Amethyst Ring" });
+  assert.ok(flask && ring);
+  assert.equal(flask.frames, 3, "flask art is a sheet of glass, frame and liquid layers");
+  assert.equal(ring.frames, 1);
+});

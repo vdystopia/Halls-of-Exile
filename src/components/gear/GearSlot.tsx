@@ -82,16 +82,30 @@ export function GearSlot({
         }`}
       >
         {item && art && !artBroken ? (
-          // A plain img: these are static files of known size, so Next's image
-          // optimiser would add work without adding anything.
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={art.src}
-            alt=""
-            draggable={false}
-            onError={() => setArtBroken(true)}
-            className="max-h-[88%] max-w-[88%] object-contain"
-          />
+          art.frames > 1 ? (
+            // Composite the sheet's layers on top of each other, which is what
+            // the game does to draw a filled flask.
+            <span
+              aria-hidden
+              className="block h-[88%] w-[88%] bg-no-repeat"
+              style={{
+                backgroundImage: `url(${art.src}), url(${art.src}), url(${art.src})`,
+                backgroundSize: `${art.frames * 100}% 100%`,
+                backgroundPosition: "0% 50%, 50% 50%, 100% 50%",
+              }}
+            />
+          ) : (
+            // A plain img: these are static files of known size, so Next's image
+            // optimiser would add work without adding anything.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={art.src}
+              alt=""
+              draggable={false}
+              onError={() => setArtBroken(true)}
+              className="h-[88%] w-[88%] object-contain"
+            />
+          )
         ) : (
           <SlotIcon
             shape={shape}

@@ -533,7 +533,7 @@ Regenerate 2.4% of Life per second`,
         slot: "Gloves",
         text: `Rarity: RARE
 Doom Clasp
-Zealot Gauntlets
+Zealot Gloves
 Item Level: 84
 Quality: 20
 Sockets: R-R-B-B

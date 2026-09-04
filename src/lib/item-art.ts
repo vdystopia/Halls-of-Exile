@@ -6,6 +6,13 @@ export type ItemArt = {
   /** Inventory footprint, which is the aspect the art is drawn at. */
   width: number;
   height: number;
+  /**
+   * Flask art ships as a horizontal sheet of three layers — glass, metal frame
+   * and liquid — that the game composites into one flask. Every flask image is
+   * such a sheet and nothing else is, verified against all 512 downloaded
+   * images. Anything else is a single frame.
+   */
+  frames: number;
 };
 
 // JSON tuples widen to (string | number)[] on import; the generator guarantees the shape.
@@ -16,7 +23,12 @@ const ART = index as unknown as Record<string, [string, number, number]>;
 const KEYS_BY_LENGTH = Object.keys(ART).sort((a, b) => b.length - a.length);
 
 function toArt(entry: [string, number, number]): ItemArt {
-  return { src: `/items/${entry[0]}.png`, width: entry[1], height: entry[2] };
+  return {
+    src: `/items/${entry[0]}.png`,
+    width: entry[1],
+    height: entry[2],
+    frames: entry[0].includes("/Flasks/") ? 3 : 1,
+  };
 }
 
 /**

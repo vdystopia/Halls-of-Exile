@@ -61,7 +61,9 @@ so a character page never depends on an external link staying alive.
   generated from RePoE by `npm run art:index`; `findItemArt` runs in `GearGrid` (a server
   component) so the 69 KB index never reaches the browser, and `GearSlot` falls back to a
   silhouette when an image is missing or fails to load. Do not import the index into a client
-  component.
+  component. Flask art is a three-frame sheet (glass, metal frame, liquid) that `GearSlot`
+  composites with stacked background layers; every flask image is such a sheet and no other
+  image is, checked across all 512.
 - **`BuildData` changes stay additive.** Rows written by older versions must still render;
   `mapCharacter` merges parsed JSON over `emptyBuild()` for exactly this reason.
 - **better-sqlite3 stays in `serverExternalPackages`.** It is a native module; bundling it
