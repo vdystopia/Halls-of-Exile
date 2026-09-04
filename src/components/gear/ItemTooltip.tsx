@@ -25,19 +25,31 @@ function Divider({ colour }: { colour: string }) {
   return <div className="my-1.5 h-px w-full opacity-30" style={{ background: colour }} />;
 }
 
-/** "Requires Level 63, 159 Dex": labels grey, the numbers picked out in white. */
-function Requirement({ text }: { text: string }) {
+/**
+ * "Requires Level 63, 130 Dex": labels grey, the numbers picked out in white,
+ * or in the modified colour where the item changed the figure.
+ */
+function Requirement({ lines }: { lines: TooltipLine[] }) {
   return (
     <p className="text-[color:var(--color-tip-label)]">
-      {text.split(/(\d+)/).map((part, index) =>
-        /^\d+$/.test(part) ? (
-          <span key={index} className="text-white">
-            {part}
-          </span>
-        ) : (
-          part
-        ),
-      )}
+      Requires{" "}
+      {lines.map((line, index) => (
+        <span key={index}>
+          {index > 0 ? ", " : null}
+          {line.text.split(/(\d+)/).map((part, part_index) =>
+            /^\d+$/.test(part) ? (
+              <span
+                key={part_index}
+                style={{ color: line.tags.includes("modified") ? "var(--color-mod)" : "#ffffff" }}
+              >
+                {part}
+              </span>
+            ) : (
+              part
+            ),
+          )}
+        </span>
+      ))}
     </p>
   );
 }
@@ -110,7 +122,7 @@ export function ItemTooltip({ item }: { item: ParsedItem }) {
             {section.kind === "sockets" ? (
               <Sockets groups={item.sockets} />
             ) : section.kind === "requires" ? (
-              section.lines.map((line, index) => <Requirement key={index} text={line.text} />)
+              <Requirement lines={section.lines} />
             ) : section.kind === "quality" || section.kind === "defences" ? (
               section.lines.map((line, index) => <Property key={index} text={line.text} />)
             ) : section.kind === "footer" ? (

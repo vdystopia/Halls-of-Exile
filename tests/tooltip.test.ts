@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { parseItem } from "../src/lib/items";
-import { buildTooltip, requirementLine, shieldBlock, type SectionKind } from "../src/lib/tooltip";
+import {
+  attributeRequirementMultiplier,
+  buildTooltip,
+  shieldBlock,
+  type SectionKind,
+} from "../src/lib/tooltip";
 
 const kinds = (item: Parameters<typeof buildTooltip>[0]): SectionKind[] =>
   buildTooltip(item).map((section) => section.kind);
@@ -85,7 +90,7 @@ Fractured Item`,
     assert.equal(everything.includes(banned), false, `${banned} leaked into the tooltip`);
   }
   // The level requirement is shown, as the game shows it.
-  assert.match(everything, /Requires Level 78/);
+  assert.deepEqual(linesOf(boots, "requires"), ["Level 78", "153 Dex"]);
   assert.deepEqual(linesOf(boots, "defences"), ["Evasion Rating: 735"]);
   assert.equal(linesOf(boots, "footer").includes("Searing Exarch Item"), true);
 });
@@ -174,9 +179,9 @@ Implicits: 1
   );
   assert.deepEqual(kinds(shield), [
     "quality",
-    "special",
     "defences",
     "sockets",
+    "special",
     "requires",
     "implicit",
     "explicit",
@@ -251,16 +256,16 @@ test("only shields get a block line", () => {
   assert.equal(linesOf(ring, "defences").length, 0);
 });
 
-test("the requirement line reads as the game shows it", () => {
-  assert.deepEqual(linesOf(BUCKLER, "requires"), ["Requires Level 63, 159 Dex"]);
+test("the requirement line carries one part per figure", () => {
+  assert.deepEqual(linesOf(BUCKLER, "requires"), ["Level 63", "159 Dex"]);
 });
 
-test("requirements sit between the sockets and the implicit", () => {
+test("special lines sit after the sockets, and requirements after those", () => {
   assert.deepEqual(kinds(BUCKLER), [
     "quality",
-    "special",
     "defences",
     "sockets",
+    "special",
     "requires",
     "implicit",
     "explicit",
@@ -269,5 +274,95 @@ test("requirements sit between the sockets and the implicit", () => {
 
 test("a base needing two attributes lists both, in Str Dex Int order", () => {
   const armour = parseItem(`Rarity: RARE\nTest\nFull Dragonscale\nImplicits: 0\n+10 to maximum Life`, 11);
-  assert.deepEqual(linesOf(armour, "requires"), ["Requires Level 63, 115 Str, 94 Dex"]);
+  assert.deepEqual(linesOf(armour, "requires"), ["Level 63", "115 Str", "94 Dex"]);
+});
+
+test("reduced attribute requirements scale the base's attributes but not the level", () => {
+  const buckler = parseItem(
+    `Rarity: RARE
+Test Buckler
+Vaal Buckler
+LevelReq: 63
+Implicits: 0
+18% reduced Attribute Requirements
++151 to maximum Life`,
+    12,
+  );
+  // 159 Dex x 0.82 = 130.38
+  assert.deepEqual(linesOf(buckler, "requires"), ["Level 63", "130 Dex"]);
+});
+
+test("increased attribute requirements raise them", () => {
+  const buckler = parseItem(
+    `Rarity: RARE
+Test Buckler
+Vaal Buckler
+LevelReq: 63
+Implicits: 0
+10% increased Attribute Requirements`,
+    13,
+  );
+  // 159 Dex x 1.1 = 174.9
+  assert.deepEqual(linesOf(buckler, "requires"), ["Level 63", "174 Dex"]);
+});
+
+test("the reduction applies to every attribute the base needs", () => {
+  const armour = parseItem(
+    `Rarity: RARE
+Test Armour
+Full Dragonscale
+LevelReq: 63
+Implicits: 0
+25% reduced Attribute Requirements`,
+    14,
+  );
+  // 115 Str x 0.75 = 86.25, 94 Dex x 0.75 = 70.5
+  assert.deepEqual(linesOf(armour, "requires"), ["Level 63", "86 Str", "70 Dex"]);
+});
+
+test("only the figure the item changed is tagged — the level beside it is not", () => {
+  const tagsOf = (item: Parameters<typeof buildTooltip>[0]) =>
+    buildTooltip(item)
+      .find((section) => section.kind === "requires")
+      ?.lines.map((line) => line.tags) ?? [];
+  const reduced = parseItem(
+    `Rarity: RARE\nTest\nVaal Buckler\nLevelReq: 63\nImplicits: 0\n18% reduced Attribute Requirements`,
+    15,
+  );
+  assert.deepEqual(tagsOf(reduced), [[], ["modified"]]);
+  assert.deepEqual(tagsOf(BUCKLER), [[], []]);
+});
+
+test("an implicit reduction counts the same as an explicit one", () => {
+  const buckler = parseItem(
+    `Rarity: RARE
+Test Buckler
+Vaal Buckler
+LevelReq: 63
+Implicits: 1
+18% reduced Attribute Requirements
++151 to maximum Life`,
+    16,
+  );
+  assert.equal(attributeRequirementMultiplier(buckler), 0.82);
+  assert.deepEqual(linesOf(buckler, "requires"), ["Level 63", "130 Dex"]);
+});
+
+test("requirements never fall below zero", () => {
+  const buckler = parseItem(
+    `Rarity: RARE\nTest\nVaal Buckler\nLevelReq: 63\nImplicits: 0\n150% reduced Attribute Requirements`,
+    17,
+  );
+  assert.equal(attributeRequirementMultiplier(buckler), 0);
+  assert.deepEqual(linesOf(buckler, "requires"), ["Level 63", "0 Dex"]);
+});
+
+test("a whole-percent reduction lands on the exact figure, not one below it", () => {
+  const armour = parseItem(
+    `Rarity: RARE\nTest\nAstral Plate\nLevelReq: 62\nImplicits: 0\n30% reduced Attribute Requirements`,
+    18,
+  );
+  // 180 Str x 0.7 is exactly 126, but evaluates to 125.99999999999999 as a
+  // float, which would floor to 125.
+  assert.deepEqual(linesOf(armour, "requires"), ["Level 62", "126 Str"]);
 });

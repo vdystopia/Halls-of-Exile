@@ -6,10 +6,11 @@ import type { ParsedItem } from "./types";
  * same way. Sections appear in this order and a section with nothing in it is
  * dropped entirely:
  *
- *   quality > anoint > special > defences > sockets > implicit > enchant > explicit
+ *   quality > anoint > defences > sockets > special > requires > implicit >
+ *   enchant > explicit > footer
  *
- * Item level, level requirement, base percentiles and the "Fractured Item"
- * label are deliberately never shown.
+ * Item level, base percentiles and the "Fractured Item" label are deliberately
+ * never shown.
  */
 export type SectionKind =
   | "quality"
@@ -29,9 +30,9 @@ export type TooltipSection = { kind: SectionKind; lines: TooltipLine[] };
 const SECTION_ORDER: SectionKind[] = [
   "quality",
   "anoint",
-  "special",
   "defences",
   "sockets",
+  "special",
   "requires",
   "implicit",
   "enchant",
@@ -89,20 +90,63 @@ export function shieldBlock(item: ParsedItem): number | null {
   return Math.floor(base.block * (1 + increased / 100));
 }
 
-/** "Requires Level 63, 159 Dex" — level from the item, attributes from its base. */
-export function requirementLine(item: ParsedItem): string | null {
+/**
+ * The summed "reduced/increased Attribute Requirements" on an item, as a
+ * percentage. Modifiers of the same kind add together, as they do in game, and
+ * a requirement cannot be pushed below zero.
+ */
+function attributeRequirementPercent(item: ParsedItem): number {
+  let percent = 0;
+  for (const raw of [...item.implicits, ...item.explicits]) {
+    const text = splitMod(raw).text;
+    const reduced = /(\d+(?:\.\d+)?)%\s+reduced\s+Attribute\s+Requirements/i.exec(text);
+    if (reduced) percent -= Number(reduced[1]);
+    const increased = /(\d+(?:\.\d+)?)%\s+increased\s+Attribute\s+Requirements/i.exec(text);
+    if (increased) percent += Number(increased[1]);
+  }
+  return Math.max(-100, percent);
+}
+
+/**
+ * How much an item scales its own attribute requirements. Only attributes are
+ * affected — the level requirement is not.
+ */
+export function attributeRequirementMultiplier(item: ParsedItem): number {
+  return (100 + attributeRequirementPercent(item)) / 100;
+}
+
+/**
+ * The parts of "Requires Level 63, 130 Dex", one per figure. The level comes
+ * from the item, which already reflects its own modifiers; the attributes come
+ * from its base, scaled by any "reduced Attribute Requirements" the item
+ * carries. A part the item has changed is marked so the tooltip can colour it
+ * the way the game colours a modified value — the level is never scaled by an
+ * attribute modifier, so it stays plain.
+ *
+ * Rounding is down, matching the rule used for block. The game's own rounding
+ * for this is not something the export records, so it is a choice, not a fact.
+ */
+export function requirementParts(item: ParsedItem): { text: string; modified: boolean }[] {
   const base = findItemBase(item);
   const level = item.levelReq ?? base?.req[0] ?? 0;
-  const attributes: string[] = [];
+  const percent = attributeRequirementPercent(item);
+  // Multiplying before dividing keeps whole-percent cases exact: 70 x 0.7 is
+  // 48.99999999999999 in floating point, which would floor to 48.
+  const scale = (value: number) => Math.floor((value * (100 + percent)) / 100);
+
+  const parts: { text: string; modified: boolean }[] = [];
+  if (level) parts.push({ text: `Level ${level}`, modified: false });
   if (base) {
     const [, strength, dexterity, intelligence] = base.req;
-    if (strength) attributes.push(`${strength} Str`);
-    if (dexterity) attributes.push(`${dexterity} Dex`);
-    if (intelligence) attributes.push(`${intelligence} Int`);
+    for (const [value, name] of [
+      [strength, "Str"],
+      [dexterity, "Dex"],
+      [intelligence, "Int"],
+    ] as const) {
+      if (value) parts.push({ text: `${scale(value)} ${name}`, modified: percent !== 0 });
+    }
   }
-  if (!level && attributes.length === 0) return null;
-  const parts = [level ? `Level ${level}` : null, ...attributes].filter(Boolean);
-  return `Requires ${parts.join(", ")}`;
+  return parts;
 }
 
 export function buildTooltip(item: ParsedItem): TooltipSection[] {
@@ -135,8 +179,11 @@ export function buildTooltip(item: ParsedItem): TooltipSection[] {
 
   if (item.sockets.length) push("sockets", plain("sockets"));
 
-  const requires = requirementLine(item);
-  if (requires) push("requires", plain(requires));
+  // One line per figure, so the tooltip can colour a modified attribute without
+  // colouring the level beside it.
+  for (const part of requirementParts(item)) {
+    push("requires", { text: part.text, tags: part.modified ? ["modified"] : [] });
+  }
 
   for (const raw of item.explicits) {
     const line = splitMod(raw);

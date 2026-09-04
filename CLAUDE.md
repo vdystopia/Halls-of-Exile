@@ -70,15 +70,17 @@ so a character page never depends on an external link staying alive.
   pushes the item's real implicit into its explicits. Add unknown header keys to `META_KEYS` in
   `src/lib/items.ts` rather than letting them through.
 - **Every item tooltip renders through `buildTooltip`** in `src/lib/tooltip.ts`, which fixes one
-  order for all items — quality, anoint, special, defences, sockets, requires, implicit, enchant,
-  explicit, footer — and drops empty sections. Item level, base percentiles and the "Fractured
+  order for all items — quality, anoint, defences, sockets, special, requires, implicit, enchant,
+  explicit, footer, the order the game itself uses — and drops empty sections. Item level, base percentiles and the "Fractured
   Item" label are never shown. Add new lines to that module, not to the component.
 - **A shield's block and an item's attribute requirements are derived, not parsed.** Path of
   Building computes them rather than writing them into the item text, so they come from the
   base's `block` and `req` in `item-art-index.json`: block is base x (1 + its own "increased
   Chance to Block" mods), floored, ignoring spell block; requirements take the level from the
-  item and the attributes from the base. An item that reduces its own attribute requirements
-  will therefore show the base figures.
+  item and the attributes from the base, scaled by the item's own "reduced/increased Attribute
+  Requirements" mods and floored. The requires section holds one line per figure ("Level 63",
+  "130 Dex") so the tooltip can colour a scaled attribute without colouring the level beside it;
+  scale with integer percentages rather than a multiplier, since 70 x 0.7 is 48.99999999999999.
 - **`BuildData` changes stay additive.** Rows written by older versions must still render;
   `mapCharacter` merges parsed JSON over `emptyBuild()` for exactly this reason.
 - **better-sqlite3 stays in `serverExternalPackages`.** It is a native module; bundling it
