@@ -133,8 +133,31 @@ function create(): Database.Database {
 // One connection per process, reused across dev-server hot reloads.
 const globalForDb = globalThis as unknown as { __hallsDb?: Database.Database };
 
+/**
+ * Reset on every module evaluation, which in the dev server means every hot
+ * reload. The connection itself is cached on globalThis and deliberately
+ * survives reloads — but that used to mean a `git pull` adding a column left a
+ * running dev server querying a database it had never migrated, failing with
+ * "no such column". Re-running the migration and the catalogue sync once per
+ * module evaluation fixes that; both are idempotent and cost nothing in
+ * production, where the module is evaluated once.
+ */
+let schemaChecked = false;
+
+/** Bring an already-open database up to date with the code's schema. */
+export function ensureSchema(instance: Database.Database): void {
+  migrate(instance);
+  syncLeagueCatalogue(instance);
+  schemaChecked = true;
+}
+
 function connection(): Database.Database {
-  if (!globalForDb.__hallsDb) globalForDb.__hallsDb = create();
+  if (!globalForDb.__hallsDb) {
+    globalForDb.__hallsDb = create();
+    schemaChecked = true;
+  } else if (!schemaChecked) {
+    ensureSchema(globalForDb.__hallsDb);
+  }
   return globalForDb.__hallsDb;
 }
 

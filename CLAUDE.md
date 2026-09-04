@@ -49,6 +49,10 @@ so a character page never depends on an external link staying alive.
 - **Only the newest league may carry `endDateEstimated`.** A test enforces this. When a
   real end date is announced, replace the estimate and clear the flag.
 - **Each league ends where the next begins.** A test enforces this too.
+- **Migrations must survive a hot reload.** The connection is cached on globalThis so it
+  outlives dev-server reloads, so `connection()` re-runs `migrate()` and the catalogue sync
+  once per module evaluation. Without that, pulling a schema change left a running dev
+  server erroring with "no such column" until it was restarted.
 - **Nothing may open the database at import time.** `src/lib/db.ts` exports a proxy that
   connects on first use. `next build` imports every route module across one worker per core;
   connecting eagerly raced on the WAL lock and failed the build on machines with enough
