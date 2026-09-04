@@ -1,3 +1,4 @@
+import { findItemArt } from "@/lib/item-art";
 import { FLASK_SLOTS, PAPER_DOLL } from "@/lib/items";
 import type { BuildData, ParsedItem } from "@/lib/types";
 import { GearSlot } from "./gear/GearSlot";
@@ -12,6 +13,8 @@ export function GearGrid({ build }: { build: BuildData }) {
     const id = build.slots[slot];
     return id ? byId.get(id) : undefined;
   };
+  // Resolved on the server so the 69 KB art index never reaches the browser.
+  const artFor = (item?: ParsedItem) => (item ? findItemArt(item) : null);
 
   const placed = new Set(Object.values(build.slots).filter(Boolean));
   const loose = build.items.filter((item) => !placed.has(item.id));
@@ -31,6 +34,7 @@ export function GearGrid({ build }: { build: BuildData }) {
           <GearSlot
             key={cell.slot}
             item={at(cell.slot)}
+            art={artFor(at(cell.slot))}
             shape={cell.shape}
             label={cell.label}
             style={{ gridColumn: cell.column, gridRow: cell.row }}
@@ -40,6 +44,7 @@ export function GearGrid({ build }: { build: BuildData }) {
           <GearSlot
             key={slot}
             item={at(slot)}
+            art={artFor(at(slot))}
             shape="flask"
             label={slot}
             style={{ gridColumn: String(index + 2), gridRow: "7 / span 2" }}
@@ -55,6 +60,7 @@ export function GearGrid({ build }: { build: BuildData }) {
               <GearSlot
                 key={slot}
                 item={at(slot)}
+                art={artFor(at(slot))}
                 shape="jewel"
                 label={slot}
                 style={{ width: CELL, height: CELL }}
@@ -72,6 +78,7 @@ export function GearGrid({ build }: { build: BuildData }) {
               <GearSlot
                 key={item.id}
                 item={item}
+                art={artFor(item)}
                 shape="jewel"
                 label={item.name}
                 style={{ width: CELL, height: CELL }}

@@ -3,6 +3,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { rarityClass } from "@/lib/items";
+import type { ItemArt } from "@/lib/item-art";
 import type { ParsedItem } from "@/lib/types";
 import { ItemTooltip } from "./ItemTooltip";
 import { SlotIcon, type SlotShape } from "./SlotIcon";
@@ -17,16 +18,20 @@ const RARITY_BORDER: Record<string, string> = {
 
 export function GearSlot({
   item,
+  art,
   shape,
   label,
   style,
 }: {
   item?: ParsedItem;
+  art?: ItemArt | null;
   shape: SlotShape;
   label: string;
   style?: React.CSSProperties;
 }) {
   const [open, setOpen] = useState(false);
+  // Art is optional: the images are fetched separately and may not be present.
+  const [artBroken, setArtBroken] = useState(false);
   const [placed, setPlaced] = useState(false);
   const [coords, setCoords] = useState({ left: 0, top: 0 });
   const tile = useRef<HTMLDivElement>(null);
@@ -76,10 +81,23 @@ export function GearSlot({
             : "border-dashed border-line/60 bg-black/20"
         }`}
       >
-        <SlotIcon
-          shape={shape}
-          className={`h-[60%] w-[60%] ${item ? `${rarityClass(item.rarity)} opacity-55 transition-opacity group-hover:opacity-90 group-focus-visible:opacity-90` : "text-muted/20"}`}
-        />
+        {item && art && !artBroken ? (
+          // A plain img: these are static files of known size, so Next's image
+          // optimiser would add work without adding anything.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={art.src}
+            alt=""
+            draggable={false}
+            onError={() => setArtBroken(true)}
+            className="max-h-[88%] max-w-[88%] object-contain"
+          />
+        ) : (
+          <SlotIcon
+            shape={shape}
+            className={`h-[60%] w-[60%] ${item ? `${rarityClass(item.rarity)} opacity-55 transition-opacity group-hover:opacity-90 group-focus-visible:opacity-90` : "text-muted/20"}`}
+          />
+        )}
         {item ? (
           <span
             className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] opacity-0 transition-opacity group-hover:opacity-90 group-focus-visible:opacity-90"

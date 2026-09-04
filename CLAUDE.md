@@ -57,6 +57,11 @@ so a character page never depends on an external link staying alive.
   connects on first use. `next build` imports every route module across one worker per core;
   connecting eagerly raced on the WAL lock and failed the build on machines with enough
   cores. `tests/db.test.ts` fails if importing the query layer creates the file.
+- **Item art is optional and resolved on the server.** `src/lib/item-art-index.json` is
+  generated from RePoE by `npm run art:index`; `findItemArt` runs in `GearGrid` (a server
+  component) so the 69 KB index never reaches the browser, and `GearSlot` falls back to a
+  silhouette when an image is missing or fails to load. Do not import the index into a client
+  component.
 - **`BuildData` changes stay additive.** Rows written by older versions must still render;
   `mapCharacter` merges parsed JSON over `emptyBuild()` for exactly this reason.
 - **better-sqlite3 stays in `serverExternalPackages`.** It is a native module; bundling it

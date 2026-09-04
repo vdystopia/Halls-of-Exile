@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "seed:demo": "tsx scripts/seed-demo.ts",
-    "test": "node --import tsx --test tests/*.test.ts"
+    "test": "node --import tsx --test tests/*.test.ts",
+    "art:index": "tsx scripts/build-item-art-index.ts",
+    "art:fetch": "tsx scripts/fetch-item-art.ts"
   },
   "dependencies": {
     "@types/better-sqlite3": "^9.6.0",

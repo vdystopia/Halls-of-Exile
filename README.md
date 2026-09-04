@@ -166,6 +166,33 @@ on the link staying alive.
 
 Link imports need outbound HTTPS from the server; pasting the code itself always works offline.
 
+## Item art
+
+The paper doll draws each item with the game's own artwork. Two pieces make that work:
+
+- `src/lib/item-art-index.json` maps every equippable base item to its art path and inventory
+  size. It is generated from [RePoE](https://github.com/lvlvllvlvllvlvl/RePoE), the canonical
+  dump of Path of Exile's item data, by `npm run art:index`, and is committed.
+- The images themselves come from the game's image CDN, at exactly the paths RePoE records:
+
+  ```bash
+  npm run art:fetch              # ~512 images; skips anything already present
+  npm run art:fetch -- --force   # re-download everything
+  npm run art:fetch -- --dry-run # list what it would fetch
+  ```
+
+1013 base items share 512 images, so this is a small download. Anything missing falls back to a
+placeholder silhouette, so the site works with no art at all — running the fetch is an
+improvement, not a requirement.
+
+Items resolve by base type: a rare or unique names its base separately, and a magic item's base
+is found inside the affixes wrapping it ("Seething **Divine Life Flask** of Staunching"). A
+unique currently shows its base type's art; unique-specific artwork needs a second source and is
+still on the roadmap.
+
+The artwork is Grinding Gear Games'. This is a personal, non-commercial fan archive, which is
+what their fan content policy covers.
+
 ## League catalogue
 
 `src/lib/leagues.ts` holds every league with its patch number, name, expansion, dates and

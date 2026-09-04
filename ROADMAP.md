@@ -15,9 +15,9 @@ mattering.
 
 ## Next
 
-- [ ] Real item art for the gear slots, replacing the placeholder silhouettes in
-      `src/components/gear/SlotIcon.tsx`. Icons are keyed by slot shape today; real art keys
-      off the item's base type, so the parser needs to expose that mapping.
+- [ ] Unique-specific item art. Bases are done; a unique currently shows its base type's
+      artwork. RePoE has no unique art, so this needs another source — the wiki's cargo API
+      exposes an inventory icon per unique, which the fetch script could take as a second pass.
 
 - [ ] Replace 3.29's tentative end date once Grinding Gear Games announces it, and clear
       the `endDateEstimated` flag.
