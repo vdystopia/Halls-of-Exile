@@ -15,8 +15,9 @@ npm run build        # production build (also what CI and Docker run)
 npm run seed:demo    # demo players; -- --reset wipes users/characters first
 ```
 
-Deploy is `.\update.ps1` on the server, never a bare `docker compose up -d --build`:
-it backs up, pulls, rebuilds, health-checks and rolls back on failure.
+Deploy is `.\update.ps1` on the owner's PC, never a bare `docker compose up -d --build`:
+it backs up, pulls, rebuilds, health-checks, rolls back on failure, and holds a lock so two
+runs cannot race.
 
 ## Shape of the code
 

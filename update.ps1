@@ -85,61 +85,87 @@ if (git status --porcelain --untracked-files=no) {
     throw "There are uncommitted changes to tracked files. Commit or discard them first - this script resets the tree on failure."
 }
 
-$port = Get-HostPort
-$healthUrl = "http://127.0.0.1:$port/api/health"
-$previousCommit = (git rev-parse HEAD).Trim()
+# Only one update at a time. Two concurrent runs race on the git index and on
+# the compose project, and a rollback from the loser can undo the winner's
+# deploy. The lock is an exclusively-held file handle rather than a PID file, so
+# a killed run leaves nothing stale behind: Windows closes the handle with the
+# process.
+$lockPath = Join-Path $PSScriptRoot '.update.lock'
+try {
+    $lock = [System.IO.File]::Open(
+        $lockPath,
+        [System.IO.FileMode]::OpenOrCreate,
+        [System.IO.FileAccess]::ReadWrite,
+        [System.IO.FileShare]::None)
+} catch [System.IO.IOException] {
+    throw "An update is already running in another window. Wait for it to finish, then re-run."
+}
 
-docker image inspect $Image *> $null
-$hadImage = $LASTEXITCODE -eq 0
-if ($hadImage) { docker tag $Image $RollbackImage | Out-Null }
+try {
 
-# --- backup ------------------------------------------------------------------
-$containerId = (docker compose ps -q $Service)
-if ($SkipBackup) {
-    Write-Step 'Skipping backup (requested)'
-} elseif ([string]::IsNullOrWhiteSpace($containerId)) {
-    Write-Step 'Nothing running yet, so no backup to take'
-} else {
-    Write-Step 'Backing up the archive'
-    docker compose exec -T $Service node scripts/backup.mjs /data/backups
-    if ($LASTEXITCODE -ne 0) {
-        throw "Backup failed. Refusing to update. Re-run with -SkipBackup only if you accept losing the current data."
+    $port = Get-HostPort
+    $healthUrl = "http://127.0.0.1:$port/api/health"
+    $previousCommit = (git rev-parse HEAD).Trim()
+
+    docker image inspect $Image *> $null
+    $hadImage = $LASTEXITCODE -eq 0
+    if ($hadImage) { docker tag $Image $RollbackImage | Out-Null }
+
+    # --- backup ------------------------------------------------------------------
+    $containerId = (docker compose ps -q $Service)
+    if ($SkipBackup) {
+        Write-Step 'Skipping backup (requested)'
+    } elseif ([string]::IsNullOrWhiteSpace($containerId)) {
+        Write-Step 'Nothing running yet, so no backup to take'
+    } else {
+        Write-Step 'Backing up the archive'
+        docker compose exec -T $Service node scripts/backup.mjs /data/backups
+        if ($LASTEXITCODE -ne 0) {
+            throw "Backup failed. Refusing to update. Re-run with -SkipBackup only if you accept losing the current data."
+        }
     }
-}
 
-# --- pull --------------------------------------------------------------------
-Write-Step 'Fetching the latest code'
-git pull --ff-only
-if ($LASTEXITCODE -ne 0) {
-    throw "git pull failed. Resolve it by hand, then re-run."
-}
-$newCommit = (git rev-parse HEAD).Trim()
-if ($newCommit -eq $previousCommit) {
-    Write-Note 'Already up to date. Rebuilding anyway to pick up any local changes.'
-}
+    # --- pull --------------------------------------------------------------------
+    Write-Step 'Fetching the latest code'
+    git pull --ff-only
+    if ($LASTEXITCODE -ne 0) {
+        throw "git pull failed. Resolve it by hand, then re-run."
+    }
+    $newCommit = (git rev-parse HEAD).Trim()
+    if ($newCommit -eq $previousCommit) {
+        Write-Note 'Already up to date. Rebuilding anyway to pick up any local changes.'
+    }
 
-# --- build and start ---------------------------------------------------------
-Write-Step 'Building and starting the container'
-docker compose up -d --build
-if ($LASTEXITCODE -ne 0) {
-    Invoke-Rollback -Commit $previousCommit -HadImage $hadImage
-    throw "Build failed. The previous version is running again."
-}
+    # --- build and start ---------------------------------------------------------
+    Write-Step 'Building and starting the container'
+    docker compose up -d --build
+    if ($LASTEXITCODE -ne 0) {
+        Invoke-Rollback -Commit $previousCommit -HadImage $hadImage
+        throw "Build failed. The previous version is running again."
+    }
 
-# --- verify ------------------------------------------------------------------
-Write-Step "Waiting for $healthUrl"
-$health = Test-Health -Url $healthUrl -TimeoutSeconds $HealthTimeoutSeconds
-if (-not $health) {
-    Write-Bad 'The new container never reported healthy. Last 40 log lines:'
-    docker compose logs --tail 40 $Service
-    Invoke-Rollback -Commit $previousCommit -HadImage $hadImage
-    throw "Update rolled back."
-}
+    # --- verify ------------------------------------------------------------------
+    Write-Step "Waiting for $healthUrl"
+    $health = Test-Health -Url $healthUrl -TimeoutSeconds $HealthTimeoutSeconds
+    if (-not $health) {
+        Write-Bad 'The new container never reported healthy. Last 40 log lines:'
+        docker compose logs --tail 40 $Service
+        Invoke-Rollback -Commit $previousCommit -HadImage $hadImage
+        throw "Update rolled back."
+    }
 
-Write-Step 'Live'
-Write-Note "commit     $($newCommit.Substring(0,7))"
-Write-Note "url        http://localhost:$port"
-Write-Note "players    $($health.users)"
-Write-Note "characters $($health.characters)"
-Write-Note "leagues    $($health.leagues)"
-Write-Note "The previous image is kept as $RollbackImage if you need it."
+    Write-Step 'Live'
+    Write-Note "commit     $($newCommit.Substring(0,7))"
+    Write-Note "url        http://localhost:$port"
+    Write-Note "players    $($health.users)"
+    Write-Note "characters $($health.characters)"
+    Write-Note "leagues    $($health.leagues)"
+    Write-Note "The previous image is kept as $RollbackImage if you need it."
+
+} finally {
+    $lock.Dispose()
+    # -Force: a dot-prefixed name counts as hidden, which Remove-Item refuses to
+    # delete without it. Leaving the file behind would be harmless — the lock is
+    # the handle, not the file — but it would show up as untracked noise.
+    Remove-Item $lockPath -Force -ErrorAction SilentlyContinue
+}

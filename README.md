@@ -97,6 +97,10 @@ previous image and commit if the build fails or the new container never reports 
 bad push leaves the running site untouched. The previous image is kept as
 `halls-of-exile:rollback`.
 
+Only one update runs at a time: a second one started while the first is still going exits
+immediately rather than racing it on the git index and the compose project. The lock is a held
+file handle, not a PID file, so a run killed part-way leaves nothing stale to clear.
+
 Windows blocks unsigned scripts by default. Either `Set-ExecutionPolicy -Scope CurrentUser
 RemoteSigned` once, or run `powershell -ExecutionPolicy Bypass -File .\update.ps1`.
 
