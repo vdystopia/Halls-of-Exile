@@ -64,6 +64,10 @@ so a character page never depends on an external link staying alive.
   component. Flask art is a three-frame sheet (glass, metal frame, liquid) that `GearSlot`
   composites with stacked background layers; every flask image is such a sheet and no other
   image is, checked across all 512.
+- **Every item tooltip renders through `buildTooltip`** in `src/lib/tooltip.ts`, which fixes one
+  order for all items — quality, anoint, special, defences, sockets, implicit, enchant, explicit,
+  footer — and drops empty sections. Item level, level requirement, base percentiles and the
+  "Fractured Item" label are never shown. Add new lines to that module, not to the component.
 - **`BuildData` changes stay additive.** Rows written by older versions must still render;
   `mapCharacter` merges parsed JSON over `emptyBuild()` for exactly this reason.
 - **better-sqlite3 stays in `serverExternalPackages`.** It is a native module; bundling it

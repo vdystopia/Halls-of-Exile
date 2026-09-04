@@ -57,7 +57,17 @@ const META_KEYS = new Set([
   "cluster jewel skill",
   "item",
   "rarity",
+  "block",
+  "baseblock",
+  "basepercentile",
+  "armourbasepercentile",
+  "evasionbasepercentile",
+  "energyshieldbasepercentile",
+  "wardbasepercentile",
 ]);
+
+/** Any "<something>BasePercentile: 0.42" line is bookkeeping, never a mod. */
+const META_KEY_PATTERNS = [/basepercentile$/, /^unique id$/];
 
 const SOCKET_COLORS = new Set(["R", "G", "B", "W", "A", "D"]);
 
@@ -147,9 +157,11 @@ export function parseItem(raw: string, id: number): ParsedItem {
   }
 
   const namedRarity = item.rarity === "RARE" || item.rarity === "UNIQUE" || item.rarity === "RELIC";
+  const isMetaKey = (key: string) =>
+    META_KEYS.has(key) || META_KEY_PATTERNS.some((pattern) => pattern.test(key));
   const isMeta = (line: string) => {
     const match = /^([A-Za-z][A-Za-z '-]*):/.exec(line);
-    return match ? META_KEYS.has(match[1].trim().toLowerCase()) : false;
+    return match ? isMetaKey(match[1].trim().toLowerCase()) : false;
   };
 
   if (lines[cursor] && !isMeta(lines[cursor])) {
@@ -171,7 +183,7 @@ export function parseItem(raw: string, id: number): ParsedItem {
     const keyMatch = /^([A-Za-z][A-Za-z '-]*):\s*(.*)$/.exec(line);
     const key = keyMatch ? keyMatch[1].trim().toLowerCase() : null;
 
-    if (key && META_KEYS.has(key)) {
+    if (key && isMetaKey(key)) {
       const value = keyMatch![2].trim();
       switch (key) {
         case "item level":
@@ -195,6 +207,11 @@ export function parseItem(raw: string, id: number): ParsedItem {
         case "energy shield":
         case "baseenergyshield":
           item.energyShield = parseInt(value, 10);
+          break;
+        case "block":
+          // The modified total, which is what the game shows. baseblock is
+          // listed above as metadata and deliberately ignored.
+          item.block = parseInt(value, 10);
           break;
         case "sockets":
           item.sockets = value

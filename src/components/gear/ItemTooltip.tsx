@@ -1,5 +1,6 @@
-import type { ParsedItem } from "@/lib/types";
 import { SOCKET_COLOR_CLASS } from "@/lib/items";
+import { buildTooltip, type SectionKind, type TooltipLine } from "@/lib/tooltip";
+import type { ParsedItem } from "@/lib/types";
 
 const RARITY_COLOUR: Record<string, string> = {
   NORMAL: "#c8c8c8",
@@ -13,19 +14,10 @@ function rarityColour(rarity: string): string {
   return RARITY_COLOUR[rarity.toUpperCase()] ?? RARITY_COLOUR.NORMAL;
 }
 
-/**
- * Mods are stored as strings, and a tagged one carries its tags after a "·"
- * separator (the format the parser has always written). Splitting here keeps
- * older characters rendering with the right colours without a data migration.
- */
-function splitMod(line: string): { text: string; tags: string[] } {
-  const [text, tags] = line.split("  ·  ");
-  return { text, tags: tags ? tags.split(", ").map((tag) => tag.trim()) : [] };
-}
-
-function modColour(tags: string[]): string {
-  if (tags.includes("crafted")) return "var(--color-mod-crafted)";
-  if (tags.includes("fractured")) return "var(--color-mod-fractured)";
+function modColour(line: TooltipLine, kind: SectionKind): string {
+  if (line.tags.includes("crafted")) return "var(--color-mod-crafted)";
+  if (line.tags.includes("fractured")) return "var(--color-mod-fractured)";
+  if (kind === "anoint" || kind === "enchant") return "var(--color-mod-crafted)";
   return "var(--color-mod)";
 }
 
@@ -33,16 +25,18 @@ function Divider({ colour }: { colour: string }) {
   return <div className="my-1.5 h-px w-full opacity-30" style={{ background: colour }} />;
 }
 
-function Property({ label, value }: { label: string; value: string }) {
+/** "Quality: +20%" and the defence lines: grey label, white value. */
+function Property({ text }: { text: string }) {
+  const split = text.indexOf(":");
+  if (split === -1) return <p className="text-[color:var(--color-tip-label)]">{text}</p>;
   return (
     <p className="text-[color:var(--color-tip-label)]">
-      {label}: <span className="text-white">{value}</span>
+      {text.slice(0, split + 1)} <span className="text-white">{text.slice(split + 1).trim()}</span>
     </p>
   );
 }
 
 function Sockets({ groups }: { groups: ParsedItem["sockets"] }) {
-  if (!groups.length) return null;
   return (
     <div className="flex flex-wrap items-center gap-2">
       <span className="text-[color:var(--color-tip-label)]">Sockets:</span>
@@ -64,12 +58,14 @@ function Sockets({ groups }: { groups: ParsedItem["sockets"] }) {
   );
 }
 
-/** An item tooltip in the shape Path of Building and the game itself use. */
+/**
+ * Every item renders through the same ordered sections, so a wand and a shield
+ * read the same way. See src/lib/tooltip.ts for the order and for what is
+ * deliberately never shown.
+ */
 export function ItemTooltip({ item }: { item: ParsedItem }) {
   const colour = rarityColour(item.rarity);
-  const hasProperties = Boolean(item.quality || item.armour || item.evasion || item.energyShield);
-  const corrupted = item.flags.includes("Corrupted");
-  const otherFlags = item.flags.filter((flag) => flag !== "Corrupted");
+  const sections = buildTooltip(item);
 
   return (
     <div
@@ -91,80 +87,36 @@ export function ItemTooltip({ item }: { item: ParsedItem }) {
       </header>
 
       <div className="px-3 pb-2">
-        {hasProperties ? (
-          <>
+        {sections.map((section) => (
+          <div key={section.kind}>
             <Divider colour={colour} />
-            {item.quality ? <Property label="Quality" value={`+${item.quality}%`} /> : null}
-            {item.armour ? <Property label="Armour" value={String(item.armour)} /> : null}
-            {item.evasion ? <Property label="Evasion Rating" value={String(item.evasion)} /> : null}
-            {item.energyShield ? (
-              <Property label="Energy Shield" value={String(item.energyShield)} />
-            ) : null}
-          </>
-        ) : null}
-
-        {item.levelReq ? (
-          <>
-            <Divider colour={colour} />
-            <p className="text-[color:var(--color-tip-label)]">
-              Requires Level <span className="text-white">{item.levelReq}</span>
-            </p>
-          </>
-        ) : null}
-
-        {item.sockets.length ? (
-          <>
-            <Divider colour={colour} />
-            <Sockets groups={item.sockets} />
-          </>
-        ) : null}
-
-        {item.itemLevel ? (
-          <>
-            <Divider colour={colour} />
-            <Property label="Item Level" value={String(item.itemLevel)} />
-          </>
-        ) : null}
-
-        {item.implicits.length ? (
-          <>
-            <Divider colour={colour} />
-            {item.implicits.map((line, index) => {
-              const mod = splitMod(line);
-              return (
-                <p key={index} style={{ color: modColour(mod.tags) }}>
-                  {mod.text}
+            {section.kind === "sockets" ? (
+              <Sockets groups={item.sockets} />
+            ) : section.kind === "quality" || section.kind === "defences" ? (
+              section.lines.map((line, index) => <Property key={index} text={line.text} />)
+            ) : section.kind === "footer" ? (
+              section.lines.map((line, index) => (
+                <p
+                  key={index}
+                  style={{
+                    color:
+                      line.text === "Corrupted"
+                        ? "var(--color-corrupt)"
+                        : "var(--color-tip-label)",
+                  }}
+                >
+                  {line.text}
                 </p>
-              );
-            })}
-          </>
-        ) : null}
-
-        {item.explicits.length ? (
-          <>
-            <Divider colour={colour} />
-            {item.explicits.map((line, index) => {
-              const mod = splitMod(line);
-              return (
-                <p key={index} style={{ color: modColour(mod.tags) }}>
-                  {mod.text}
+              ))
+            ) : (
+              section.lines.map((line, index) => (
+                <p key={index} style={{ color: modColour(line, section.kind) }}>
+                  {line.text}
                 </p>
-              );
-            })}
-          </>
-        ) : null}
-
-        {item.influences.length || otherFlags.length || corrupted ? (
-          <>
-            <Divider colour={colour} />
-            {[...item.influences.map((name) => `${name} Item`), ...otherFlags].map((flag) => (
-              <p key={flag} className="text-[color:var(--color-tip-label)]">
-                {flag}
-              </p>
-            ))}
-            {corrupted ? <p style={{ color: "var(--color-corrupt)" }}>Corrupted</p> : null}
-          </>
-        ) : null}
+              ))
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );

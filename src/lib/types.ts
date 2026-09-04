@@ -49,6 +49,8 @@ export type ParsedItem = {
   armour?: number;
   evasion?: number;
   energyShield?: number;
+  /** Shields only: the item's total modified block chance. */
+  block?: number;
   sockets: SocketGroupColor[][];
   influences: string[];
   flags: string[];
