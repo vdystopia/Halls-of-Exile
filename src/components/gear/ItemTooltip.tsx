@@ -25,6 +25,23 @@ function Divider({ colour }: { colour: string }) {
   return <div className="my-1.5 h-px w-full opacity-30" style={{ background: colour }} />;
 }
 
+/** "Requires Level 63, 159 Dex": labels grey, the numbers picked out in white. */
+function Requirement({ text }: { text: string }) {
+  return (
+    <p className="text-[color:var(--color-tip-label)]">
+      {text.split(/(\d+)/).map((part, index) =>
+        /^\d+$/.test(part) ? (
+          <span key={index} className="text-white">
+            {part}
+          </span>
+        ) : (
+          part
+        ),
+      )}
+    </p>
+  );
+}
+
 /** "Quality: +20%" and the defence lines: grey label, white value. */
 function Property({ text }: { text: string }) {
   const split = text.indexOf(":");
@@ -92,6 +109,8 @@ export function ItemTooltip({ item }: { item: ParsedItem }) {
             <Divider colour={colour} />
             {section.kind === "sockets" ? (
               <Sockets groups={item.sockets} />
+            ) : section.kind === "requires" ? (
+              section.lines.map((line, index) => <Requirement key={index} text={line.text} />)
             ) : section.kind === "quality" || section.kind === "defences" ? (
               section.lines.map((line, index) => <Property key={index} text={line.text} />)
             ) : section.kind === "footer" ? (

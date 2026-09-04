@@ -1,3 +1,4 @@
+import { findItemBase } from "./item-art";
 import type { ParsedItem } from "./types";
 
 /**
@@ -16,6 +17,7 @@ export type SectionKind =
   | "special"
   | "defences"
   | "sockets"
+  | "requires"
   | "implicit"
   | "enchant"
   | "explicit"
@@ -30,6 +32,7 @@ const SECTION_ORDER: SectionKind[] = [
   "special",
   "defences",
   "sockets",
+  "requires",
   "implicit",
   "enchant",
   "explicit",
@@ -64,6 +67,44 @@ function classify(line: TooltipLine): Extract<SectionKind, "anoint" | "enchant" 
   return "implicit";
 }
 
+/**
+ * A shield's displayed block is its base block raised by the item's own
+ * "increased Chance to Block" modifiers, rounded down. Spell block is a
+ * separate stat and is deliberately not counted. Path of Building computes
+ * this rather than writing it into the item text, so it is derived here from
+ * the base's block chance in the catalogue.
+ */
+export function shieldBlock(item: ParsedItem): number | null {
+  const base = findItemBase(item);
+  if (!base?.block) return null;
+
+  let increased = 0;
+  for (const raw of [...item.implicits, ...item.explicits]) {
+    const text = splitMod(raw).text;
+    if (/spell/i.test(text)) continue;
+    const match = /(\d+(?:\.\d+)?)%\s+increased\s+Chance\s+to\s+Block/i.exec(text);
+    if (match) increased += Number(match[1]);
+  }
+
+  return Math.floor(base.block * (1 + increased / 100));
+}
+
+/** "Requires Level 63, 159 Dex" — level from the item, attributes from its base. */
+export function requirementLine(item: ParsedItem): string | null {
+  const base = findItemBase(item);
+  const level = item.levelReq ?? base?.req[0] ?? 0;
+  const attributes: string[] = [];
+  if (base) {
+    const [, strength, dexterity, intelligence] = base.req;
+    if (strength) attributes.push(`${strength} Str`);
+    if (dexterity) attributes.push(`${dexterity} Dex`);
+    if (intelligence) attributes.push(`${intelligence} Int`);
+  }
+  if (!level && attributes.length === 0) return null;
+  const parts = [level ? `Level ${level}` : null, ...attributes].filter(Boolean);
+  return `Requires ${parts.join(", ")}`;
+}
+
 export function buildTooltip(item: ParsedItem): TooltipSection[] {
   const buckets = new Map<SectionKind, TooltipLine[]>();
   const push = (kind: SectionKind, line: TooltipLine) => {
@@ -86,12 +127,16 @@ export function buildTooltip(item: ParsedItem): TooltipSection[] {
     push(classify(line), line);
   }
 
+  const block = shieldBlock(item);
+  if (block !== null) push("defences", plain(`Chance to Block: ${block}%`));
   if (item.armour) push("defences", plain(`Armour: ${item.armour}`));
   if (item.evasion) push("defences", plain(`Evasion Rating: ${item.evasion}`));
   if (item.energyShield) push("defences", plain(`Energy Shield: ${item.energyShield}`));
-  if (item.block) push("defences", plain(`Chance to Block: ${item.block}%`));
 
   if (item.sockets.length) push("sockets", plain("sockets"));
+
+  const requires = requirementLine(item);
+  if (requires) push("requires", plain(requires));
 
   for (const raw of item.explicits) {
     const line = splitMod(raw);

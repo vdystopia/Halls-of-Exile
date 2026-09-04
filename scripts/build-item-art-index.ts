@@ -33,10 +33,24 @@ type BaseItem = {
   inventory_width?: number;
   inventory_height?: number;
   visual_identity?: { dds_file?: string };
+  properties?: { block?: number | null };
+  requirements?: { level?: number; strength?: number; dexterity?: number; intelligence?: number };
 };
 
-/** name -> [art path without extension, inventory width, inventory height] */
-export type ArtIndex = Record<string, [string, number, number]>;
+export type BaseEntry = {
+  /** Art path without extension, e.g. Art/2DItems/Rings/AmethystRing */
+  art: string;
+  /** Inventory footprint, which is the aspect the art is drawn at. */
+  w: number;
+  h: number;
+  cls: string;
+  /** Shields only: the base's block chance before the item's own modifiers. */
+  block?: number;
+  /** [level, strength, dexterity, intelligence] */
+  req: [number, number, number, number];
+};
+
+export type ArtIndex = Record<string, BaseEntry>;
 
 async function main() {
   process.stdout.write(`fetching ${SOURCE}\n`);
@@ -55,7 +69,21 @@ async function main() {
       skipped += 1;
       continue;
     }
-    index[name] = [dds.slice(0, -4), item.inventory_width ?? 1, item.inventory_height ?? 1];
+    const requirements = item.requirements ?? {};
+    const entry: BaseEntry = {
+      art: dds.slice(0, -4),
+      w: item.inventory_width ?? 1,
+      h: item.inventory_height ?? 1,
+      cls: item.item_class,
+      req: [
+        requirements.level ?? 0,
+        requirements.strength ?? 0,
+        requirements.dexterity ?? 0,
+        requirements.intelligence ?? 0,
+      ],
+    };
+    if (item.item_class === "Shield" && item.properties?.block) entry.block = item.properties.block;
+    index[name] = entry;
   }
 
   const sorted: ArtIndex = {};

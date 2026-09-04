@@ -70,9 +70,15 @@ so a character page never depends on an external link staying alive.
   pushes the item's real implicit into its explicits. Add unknown header keys to `META_KEYS` in
   `src/lib/items.ts` rather than letting them through.
 - **Every item tooltip renders through `buildTooltip`** in `src/lib/tooltip.ts`, which fixes one
-  order for all items — quality, anoint, special, defences, sockets, implicit, enchant, explicit,
-  footer — and drops empty sections. Item level, level requirement, base percentiles and the
-  "Fractured Item" label are never shown. Add new lines to that module, not to the component.
+  order for all items — quality, anoint, special, defences, sockets, requires, implicit, enchant,
+  explicit, footer — and drops empty sections. Item level, base percentiles and the "Fractured
+  Item" label are never shown. Add new lines to that module, not to the component.
+- **A shield's block and an item's attribute requirements are derived, not parsed.** Path of
+  Building computes them rather than writing them into the item text, so they come from the
+  base's `block` and `req` in `item-art-index.json`: block is base x (1 + its own "increased
+  Chance to Block" mods), floored, ignoring spell block; requirements take the level from the
+  item and the attributes from the base. An item that reduces its own attribute requirements
+  will therefore show the base figures.
 - **`BuildData` changes stay additive.** Rows written by older versions must still render;
   `mapCharacter` merges parsed JSON over `emptyBuild()` for exactly this reason.
 - **better-sqlite3 stays in `serverExternalPackages`.** It is a native module; bundling it

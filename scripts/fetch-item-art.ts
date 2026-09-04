@@ -60,8 +60,8 @@ async function download(artPath: string): Promise<"saved" | "skipped" | "failed"
 }
 
 async function main() {
-  const entries = Object.values(index) as [string, number, number][];
-  const paths = [...new Set(entries.map((entry) => entry[0]))];
+  const entries = Object.values(index) as { art: string }[];
+  const paths = [...new Set(entries.map((entry) => entry.art))];
   process.stdout.write(
     `${dryRun ? "would fetch" : "fetching"} ${paths.length} item images from ${baseUrl}\n`,
   );
