@@ -51,6 +51,9 @@ export type ParsedItem = {
   energyShield?: number;
   /** Shields only: the item's total modified block chance. */
   block?: number;
+  /** League mechanic values written into the item's header region. */
+  intangibility?: string;
+  memoryStrands?: string;
   sockets: SocketGroupColor[][];
   influences: string[];
   flags: string[];

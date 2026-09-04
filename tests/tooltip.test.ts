@@ -9,117 +9,185 @@ const kinds = (item: Parameters<typeof buildTooltip>[0]): SectionKind[] =>
 const linesOf = (item: Parameters<typeof buildTooltip>[0], kind: SectionKind): string[] =>
   buildTooltip(item).find((section) => section.kind === kind)?.lines.map((l) => l.text) ?? [];
 
-/** The ring from the report: an anoint, a league mod and an implicit were all one block. */
+/**
+ * Real item text, taken verbatim from a Path of Building export. The synthetic
+ * fixtures this replaced hid the actual defect: "Intangibility: 19%" sits in
+ * the header region above Unique ID, and reading it as a mod shifted the
+ * implicit boundary so the ring's real implicit landed among the explicits.
+ */
 const RING = parseItem(
   `Rarity: RARE
 Mind Knuckle
 Moonstone Ring
-Unique ID: abc123
+Intangibility: 19%
+Unique ID: 44cb867c8b8e499a92255459b1492db9
 Item Level: 85
 LevelReq: 59
-BasePercentile: 0.7231
-Quality: 20
-Implicits: 3
-Your Empowering Towers have 25% increased Range
-Intangibility: 19%
+Implicits: 2
+{crafted}Your Empowering Towers have 25% increased Range
 10% increased Cast Speed
 +48 to Strength
 +44 to Dexterity
+Adds 6 to 12 Cold Damage to Attacks
 +108 to maximum Life
-Fractured Item`,
+Regenerate 33.3 Life per second
++59 to maximum Mana
++43% to Fire Resistance`,
   1,
 );
 
-test("sections keep the standard order", () => {
-  assert.deepEqual(kinds(RING), ["quality", "anoint", "special", "implicit", "explicit"]);
+test("the ring's implicit is its own section, not the first explicit", () => {
+  assert.deepEqual(linesOf(RING, "anoint"), ["Your Empowering Towers have 25% increased Range"]);
+  assert.deepEqual(linesOf(RING, "implicit"), ["10% increased Cast Speed"]);
+  assert.equal(linesOf(RING, "explicit").length, 7);
+  assert.equal(linesOf(RING, "explicit")[0], "+48 to Strength");
 });
 
-test("the anoint, the league mod and the implicit each get their own section", () => {
-  assert.deepEqual(linesOf(RING, "anoint"), ["Your Empowering Towers have 25% increased Range"]);
+test("a league mechanic in the header is not counted as a mod", () => {
   assert.deepEqual(linesOf(RING, "special"), ["Intangibility: 19%"]);
-  assert.deepEqual(linesOf(RING, "implicit"), ["10% increased Cast Speed"]);
-  assert.equal(linesOf(RING, "explicit").length, 3);
+  assert.equal(RING.implicits.length, 2, "the implicit region should still hold exactly two lines");
+  assert.equal(
+    [...RING.implicits, ...RING.explicits].some((mod) => /Intangibility/.test(mod)),
+    false,
+  );
+});
+
+test("sections keep the standard order", () => {
+  assert.deepEqual(kinds(RING), ["anoint", "special", "implicit", "explicit"]);
 });
 
 test("item level, level requirement, base percentile and the fractured label never appear", () => {
-  const everything = buildTooltip(RING)
+  const boots = parseItem(
+    `Rarity: RARE
+Pain Spark
+Harpyskin Boots
+Evasion: 735
+EvasionBasePercentile: 0.9785
+Intangibility: 23%
+Unique ID: 706e8f9d35549ef3
+Searing Exarch Item
+Item Level: 84
+Quality: 20
+Sockets: G-G-G-G
+LevelReq: 78
+Implicits: 2
+23% chance to Avoid Elemental Ailments
+4% increased Action Speed
+74% increased Evasion Rating
+{fractured}+35% to Chaos Resistance
+Fractured Item`,
+    2,
+  );
+  const everything = buildTooltip(boots)
     .flatMap((section) => section.lines.map((line) => line.text))
     .join("\n");
   for (const banned of ["Item Level", "Requires Level", "LevelReq", "BasePercentile", "Fractured Item"]) {
     assert.equal(everything.includes(banned), false, `${banned} leaked into the tooltip`);
   }
+  assert.deepEqual(linesOf(boots, "defences"), ["Evasion Rating: 735"]);
+  assert.equal(linesOf(boots, "footer").includes("Searing Exarch Item"), true);
 });
 
-test("a base percentile line is not mistaken for a mod", () => {
-  assert.equal(RING.explicits.some((mod) => /BasePercentile/i.test(mod)), false);
-  assert.equal(RING.implicits.some((mod) => /BasePercentile/i.test(mod)), false);
-});
-
-test("quality is dropped when there is none", () => {
-  const noQuality = parseItem(
-    `Rarity: RARE
-Plain Thing
-Iron Ring
-Implicits: 0
-+10 to maximum Life`,
-    2,
-  );
-  assert.equal(kinds(noQuality).includes("quality"), false);
-});
-
-test("a shield shows its modified block with the other defences, in order", () => {
-  const shield = parseItem(
-    `Rarity: RARE
-Doom Ward
-Titanium Spirit Shield
+test("a flask's enchantment is separated from its explicits", () => {
+  const flask = parseItem(
+    `Rarity: MAGIC
+Surgeon's Silver Flask of Rupturing
+Unique ID: 9695f2a70accd96a
+Item Level: 85
 Quality: 20
-Armour: 120
-Evasion: 90
-Energy Shield: 96
-Block: 25
-BaseBlock: 22
-Sockets: B-B
+LevelReq: 64
 Implicits: 1
-16% increased Spell Damage
-+108 to maximum Life`,
+{crafted}Used when Charges reach full
+32% chance to gain a Flask Charge when you deal a Critical Strike
+40% increased Critical Strike Chance during Effect`,
     3,
   );
-  assert.deepEqual(linesOf(shield, "defences"), [
-    "Armour: 120",
-    "Evasion Rating: 90",
-    "Energy Shield: 96",
-    "Chance to Block: 25%",
-  ]);
-  assert.deepEqual(kinds(shield), ["quality", "defences", "sockets", "implicit", "explicit"]);
+  assert.deepEqual(linesOf(flask, "enchant"), ["Used when Charges reach full"]);
+  assert.equal(linesOf(flask, "explicit").length, 2);
+  assert.deepEqual(kinds(flask), ["quality", "enchant", "explicit"]);
 });
 
-test("an amulet anoint is recognised", () => {
-  const amulet = parseItem(
+test("a tower anoint is recognised whatever verb follows", () => {
+  const coral = parseItem(
     `Rarity: RARE
-Onslaught Locket
-Marble Amulet
+Behemoth Grasp
+Coral Ring
+Item Level: 85
+LevelReq: 64
 Implicits: 2
-Allocates Whispers of Doom
-Regenerate 1.2% of Life per second
-+82 to maximum Life`,
+{crafted}Your Meteor Towers create Burning Ground for 3 seconds on Hit
++29 to maximum Life
++82 to maximum Life
+{fractured}+18% to Fire and Chaos Resistances
+Fractured Item`,
     4,
   );
-  assert.deepEqual(linesOf(amulet, "anoint"), ["Allocates Whispers of Doom"]);
-  assert.deepEqual(linesOf(amulet, "implicit"), ["Regenerate 1.2% of Life per second"]);
+  assert.deepEqual(linesOf(coral, "anoint"), [
+    "Your Meteor Towers create Burning Ground for 3 seconds on Hit",
+  ]);
+  assert.deepEqual(linesOf(coral, "implicit"), ["+29 to maximum Life"]);
 });
 
-test("corruption stays at the bottom and keeps its own line", () => {
-  const corrupted = parseItem(
-    `Rarity: UNIQUE
-Emberwake
-Ruby Ring
-Implicits: 1
-+25% to Fire Resistance
-15% increased Fire Damage
-Corrupted`,
+test("an amulet anoint and its memory strands are each their own section", () => {
+  const amulet = parseItem(
+    `Rarity: RARE
+Bramble Charm
+Agate Amulet
+Intangibility: 8%
+Unique ID: f7cbf6af34e39fe3
+Item Level: 85
+Memory Strands: 29
+LevelReq: 65
+Implicits: 2
+{crafted}Allocates Ash, Frost and Storm
++23 to Strength and Intelligence
++54 to Dexterity
++128 to maximum Life`,
     5,
   );
-  const order = kinds(corrupted);
+  assert.deepEqual(linesOf(amulet, "anoint"), ["Allocates Ash, Frost and Storm"]);
+  assert.deepEqual(linesOf(amulet, "special"), ["Intangibility: 8%", "Memory Strands: 29"]);
+  assert.deepEqual(linesOf(amulet, "implicit"), ["+23 to Strength and Intelligence"]);
+});
+
+test("a shield keeps its defences, sockets and quality in order", () => {
+  const shield = parseItem(
+    `Rarity: RARE
+Oblivion Spell
+Harmonic Spirit Shield
+Energy Shield: 158
+EnergyShieldBasePercentile: 0.3333
+Intangibility: 30%
+Unique ID: 4ba5afe8a0d5e8bb
+Item Level: 84
+Memory Strands: 41
+Quality: 20
+Sockets: B-B-W
+LevelReq: 65
+Implicits: 1
+14% increased Spell Damage
+74% increased Chance to Block
+{crafted}3% additional Physical Damage Reduction`,
+    6,
+  );
+  assert.deepEqual(kinds(shield), ["quality", "special", "defences", "sockets", "implicit", "explicit"]);
+  assert.deepEqual(linesOf(shield, "defences"), ["Energy Shield: 158"]);
+  assert.deepEqual(linesOf(shield, "implicit"), ["14% increased Spell Damage"]);
+});
+
+test("corruption stays at the bottom", () => {
+  const jewel = parseItem(
+    `Rarity: RARE
+Vivid Curio
+Crimson Jewel
+Unique ID: fe760cbe182bf164
+Item Level: 85
+Implicits: 0
+14% increased Damage with Maces or Sceptres
+Corrupted`,
+    7,
+  );
+  const order = kinds(jewel);
   assert.equal(order[order.length - 1], "footer");
-  assert.deepEqual(linesOf(corrupted, "footer"), ["Corrupted"]);
+  assert.deepEqual(linesOf(jewel, "footer"), ["Corrupted"]);
 });

@@ -64,6 +64,11 @@ so a character page never depends on an external link staying alive.
   component. Flask art is a three-frame sheet (glass, metal frame, liquid) that `GearSlot`
   composites with stacked background layers; every flask image is such a sheet and no other
   image is, checked across all 512.
+- **An item's header region holds "Key: value" lines that are not mods** — league values like
+  `Intangibility: 19%` and `Memory Strands: 41`, and `…BasePercentile` figures. A key the parser
+  does not recognise falls through to the mod list, which shifts the `Implicits: N` boundary and
+  pushes the item's real implicit into its explicits. Add unknown header keys to `META_KEYS` in
+  `src/lib/items.ts` rather than letting them through.
 - **Every item tooltip renders through `buildTooltip`** in `src/lib/tooltip.ts`, which fixes one
   order for all items — quality, anoint, special, defences, sockets, implicit, enchant, explicit,
   footer — and drops empty sections. Item level, level requirement, base percentiles and the

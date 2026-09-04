@@ -59,6 +59,8 @@ const META_KEYS = new Set([
   "rarity",
   "block",
   "baseblock",
+  "intangibility",
+  "memory strands",
   "basepercentile",
   "armourbasepercentile",
   "evasionbasepercentile",
@@ -212,6 +214,15 @@ export function parseItem(raw: string, id: number): ParsedItem {
           // The modified total, which is what the game shows. baseblock is
           // listed above as metadata and deliberately ignored.
           item.block = parseInt(value, 10);
+          break;
+        // League mechanics are written into the header region, above Unique ID,
+        // as "Key: value" lines. Reading them as mods shifted the implicit
+        // boundary and pushed the item's real implicit into the explicits.
+        case "intangibility":
+          item.intangibility = value;
+          break;
+        case "memory strands":
+          item.memoryStrands = value;
           break;
         case "sockets":
           item.sockets = value

@@ -36,11 +36,12 @@ const SECTION_ORDER: SectionKind[] = [
   "footer",
 ];
 
-/** Anoints: amulets read "Allocates ...", ring tower anoints read "Your ... Towers ...". */
-const ANOINT = [/^Allocates\b/i, /\bTowers?\b.*\bhave\b/i];
-
-/** League mechanics the game gives their own block, above the item's own mods. */
-const SPECIAL = [/^Intangibility\b/i, /^Tangibility\b/i, /^Memory Strands\b/i];
+/**
+ * Anoints: amulets read "Allocates ...", and a ring's tower anoint reads
+ * "Your <something> Towers ..." — which can be "have", "create" or anything
+ * else, so match on the opening rather than the verb.
+ */
+const ANOINT = [/^Allocates\b/i, /^Your\b.*\bTowers?\b/i];
 
 /**
  * Mods are stored as strings; a tagged one carries its tags after a "·"
@@ -52,10 +53,14 @@ export function splitMod(line: string): TooltipLine {
   return { text, tags: tags ? tags.split(", ").map((tag) => tag.trim()) : [] };
 }
 
-function classify(line: TooltipLine): Extract<SectionKind, "anoint" | "special" | "enchant" | "implicit"> {
-  if (line.tags.includes("enchant")) return "enchant";
+/**
+ * Inside the implicit region, a crafted tag means the line is not one of the
+ * base's own implicits: it is an anoint or, on a flask, an enchantment such as
+ * "Used when Charges reach full".
+ */
+function classify(line: TooltipLine): Extract<SectionKind, "anoint" | "enchant" | "implicit"> {
   if (ANOINT.some((pattern) => pattern.test(line.text))) return "anoint";
-  if (SPECIAL.some((pattern) => pattern.test(line.text))) return "special";
+  if (line.tags.includes("enchant") || line.tags.includes("crafted")) return "enchant";
   return "implicit";
 }
 
@@ -69,6 +74,9 @@ export function buildTooltip(item: ParsedItem): TooltipSection[] {
   const plain = (text: string) => ({ text, tags: [] });
 
   if (item.quality) push("quality", plain(`Quality: +${item.quality}%`));
+
+  if (item.intangibility) push("special", plain(`Intangibility: ${item.intangibility}`));
+  if (item.memoryStrands) push("special", plain(`Memory Strands: ${item.memoryStrands}`));
 
   // The implicit block carries anoints, league mods and enchants as well as the
   // item's own implicits; each gets its own section.
