@@ -114,17 +114,50 @@ function syncLeagueCatalogue(db: Database.Database) {
 function create(): Database.Database {
   const file = process.env.ARCHIVE_DB ?? DEFAULT_PATH;
   fs.mkdirSync(path.dirname(file), { recursive: true });
-  const db = new Database(file);
-  db.pragma("journal_mode = WAL");
-  db.pragma("foreign_keys = ON");
-  db.exec(SCHEMA);
-  migrate(db);
-  syncLeagueCatalogue(db);
-  return db;
+  const connection = new Database(file);
+  // The journal mode is stored in the file, so it only has to be set once, but
+  // setting it takes a brief exclusive lock. If something else holds that lock
+  // right now, carry on rather than refusing to start.
+  try {
+    connection.pragma("journal_mode = WAL");
+  } catch (error) {
+    if (!(error instanceof Error) || !/locked|busy/i.test(error.message)) throw error;
+  }
+  connection.pragma("foreign_keys = ON");
+  connection.exec(SCHEMA);
+  migrate(connection);
+  syncLeagueCatalogue(connection);
+  return connection;
 }
 
-// Reuse one connection across dev-server hot reloads.
+// One connection per process, reused across dev-server hot reloads.
 const globalForDb = globalThis as unknown as { __hallsDb?: Database.Database };
 
-export const db: Database.Database = globalForDb.__hallsDb ?? create();
-if (process.env.NODE_ENV !== "production") globalForDb.__hallsDb = db;
+function connection(): Database.Database {
+  if (!globalForDb.__hallsDb) globalForDb.__hallsDb = create();
+  return globalForDb.__hallsDb;
+}
+
+/**
+ * The database opens on first use, never at import time.
+ *
+ * `next build` imports every route module to collect its configuration, and it
+ * does that across as many worker processes as the machine has cores. Opening
+ * SQLite eagerly meant a dozen processes raced to set `journal_mode = WAL`,
+ * which needs an exclusive lock; the loser failed the build with SQLITE_BUSY on
+ * machines with enough cores. Going through this proxy keeps every call site
+ * unchanged while making it impossible to touch the file just by importing.
+ */
+export const db: Database.Database = new Proxy({} as Database.Database, {
+  get(_target, property) {
+    const instance = connection();
+    const value = Reflect.get(instance, property, instance);
+    return typeof value === "function" ? value.bind(instance) : value;
+  },
+  set(_target, property, value) {
+    return Reflect.set(connection(), property, value);
+  },
+  has(_target, property) {
+    return property in connection();
+  },
+});

@@ -214,9 +214,16 @@ export function getArchiveTotals() {
     .prepare(
       `SELECT (SELECT COUNT(*) FROM users)      AS users,
               (SELECT COUNT(*) FROM characters) AS characters,
-              -- leagues someone has actually archived a character in, not the catalogue size
-              (SELECT COUNT(DISTINCT league_id) FROM characters) AS leagues`,
+              -- leagues someone has actually archived a character in...
+              (SELECT COUNT(DISTINCT league_id) FROM characters) AS leagues,
+              -- ...and the size of the catalogue itself, which proves the seed ran
+              (SELECT COUNT(*) FROM leagues)    AS catalogue`,
     )
     .get() as Row;
-  return { users: row.users as number, characters: row.characters as number, leagues: row.leagues as number };
+  return {
+    users: row.users as number,
+    characters: row.characters as number,
+    leagues: row.leagues as number,
+    catalogue: row.catalogue as number,
+  };
 }

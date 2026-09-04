@@ -57,11 +57,13 @@ jobs:
           echo "container never reported healthy"
           docker logs halls-ci
           exit 1
+      # "leagues" counts leagues holding a character, which is 0 on a fresh
+      # container; "catalogue" is the seeded league table, which must be there.
       - name: Seeded league catalogue is present
         run: |
-          leagues=$(curl -fsS http://127.0.0.1:3000/api/health | grep -o '"leagues":[0-9]*' | cut -d: -f2)
-          echo "leagues: ${leagues}"
-          test "${leagues}" -ge 41
+          catalogue=$(curl -fsS http://127.0.0.1:3000/api/health | grep -o '"catalogue":[0-9]*' | cut -d: -f2)
+          echo "catalogue: ${catalogue}"
+          test "${catalogue}" -ge 41
       - name: Every page renders
         run: |
           for path in / /players /players/new; do

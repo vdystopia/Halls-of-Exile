@@ -49,6 +49,10 @@ so a character page never depends on an external link staying alive.
 - **Only the newest league may carry `endDateEstimated`.** A test enforces this. When a
   real end date is announced, replace the estimate and clear the flag.
 - **Each league ends where the next begins.** A test enforces this too.
+- **Nothing may open the database at import time.** `src/lib/db.ts` exports a proxy that
+  connects on first use. `next build` imports every route module across one worker per core;
+  connecting eagerly raced on the WAL lock and failed the build on machines with enough
+  cores. `tests/db.test.ts` fails if importing the query layer creates the file.
 - **`BuildData` changes stay additive.** Rows written by older versions must still render;
   `mapCharacter` merges parsed JSON over `emptyBuild()` for exactly this reason.
 - **better-sqlite3 stays in `serverExternalPackages`.** It is a native module; bundling it
@@ -72,7 +76,11 @@ visual, start the app and screenshot the affected page rather than assuming — 
 real defects in this project (a clipped resistance label, a missing CSS chunk from a
 stale server, an over-eager dirty-tree guard) were only visible when actually looked at.
 For schema changes, exercise the migration against a populated pre-change database.
-CI runs the same checks plus a container boot, so a red build means do not deploy.
+CI runs the same checks plus a container boot, so a red build means do not deploy. **Check
+that the CI run for your push is green before telling the owner to deploy** — a deploy was
+sent to a red build once because nobody looked, and CI had already caught the fault.
+Note that CI runners have fewer cores than the owner's machine, so build-time concurrency
+bugs can pass there and still fail on the server.
 
 ## Working with the owner
 
