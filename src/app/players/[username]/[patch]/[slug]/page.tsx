@@ -104,7 +104,7 @@ export default async function CharacterPage({ params }: Props) {
         <div className="space-y-4 lg:col-span-6">
           <section className="panel">
             <div className="panel-header">
-              <h2 className="panel-title">Equipment</h2>
+              <h2 className="panel-title">Gear</h2>
               <span className="text-xs text-muted">{build.items.length} items</span>
             </div>
             <div className="p-4">

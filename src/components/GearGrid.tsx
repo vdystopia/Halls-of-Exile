@@ -1,6 +1,10 @@
-import { FLASK_SLOTS, GEAR_LAYOUT } from "@/lib/items";
+import { FLASK_SLOTS, PAPER_DOLL } from "@/lib/items";
 import type { BuildData, ParsedItem } from "@/lib/types";
-import { ItemCard } from "./ItemCard";
+import { GearSlot } from "./gear/GearSlot";
+
+/** One square of the paper doll. Tiles are sized from this. */
+const CELL = "clamp(34px, 5.4vw, 58px)";
+const GAP = "6px";
 
 export function GearGrid({ build }: { build: BuildData }) {
   const byId = new Map<number, ParsedItem>(build.items.map((item) => [item.id, item]));
@@ -9,41 +13,52 @@ export function GearGrid({ build }: { build: BuildData }) {
     return id ? byId.get(id) : undefined;
   };
 
-  const placed = new Set<number>();
-  for (const slot of Object.keys(build.slots)) {
-    const id = build.slots[slot];
-    if (id) placed.add(id);
-  }
+  const placed = new Set(Object.values(build.slots).filter(Boolean));
   const loose = build.items.filter((item) => !placed.has(item.id));
-
   const abyssal = Object.keys(build.slots).filter((slot) => /Abyssal Socket/.test(slot));
-  const flasks = FLASK_SLOTS.map((slot) => ({ slot, item: at(slot) })).filter((entry) => entry.item);
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
-        {GEAR_LAYOUT.map((cell) => (
-          <ItemCard key={cell.slot} item={at(cell.slot)} label={cell.label} className={cell.pos} />
+    <div className="space-y-5">
+      <div
+        className="mx-auto grid w-fit"
+        style={{
+          gridTemplateColumns: `repeat(8, ${CELL})`,
+          gridAutoRows: CELL,
+          gap: GAP,
+        }}
+      >
+        {PAPER_DOLL.map((cell) => (
+          <GearSlot
+            key={cell.slot}
+            item={at(cell.slot)}
+            shape={cell.shape}
+            label={cell.label}
+            style={{ gridColumn: cell.column, gridRow: cell.row }}
+          />
+        ))}
+        {FLASK_SLOTS.map((slot, index) => (
+          <GearSlot
+            key={slot}
+            item={at(slot)}
+            shape="flask"
+            label={slot}
+            style={{ gridColumn: String(index + 2), gridRow: "7 / span 2" }}
+          />
         ))}
       </div>
-
-      {flasks.length ? (
-        <div>
-          <p className="eyebrow mb-2">Flasks</p>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-            {flasks.map(({ slot, item }) => (
-              <ItemCard key={slot} item={item} label={slot} />
-            ))}
-          </div>
-        </div>
-      ) : null}
 
       {abyssal.length ? (
         <div>
           <p className="eyebrow mb-2">Abyssal sockets</p>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="flex flex-wrap gap-1.5">
             {abyssal.map((slot) => (
-              <ItemCard key={slot} item={at(slot)} label={slot.replace(" Abyssal Socket", " · socket")} />
+              <GearSlot
+                key={slot}
+                item={at(slot)}
+                shape="jewel"
+                label={slot}
+                style={{ width: CELL, height: CELL }}
+              />
             ))}
           </div>
         </div>
@@ -52,9 +67,15 @@ export function GearGrid({ build }: { build: BuildData }) {
       {loose.length ? (
         <div>
           <p className="eyebrow mb-2">Jewels &amp; unequipped</p>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="flex flex-wrap gap-1.5">
             {loose.map((item) => (
-              <ItemCard key={item.id} item={item} label={item.rarity.toLowerCase()} />
+              <GearSlot
+                key={item.id}
+                item={item}
+                shape="jewel"
+                label={item.name}
+                style={{ width: CELL, height: CELL }}
+              />
             ))}
           </div>
         </div>

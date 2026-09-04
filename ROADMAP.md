@@ -15,6 +15,10 @@ mattering.
 
 ## Next
 
+- [ ] Real item art for the gear slots, replacing the placeholder silhouettes in
+      `src/components/gear/SlotIcon.tsx`. Icons are keyed by slot shape today; real art keys
+      off the item's base type, so the parser needs to expose that mapping.
+
 - [ ] Replace 3.29's tentative end date once Grinding Gear Games announces it, and clear
       the `endDateEstimated` flag.
 - [ ] Character sorting and filtering on a league page once leagues hold more than a
@@ -37,8 +41,8 @@ mattering.
 ## Done
 
 - [x] Player profiles, public directory, league index, league pages, character sheets.
-- [x] Path of Building import: gear with mod tooltips, gems by socket group, tree summary,
-      every computed stat.
+- [x] Path of Building import: gems by socket group, tree summary, every computed stat.
+- [x] Gear laid out as Path of Exile's paper doll, with in-game-style hover tooltips.
 - [x] League catalogue 1.0 → 3.29, with challenge totals and per-player challenge records.
 - [x] Docker packaging, health endpoint, online backup script.
 - [x] Renamed to **Halls of Exile**, matching the repository.

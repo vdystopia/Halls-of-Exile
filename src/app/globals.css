@@ -30,6 +30,14 @@
   --color-res-lightning: #e8d54e;
   --color-res-chaos: #d16fd1;
 
+  /* Path of Exile's own item-tooltip palette, so tooltips read like the game. */
+  --color-tip-bg: #060606;
+  --color-tip-label: #7f7f7f;
+  --color-mod: #8787fe;
+  --color-mod-crafted: #b4b4ff;
+  --color-mod-fractured: #a29160;
+  --color-corrupt: #d20000;
+
   --color-socket-r: #c94f4f;
   --color-socket-g: #4fb04f;
   --color-socket-b: #4f6fd4;
