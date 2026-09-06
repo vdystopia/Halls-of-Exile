@@ -82,6 +82,13 @@ so a character page never depends on an external link staying alive.
   Requirements" mods and floored. The requires section holds one line per figure ("Level 63",
   "130 Dex") so the tooltip can colour a scaled attribute without colouring the level beside it;
   scale with integer percentages rather than a multiplier, since 70 x 0.7 is 48.99999999999999.
+- **A stored build is a cache of the parser, so parser fixes need `PARSER_VERSION`.**
+  A character's items are parsed once, at import, and written to `characters.data` as JSON;
+  the archive went on rendering base percentiles as mods for days after the parser stopped
+  reading them that way. When a parser change makes older stored builds wrong, bump
+  `PARSER_VERSION` in `src/lib/pob.ts`: `migrate()` re-parses every character whose
+  `parser_version` is lower and that still has its share code. A character with no code, or
+  one whose code no longer parses, keeps the build it has.
 - **`BuildData` changes stay additive.** Rows written by older versions must still render;
   `mapCharacter` merges parsed JSON over `emptyBuild()` for exactly this reason.
 - **better-sqlite3 stays in `serverExternalPackages`.** It is a native module; bundling it

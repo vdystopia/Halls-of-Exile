@@ -200,6 +200,20 @@ function parseConfig(root: Node): { name: string; value: string }[] {
     .filter((entry) => entry.name && entry.value && entry.value !== "false");
 }
 
+/**
+ * What the parser produces, as a number. A character stores its parsed build as
+ * JSON, so a fix to the parser reaches only imports made after it — the archive
+ * kept showing base percentiles as mods long after the parser stopped reading
+ * them that way. Bump this whenever a change makes an older stored build wrong,
+ * and `migrate()` re-parses every character that still carries the original
+ * share code.
+ *
+ * 1 — the first parser.
+ * 2 — header keys (BasePercentile, Intangibility, Memory Strands) no longer
+ *     read as mods, which also fixes the implicit boundary they shifted.
+ */
+export const PARSER_VERSION = 2;
+
 /** Turn a Path of Building export into the structure the character page renders. */
 export function parsePob(code: string): BuildData {
   const xml = decodePobCode(code);

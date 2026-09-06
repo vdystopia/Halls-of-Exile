@@ -45,3 +45,92 @@ test("a schema change is applied to a connection that is already open", async ()
   ensureSchema(db);
   assert.ok(columns().includes("played_minutes"), "the open connection was not brought up to date");
 });
+
+/**
+ * A character's build is parsed once, on import, and stored as JSON. Every
+ * parser fix therefore reached only later imports: the archive kept rendering
+ * base percentiles as mods, with the implicit boundary they shifted, long after
+ * the parser stopped reading them that way. The share code is stored beside the
+ * build so a row can be brought forward instead, which is what `migrate()` does
+ * for anything older than PARSER_VERSION.
+ */
+test("a build stored by an older parser is re-parsed from its share code", async () => {
+  const zlib = await import("node:zlib");
+  const { db, ensureSchema } = await import("../src/lib/db");
+  const { PARSER_VERSION } = await import("../src/lib/pob");
+
+  const xml = `<PathOfBuilding><Build level="84" className="Ranger" ascendClassName="Deadeye"/><Items><Item>Rarity: RARE
+Blood Coat
+Necrotic Armour
+Evasion: 2974
+EvasionBasePercentile: 0.9333
+Intangibility: 33%
+Item Level: 85
+LevelReq: 84
+Implicits: 1
+11% of Physical Damage from Hits taken as Fire Damage
++467 to Evasion Rating</Item></Items></PathOfBuilding>`;
+  const code = zlib.deflateSync(Buffer.from(xml)).toString("base64").replace(/\+/g, "-").replace(/\//g, "_");
+
+  // The connection is cached across tests, so every row here is named uniquely
+  // rather than assuming an empty database.
+  const user = db
+    .prepare(`INSERT INTO users (username, first_name) VALUES ('reparse-tester', 'Test')`)
+    .run().lastInsertRowid as number;
+  const league = db.prepare(`SELECT id FROM leagues LIMIT 1`).get() as { id: number };
+  // The build as the old parser left it: the percentile line read as a mod,
+  // which pushed the item's real implicit into its explicits.
+  const stale = {
+    items: [
+      {
+        id: 1,
+        rarity: "RARE",
+        name: "Blood Coat",
+        base: "Necrotic Armour",
+        implicits: ["EvasionBasePercentile: 0.9333"],
+        explicits: ["Intangibility: 33%", "11% of Physical Damage from Hits taken as Fire Damage"],
+      },
+    ],
+  };
+  db.prepare(
+    `INSERT INTO characters (user_id, league_id, slug, name, class_name, pob_code, data, parser_version)
+     VALUES (?, ?, 'stale', 'Stale', 'Ranger', ?, ?, 0)`,
+  ).run(user, league.id, code, JSON.stringify(stale));
+
+  ensureSchema(db);
+
+  const row = db.prepare(`SELECT data, parser_version FROM characters WHERE slug = 'stale'`).get() as {
+    data: string;
+    parser_version: number;
+  };
+  const item = (JSON.parse(row.data) as { items: Record<string, unknown>[] }).items[0];
+  assert.equal(row.parser_version, PARSER_VERSION);
+  assert.deepEqual(item.implicits, ["11% of Physical Damage from Hits taken as Fire Damage"]);
+  assert.deepEqual(item.explicits, ["+467 to Evasion Rating"]);
+  assert.equal(item.intangibility, "33%");
+});
+
+/** A character with no share code cannot be re-parsed, and must not be lost. */
+test("a character with no share code keeps the build it has", async () => {
+  const { db, ensureSchema } = await import("../src/lib/db");
+  const { PARSER_VERSION } = await import("../src/lib/pob");
+
+  const user = db
+    .prepare(`INSERT INTO users (username, first_name) VALUES ('nocode-tester', 'Test')`)
+    .run().lastInsertRowid as number;
+  const league = db.prepare(`SELECT id FROM leagues LIMIT 1`).get() as { id: number };
+  const kept = JSON.stringify({ items: [], className: "Witch" });
+  db.prepare(
+    `INSERT INTO characters (user_id, league_id, slug, name, class_name, pob_code, data, parser_version)
+     VALUES (?, ?, 'manual', 'Manual', 'Witch', NULL, ?, 0)`,
+  ).run(user, league.id, kept);
+
+  ensureSchema(db);
+
+  const row = db.prepare(`SELECT data, parser_version FROM characters WHERE slug = 'manual'`).get() as {
+    data: string;
+    parser_version: number;
+  };
+  assert.equal(row.data, kept);
+  assert.equal(row.parser_version, PARSER_VERSION, "it should not be re-checked on every boot");
+});

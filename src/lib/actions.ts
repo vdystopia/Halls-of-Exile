@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "./db";
-import { emptyBuild, fetchPobCode, isPobUrl, parsePob, PobError } from "./pob";
+import { emptyBuild, fetchPobCode, isPobUrl, parsePob, PARSER_VERSION, PobError } from "./pob";
 import { parsePlayed } from "./format";
 import { getLeagueByPatch, getUser } from "./queries";
 import type { BuildData } from "./types";
@@ -134,8 +134,8 @@ export async function addCharacterAction(_prev: ActionState, formData: FormData)
   db.prepare(
     `INSERT INTO characters
        (user_id, league_id, slug, name, class_name, ascendancy, level, main_skill, notes, played_minutes,
-        is_favorite, pob_code, pob_url, data)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        is_favorite, pob_code, pob_url, data, parser_version)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).run(
     user.id,
     league.id,
@@ -151,6 +151,7 @@ export async function addCharacterAction(_prev: ActionState, formData: FormData)
     parsed.code,
     parsed.url,
     JSON.stringify(data),
+    PARSER_VERSION,
   );
 
   revalidatePath(`/players/${username}`);
@@ -204,7 +205,8 @@ export async function updateCharacterAction(_prev: ActionState, formData: FormDa
        is_favorite    = ?,
        pob_code    = COALESCE(?, pob_code),
        pob_url     = COALESCE(?, pob_url),
-       data        = COALESCE(?, data)
+       data        = COALESCE(?, data),
+       parser_version = COALESCE(?, parser_version)
      WHERE id = ?`,
   ).run(
     name,
@@ -218,6 +220,7 @@ export async function updateCharacterAction(_prev: ActionState, formData: FormDa
     code,
     url,
     data ? JSON.stringify(data) : null,
+    data ? PARSER_VERSION : null,
     existing.id,
   );
 

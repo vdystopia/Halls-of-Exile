@@ -2,6 +2,7 @@ import Database from "better-sqlite3";
 import fs from "node:fs";
 import path from "node:path";
 import { LEAGUE_SEED } from "./leagues";
+import { PARSER_VERSION, parsePob } from "./pob";
 
 const DEFAULT_PATH = path.join(process.cwd(), "data", "archive.db");
 
@@ -53,6 +54,7 @@ CREATE TABLE IF NOT EXISTS characters (
   pob_code     TEXT,
   pob_url      TEXT,
   data         TEXT NOT NULL DEFAULT '{}',
+  parser_version INTEGER NOT NULL DEFAULT 0,
   created_at   TEXT NOT NULL DEFAULT (datetime('now')),
   UNIQUE (user_id, league_id, slug)
 );
@@ -70,12 +72,47 @@ function migrate(db: Database.Database) {
   const additions: [string, string, string][] = [
     ["leagues", "end_date_estimated", "INTEGER NOT NULL DEFAULT 0"],
     ["characters", "played_minutes", "INTEGER"],
+    ["characters", "parser_version", "INTEGER NOT NULL DEFAULT 0"],
   ];
   for (const [table, column, definition] of additions) {
     const columns = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
     if (columns.some((existing) => existing.name === column)) continue;
     db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
   }
+  reparseStaleBuilds(db);
+}
+
+/**
+ * Re-parse characters whose stored build predates the current parser. The share
+ * code is kept alongside the parsed JSON precisely so this is possible; without
+ * it, a parser fix would only ever reach characters imported afterwards, and
+ * the archive would keep rendering whatever the parser believed on import day.
+ *
+ * A character with no code cannot be re-parsed, so it is only marked current.
+ * A code that no longer parses keeps the build it has rather than losing it.
+ */
+function reparseStaleBuilds(db: Database.Database) {
+  const stale = db
+    .prepare(`SELECT id, pob_code FROM characters WHERE parser_version < ?`)
+    .all(PARSER_VERSION) as { id: number; pob_code: string | null }[];
+  if (stale.length === 0) return;
+
+  const store = db.prepare(`UPDATE characters SET data = ?, parser_version = ? WHERE id = ?`);
+  const mark = db.prepare(`UPDATE characters SET parser_version = ? WHERE id = ?`);
+  const run = db.transaction(() => {
+    for (const row of stale) {
+      if (!row.pob_code) {
+        mark.run(PARSER_VERSION, row.id);
+        continue;
+      }
+      try {
+        store.run(JSON.stringify(parsePob(row.pob_code)), PARSER_VERSION, row.id);
+      } catch {
+        mark.run(PARSER_VERSION, row.id);
+      }
+    }
+  });
+  run();
 }
 
 function syncLeagueCatalogue(db: Database.Database) {
