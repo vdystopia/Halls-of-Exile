@@ -245,6 +245,22 @@ export async function deleteCharacterAction(formData: FormData): Promise<void> {
   redirect(`/players/${username}/${patch}`);
 }
 
+/**
+ * Removing a player takes their characters and league records with them: both
+ * tables declare ON DELETE CASCADE and the connection runs with foreign keys
+ * on. There is no undo, which is why the button asks first.
+ */
+export async function deletePlayerAction(formData: FormData): Promise<void> {
+  const username = text(formData, "username");
+  const user = getUser(username);
+  if (!user) return;
+
+  db.prepare(`DELETE FROM users WHERE id = ?`).run(user.id);
+  revalidatePath("/players");
+  revalidatePath("/");
+  redirect("/players");
+}
+
 export async function saveLeagueRecordAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const username = text(formData, "username");
   const patch = text(formData, "patch");

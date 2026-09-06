@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { AddLeagueForm } from "@/components/AddLeagueForm";
 import { ChallengeMeter } from "@/components/ChallengeMeter";
 import { CharacterCard } from "@/components/CharacterCard";
+import { PlayerAdmin } from "@/components/PlayerAdmin";
 import { formatPlayed, isLeagueRunning, leagueTitle, leagueWindow } from "@/lib/format";
 import { getUser, getUserTotals, listLeaguesForUser, listRecentCharacters } from "@/lib/queries";
 
@@ -130,6 +131,8 @@ export default async function PlayerPage({ params, searchParams }: Props) {
       </section>
 
       <AddLeagueForm returnTo={`/players/${user.username}`} />
+
+      <PlayerAdmin username={user.username} characters={totals.characters} />
     </div>
   );
 }
