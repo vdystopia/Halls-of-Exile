@@ -1,0 +1,4 @@
+{
+  "_comment": "Corrections to RePoE's art paths, keyed by base type or unique name. See scripts/build-item-art-index.ts.",
+  "Ancient Skull": ""
+}

@@ -10,6 +10,14 @@
  * that ships with the code; the images themselves are fetched separately by
  * scripts/fetch-item-art.ts.
  *
+ * A handful of RePoE's art paths are not what the image CDN serves — Ancient
+ * Skull records Art/2DItems/Effects/Hats/ChuhutlusSkull, which 404s — so
+ * src/lib/art-overrides.json corrects them by name after the dump is read.
+ * Editing the generated index by hand would not survive the next run; that file
+ * would. An entry with an empty value is a known-broken path with no known
+ * replacement: it keeps whatever RePoE says and the tile falls back to a
+ * silhouette.
+ *
  * Uniques come from the same dump and are indexed by name, because dozens of
  * uniques share one base — every Prismatic Jewel unique drew the same picture
  * while art was keyed on the base type alone. Only their art and footprint are
@@ -18,6 +26,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import overrides from "../src/lib/art-overrides.json";
 
 const BASE_SOURCE =
   "https://raw.githubusercontent.com/lvlvllvlvllvlvl/RePoE/master/RePoE/data/base_items.json";
@@ -127,6 +136,14 @@ async function main() {
       w: item.inventory_width ?? 1,
       h: item.inventory_height ?? 1,
     };
+  }
+
+  // Corrections last, so a fixed path is not overwritten by the dump.
+  for (const [name, art] of Object.entries(overrides as Record<string, string>)) {
+    if (name.startsWith("_") || !art) continue;
+    if (uniques[name]) uniques[name] = { ...uniques[name], art };
+    else if (index[name]) index[name] = { ...index[name], art };
+    else throw new Error(`art-overrides.json names "${name}", which is not in the catalogue`);
   }
 
   const sorted: ArtIndex = { bases: {}, uniques: {} };

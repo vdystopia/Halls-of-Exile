@@ -69,7 +69,10 @@ so a character page never depends on an external link staying alive.
   not import the index into a client component. The index holds `bases` keyed by base type
   and `uniques` keyed by the unique's own name: dozens of uniques share one base, so every
   Prismatic Jewel unique drew the same picture while art was keyed on the base alone. Only a
-  unique is looked up by name — a rare's name is randomly generated and could collide. Flask art is a three-frame sheet (glass, metal frame, liquid) that `GearSlot`
+  unique is looked up by name — a rare's name is randomly generated and could collide. A few
+  of RePoE's art paths are not what the CDN serves (Ancient Skull's 404s), so
+  `src/lib/art-overrides.json` corrects them by name and the generator applies it last;
+  editing the generated index by hand does not survive the next `npm run art:index`. Flask art is a three-frame sheet (glass, metal frame, liquid) that `GearSlot`
   composites with stacked background layers; every flask image is such a sheet and no other
   image is, checked across all 512.
 - **An item's header region holds "Key: value" lines that are not mods** — league values like

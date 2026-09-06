@@ -79,3 +79,23 @@ test("flask art is flagged as a three-layer sheet, other art is not", () => {
   assert.equal(flask.frames, 3, "flask art is a sheet of glass, frame and liquid layers");
   assert.equal(ring.frames, 1);
 });
+
+/**
+ * RePoE records what the game data says, and a few of those paths are not what
+ * the image CDN serves. Overrides are applied by the generator, so a typo would
+ * silently do nothing — this catches one that names an item the index lacks, or
+ * a correction that never made it into the index.
+ */
+test("every art override names a real item and is applied", async () => {
+  const overrides = (await import("../src/lib/art-overrides.json")).default as Record<string, string>;
+  const index = (await import("../src/lib/item-art-index.json")).default as unknown as {
+    bases: Record<string, { art: string }>;
+    uniques: Record<string, { art: string }>;
+  };
+  for (const [name, art] of Object.entries(overrides)) {
+    if (name.startsWith("_")) continue;
+    const entry = index.uniques[name] ?? index.bases[name];
+    assert.ok(entry, `override names "${name}", which is not in the catalogue`);
+    if (art) assert.equal(entry.art, art, `the override for "${name}" was not applied`);
+  }
+});
