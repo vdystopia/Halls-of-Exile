@@ -118,6 +118,10 @@ npm install       # once
 npm run dev       # http://localhost:3001, hot reload
 ```
 
+After a reboot, `start-dev.cmd` in this folder opens both windows in one double-click: the
+dev window running `npm run dev`, and a command window at the repository that has already
+pulled. It works out of whatever folder it sits in, so nothing in it is machine-specific.
+
 **On Windows, install with `--ignore-scripts`:**
 
 ```powershell
