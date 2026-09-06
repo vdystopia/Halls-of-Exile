@@ -154,6 +154,10 @@ if (Test-Path $indexPath) {
         Write-Step "Item art is complete ($have images)"
     }
 }
+if (-not (Test-Path (Join-Path $PSScriptRoot 'public/ascendancy.webp'))) {
+    Write-Bad 'The ascendancy emblem sheet is missing.'
+    Write-Note 'Run npm run art:fetch and deploy again; character cards show no emblem without it.'
+}
 
 # --- build and start ---------------------------------------------------------
     Write-Step 'Building and starting the container'

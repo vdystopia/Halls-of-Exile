@@ -97,6 +97,8 @@ previous image and commit if the build fails or the new container never reports 
 bad push leaves the running site untouched. The previous image is kept as
 `halls-of-exile:rollback`.
 
+`npm run art:fetch` also downloads the ascendancy emblem sheet the character cards use.
+
 Item art is copied into the image at build time, so it has to be on disk *before* the
 deploy: run `npm run art:fetch` first, then `.\update.ps1`. Fetching afterwards changes
 nothing until the next rebuild. The script counts the images against the catalogue and says

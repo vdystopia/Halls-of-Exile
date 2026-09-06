@@ -44,3 +44,6 @@ next-env.d.ts
 # local archive database
 /data
 .update.lock
+
+# fetched by npm run art:fetch, not committed
+/public/ascendancy.webp

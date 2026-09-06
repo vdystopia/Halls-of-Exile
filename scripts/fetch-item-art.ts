@@ -17,6 +17,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import index from "../src/lib/item-art-index.json";
+import ascendancy from "../src/lib/ascendancy-icons.json";
 
 // The literal type of a 2000-entry JSON file is too much for the compiler to
 // carry around, and only the art path is needed here.
@@ -66,7 +67,36 @@ async function download(artPath: string): Promise<"saved" | "skipped" | "failed"
   return "failed";
 }
 
+/**
+ * Every ascendancy emblem is one sprite sheet from the passive tree, cropped in
+ * CSS, so it is a single file rather than nineteen. Its URL carries a
+ * cache-buster, which the local name drops.
+ */
+async function fetchAscendancySheet(): Promise<void> {
+  const target = path.join(process.cwd(), "public", "ascendancy.webp");
+  if (fs.existsSync(target) && !force) {
+    process.stdout.write("ascendancy sheet already present\n");
+    return;
+  }
+  if (dryRun) {
+    process.stdout.write(`would fetch ${ascendancy.sheet}\n`);
+    return;
+  }
+  try {
+    const response = await fetch(ascendancy.sheet);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    fs.writeFileSync(target, Buffer.from(await response.arrayBuffer()));
+    process.stdout.write("saved the ascendancy sheet\n");
+  } catch (error) {
+    process.stdout.write(
+      `could not fetch the ascendancy sheet (${error instanceof Error ? error.message : String(error)}); ` +
+        "character cards will show no emblem\n",
+    );
+  }
+}
+
 async function main() {
+  await fetchAscendancySheet();
   const entries = [...Object.values(catalogue.bases), ...Object.values(catalogue.uniques)];
   const paths = [...new Set(entries.map((entry) => entry.art))];
   process.stdout.write(

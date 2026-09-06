@@ -99,6 +99,14 @@ so a character page never depends on an external link staying alive.
   `PARSER_VERSION` in `src/lib/pob.ts`: `migrate()` re-parses every character whose
   `parser_version` is lower and that still has its share code. A character with no code, or
   one whose code no longer parses, keeps the build it has.
+- **Ascendancy emblems are one sprite sheet, cropped in CSS.** Grinding Gear Games' own
+  passive tree export (`grindinggear/skilltree-export`) ships all nineteen in a single image
+  with per-class coordinates, which `npm run ascendancy:index` reduces to
+  `src/lib/ascendancy-icons.json`; `npm run art:fetch` downloads the sheet itself to
+  `public/ascendancy.webp`, which is not committed. Icons are indexed under both the id and
+  the display name, because the two differ where a class was renamed (id `Raider`, name
+  `Warden`) and which one an export carries depends on its Path of Building version. A
+  character with no ascendancy renders no emblem rather than a placeholder.
 - **A gem's colour comes from an index, and no gem leads its group.** Path of Building's
   export does not carry a gem's attribute, so `src/lib/gem-colors.json` (from RePoE via
   `npm run gems:index`) maps metadata id and name to r/g/b/w; supports are indexed with and
