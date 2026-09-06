@@ -64,6 +64,8 @@ export type ParsedItem = {
 
 export type Gem = {
   name: string;
+  /** Path of Building's metadata id, e.g. Metadata/Items/Gems/SkillGemFireball. */
+  gemId?: string;
   level: number | null;
   quality: number | null;
   enabled: boolean;
@@ -102,6 +104,8 @@ export type BuildData = {
   slots: Record<string, number>;
   trees: TreeSpec[];
   activeTree: number;
+  /** Item ids socketed into the active passive tree. */
+  treeJewels?: number[];
   notes?: string;
   config: { name: string; value: string }[];
 };

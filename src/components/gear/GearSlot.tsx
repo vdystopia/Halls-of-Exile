@@ -99,6 +99,13 @@ export function GearSlot({
             // optimiser would add work without adding anything.
             // eslint-disable-next-line @next/next/no-img-element
             <img
+              // The server renders this tag, so an image that 404s does so
+              // before React attaches onError and the tile keeps the browser's
+              // broken-image glyph. A ref catches the failure that already
+              // happened; onError catches the ones that happen after.
+              ref={(node) => {
+                if (node?.complete && node.naturalWidth === 0) setArtBroken(true);
+              }}
               src={art.src}
               alt=""
               draggable={false}

@@ -60,9 +60,13 @@ so a character page never depends on an external link staying alive.
   cores. `tests/db.test.ts` fails if importing the query layer creates the file.
 - **Item art is optional and resolved on the server.** `src/lib/item-art-index.json` is
   generated from RePoE by `npm run art:index`; `findItemArt` runs in `GearGrid` (a server
-  component) so the 69 KB index never reaches the browser, and `GearSlot` falls back to a
-  silhouette when an image is missing or fails to load. Do not import the index into a client
-  component. Flask art is a three-frame sheet (glass, metal frame, liquid) that `GearSlot`
+  component) so the 223 KB index never reaches the browser, and `GearSlot` falls back to a
+  silhouette when an image is missing or fails to load — via a ref as well as `onError`,
+  because the tag is server-rendered and a 404 fires before React attaches the handler. Do
+  not import the index into a client component. The index holds `bases` keyed by base type
+  and `uniques` keyed by the unique's own name: dozens of uniques share one base, so every
+  Prismatic Jewel unique drew the same picture while art was keyed on the base alone. Only a
+  unique is looked up by name — a rare's name is randomly generated and could collide. Flask art is a three-frame sheet (glass, metal frame, liquid) that `GearSlot`
   composites with stacked background layers; every flask image is such a sheet and no other
   image is, checked across all 512.
 - **An item's header region holds "Key: value" lines that are not mods** — league values like
@@ -89,6 +93,15 @@ so a character page never depends on an external link staying alive.
   `PARSER_VERSION` in `src/lib/pob.ts`: `migrate()` re-parses every character whose
   `parser_version` is lower and that still has its share code. A character with no code, or
   one whose code no longer parses, keeps the build it has.
+- **A gem's colour comes from an index, and no gem leads its group.** Path of Building's
+  export does not carry a gem's attribute, so `src/lib/gem-colors.json` (from RePoE via
+  `npm run gems:index`) maps metadata id and name to r/g/b/w; supports are indexed with and
+  without the trailing "Support", and a transfigured gem resolves through its base gem's id.
+  A socket group has no primary skill — four golems are four equal actives — so `orderGems`
+  puts every active above every support and nothing is promoted to a title.
+- **Only equipped and socketed items are gear.** A Path of Building export lists every item
+  the build has ever held; `build.slots` and `build.treeJewels` are what "in use" means, and
+  the rest are spares that must not be drawn.
 - **`BuildData` changes stay additive.** Rows written by older versions must still render;
   `mapCharacter` merges parsed JSON over `emptyBuild()` for exactly this reason.
 - **better-sqlite3 stays in `serverExternalPackages`.** It is a native module; bundling it

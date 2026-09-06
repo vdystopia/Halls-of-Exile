@@ -133,3 +133,68 @@ test("recognises the build hosts it can fetch from", () => {
   assert.equal(isPobUrl("https://poe.ninja/pob/abc"), true);
   assert.equal(isPobUrl("https://example.com/build"), false);
 });
+
+/**
+ * Path of Building keeps every item a build has ever held in one list. Only the
+ * ones in an equipment slot or socketed into the active tree are in use; the
+ * gear panel showed the spares too, under "Jewels & unequipped".
+ */
+test("records which jewels are socketed into the active tree", () => {
+  const xml = `<?xml version="1.0"?>
+<PathOfBuilding>
+  <Build level="90" className="Witch"/>
+  <Tree activeSpec="2">
+    <Spec title="Levelling" nodes="1,2"><Sockets><Socket itemId="1" nodeId="100"/></Sockets></Spec>
+    <Spec title="Current" nodes="1,2,3">
+      <Sockets><Socket itemId="2" nodeId="200"/><Socket itemId="3" nodeId="300"/></Sockets>
+    </Spec>
+  </Tree>
+  <Items activeItemSet="1">
+    <Item id="1">Rarity: RARE
+Old Jewel
+Crimson Jewel
+Implicits: 0
++10 to Strength
+    </Item>
+    <Item id="2">Rarity: UNIQUE
+Watcher's Eye
+Prismatic Jewel
+Implicits: 0
+6% increased maximum Life
+    </Item>
+    <Item id="3">Rarity: RARE
+Brood Cry
+Cobalt Jewel
+Implicits: 0
++10 to Intelligence
+    </Item>
+    <Item id="4">Rarity: RARE
+Spare Wand
+Prophecy Wand
+Implicits: 0
++10 to maximum Mana
+    </Item>
+    <ItemSet id="1"><Slot name="Weapon 1" itemId="0"/></ItemSet>
+  </Items>
+</PathOfBuilding>`;
+
+  const build = parsePob(encode(xml));
+  assert.deepEqual(build.treeJewels, [2, 3], "only the active tree's sockets count");
+  assert.equal(build.items.length, 4, "the spares are still parsed, just not in use");
+});
+
+/** The colour lookup needs the metadata id, since a name can be transfigured. */
+test("a gem keeps its metadata id", () => {
+  const xml = `<?xml version="1.0"?>
+<PathOfBuilding>
+  <Build level="90" className="Witch"/>
+  <Skills activeSkillSet="1"><SkillSet id="1">
+    <Skill enabled="true" slot="Gloves">
+      <Gem nameSpec="Frostblink of Wintry Blast" gemId="Metadata/Items/Gems/SkillGemFrostblink" skillId="FrostblinkAltX" level="20" quality="0" enabled="true"/>
+    </Skill>
+  </SkillSet></Skills>
+</PathOfBuilding>`;
+
+  const build = parsePob(encode(xml));
+  assert.equal(build.skillGroups[0].gems[0].gemId, "Metadata/Items/Gems/SkillGemFrostblink");
+});

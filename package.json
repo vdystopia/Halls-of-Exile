@@ -10,6 +10,7 @@
     "seed:demo": "tsx scripts/seed-demo.ts",
     "test": "node --import tsx --test tests/*.test.ts",
     "art:index": "tsx scripts/build-item-art-index.ts",
+    "gems:index": "tsx scripts/build-gem-index.ts",
     "art:fetch": "tsx scripts/fetch-item-art.ts"
   },
   "dependencies": {

@@ -15,6 +15,9 @@ export type ItemArt = {
   frames: number;
 };
 
+/** A unique adds nothing to its base but its own picture. */
+export type UniqueEntry = { art: string; w: number; h: number };
+
 export type BaseEntry = {
   art: string;
   w: number;
@@ -27,7 +30,8 @@ export type BaseEntry = {
 
 // JSON widens the requirement tuple to number[] on import; the generator
 // guarantees the shape.
-const BASES = index as unknown as Record<string, BaseEntry>;
+const BASES = index.bases as unknown as Record<string, BaseEntry>;
+const UNIQUES = index.uniques as Record<string, UniqueEntry>;
 
 // Longest first, so "Divine Life Flask" wins over "Life Flask" when both appear
 // in a magic item's full name.
@@ -50,9 +54,16 @@ export function findItemBase(item: { name: string; base: string }): BaseEntry | 
   return match ? BASES[match] : null;
 }
 
-/** A unique resolves to its base type's art until unique art exists. */
-export function findItemArt(item: { name: string; base: string }): ItemArt | null {
-  const entry = findItemBase(item);
+/**
+ * Uniques are keyed on their own name, because dozens of them share one base:
+ * every Prismatic Jewel unique drew the Mastery jewel's picture while art was
+ * keyed on the base type alone. Only a unique is looked up this way — a rare's
+ * name is randomly generated and could collide.
+ */
+export function findItemArt(item: { name: string; base: string; rarity?: string }): ItemArt | null {
+  const rarity = item.rarity?.toUpperCase();
+  const unique = rarity === "UNIQUE" || rarity === "RELIC" ? UNIQUES[item.name.trim()] : undefined;
+  const entry = unique ?? findItemBase(item);
   if (!entry) return null;
   return {
     src: `/items/${entry.art}.png`,
@@ -64,4 +75,8 @@ export function findItemArt(item: { name: string; base: string }): ItemArt | nul
 
 export function artIndexSize(): number {
   return KEYS_BY_LENGTH.length;
+}
+
+export function uniqueArtIndexSize(): number {
+  return Object.keys(UNIQUES).length;
 }

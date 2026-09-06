@@ -16,8 +16,12 @@ export function GearGrid({ build }: { build: BuildData }) {
   // Resolved on the server so the 69 KB art index never reaches the browser.
   const artFor = (item?: ParsedItem) => (item ? findItemArt(item) : null);
 
+  // Path of Building keeps every item a build has ever held in one list, so an
+  // item is only shown if the build actually uses it: equipped in a slot, or
+  // socketed into the passive tree. The rest are spares and are not gear.
   const placed = new Set(Object.values(build.slots).filter(Boolean));
-  const loose = build.items.filter((item) => !placed.has(item.id));
+  const socketed = (build.treeJewels ?? []).filter((id) => !placed.has(id));
+  const jewels = socketed.map((id) => byId.get(id)).filter((item): item is ParsedItem => Boolean(item));
   const abyssal = Object.keys(build.slots).filter((slot) => /Abyssal Socket/.test(slot));
 
   return (
@@ -70,11 +74,11 @@ export function GearGrid({ build }: { build: BuildData }) {
         </div>
       ) : null}
 
-      {loose.length ? (
+      {jewels.length ? (
         <div>
-          <p className="eyebrow mb-2">Jewels &amp; unequipped</p>
+          <p className="eyebrow mb-2">Tree jewels</p>
           <div className="flex flex-wrap gap-1.5">
-            {loose.map((item) => (
+            {jewels.map((item) => (
               <GearSlot
                 key={item.id}
                 item={item}

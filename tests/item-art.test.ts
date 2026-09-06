@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { artIndexSize, findItemArt } from "../src/lib/item-art";
+import { artIndexSize, findItemArt, uniqueArtIndexSize } from "../src/lib/item-art";
 
 test("the art index covers every equippable base", () => {
   assert.ok(artIndexSize() > 900, `index only has ${artIndexSize()} entries`);
@@ -14,12 +14,35 @@ test("a rare resolves through its base type", () => {
   assert.equal(art.height, 4);
 });
 
-test("a unique falls back to its base type's art", () => {
-  const art = findItemArt({ name: "Kaom's Heart", base: "Glorious Plate" });
+test("the index covers the uniques too", () => {
+  assert.ok(uniqueArtIndexSize() > 1200, `index only has ${uniqueArtIndexSize()} uniques`);
+});
+
+/**
+ * Dozens of uniques share one base — every Prismatic Jewel unique drew the
+ * Mastery jewel's picture while art was keyed on the base type alone.
+ */
+test("a unique draws its own art, not its base type's", () => {
+  const watchers = findItemArt({ name: "Watcher's Eye", base: "Prismatic Jewel", rarity: "UNIQUE" });
+  const base = findItemArt({ name: "A Jewel", base: "Prismatic Jewel", rarity: "RARE" });
+  assert.ok(watchers);
+  assert.equal(watchers.src, "/items/Art/2DItems/Jewels/ElderJewel.png");
+  assert.notEqual(watchers.src, base?.src);
+});
+
+test("a unique the index does not know still falls back to its base", () => {
+  const art = findItemArt({ name: "Not A Real Unique", base: "Glorious Plate", rarity: "UNIQUE" });
   assert.ok(art);
   assert.match(art.src, /BodyArmours/);
   assert.equal(art.width, 2);
   assert.equal(art.height, 3);
+});
+
+/** A rare's name is randomly generated and could collide with a unique's. */
+test("a rare is never matched against the unique names", () => {
+  const art = findItemArt({ name: "Watcher's Eye", base: "Glorious Plate", rarity: "RARE" });
+  assert.ok(art);
+  assert.match(art.src, /BodyArmours/);
 });
 
 test("a magic item is matched through the affixes wrapping its base", () => {

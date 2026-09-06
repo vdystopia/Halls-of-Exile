@@ -106,6 +106,9 @@ function parseGem(node: Node): Gem {
   const skillId: string = node["@_skillId"] ?? "";
   return {
     name,
+    // The metadata id is what the gem colour is looked up by; a transfigured
+    // gem carries its base gem's id, which is the same colour.
+    gemId: node["@_gemId"] || undefined,
     level: num(node["@_level"]) ?? null,
     quality: num(node["@_quality"]) ?? null,
     enabled: bool(node["@_enabled"]),
@@ -138,6 +141,20 @@ function parseSkills(root: Node, mainSocketGroup: number): { groups: SkillGroup[
   const mainGroup = groups[mainSocketGroup - 1] ?? groups.find((group) => group.enabled);
   const mainSkillGem = mainGroup?.gems.find((gem) => !gem.support && gem.enabled) ?? mainGroup?.gems[0];
   return { groups, mainSkill: mainSkillGem?.name };
+}
+
+/**
+ * The item ids of the jewels socketed into the active passive tree. Path of
+ * Building keeps every item a build has ever held in one list, so this and the
+ * equipment slots together are what "in use" means; anything else is a spare.
+ */
+function parseTreeJewels(root: Node): number[] {
+  const treeNode = root?.Tree;
+  const specs = toArray<Node>(treeNode?.Spec);
+  const active = specs[(num(treeNode?.["@_activeSpec"]) ?? 1) - 1] ?? specs[0];
+  return toArray<Node>(active?.Sockets?.Socket)
+    .map((socket) => num(socket["@_itemId"]))
+    .filter((id): id is number => Boolean(id));
 }
 
 function parseTrees(root: Node): { trees: TreeSpec[]; activeTree: number } {
@@ -211,8 +228,11 @@ function parseConfig(root: Node): { name: string; value: string }[] {
  * 1 — the first parser.
  * 2 — header keys (BasePercentile, Intangibility, Memory Strands) no longer
  *     read as mods, which also fixes the implicit boundary they shifted.
+ * 3 — jewels socketed in the passive tree are recorded, so the gear panel can
+ *     tell them from the spares Path of Building keeps in the same list, and a
+ *     gem carries its metadata id so its colour can be looked up.
  */
-export const PARSER_VERSION = 2;
+export const PARSER_VERSION = 3;
 
 /** Turn a Path of Building export into the structure the character page renders. */
 export function parsePob(code: string): BuildData {
@@ -226,6 +246,7 @@ export function parsePob(code: string): BuildData {
   const { groups, mainSkill } = parseSkills(root, mainSocketGroup);
   const { items, slots } = parseItems(root);
   const { trees, activeTree } = parseTrees(root);
+  const treeJewels = parseTreeJewels(root);
   const notesRaw = root.Notes;
   const notes = typeof notesRaw === "string" ? notesRaw : (notesRaw?.["#text"] ?? "");
 
@@ -247,6 +268,7 @@ export function parsePob(code: string): BuildData {
     slots,
     trees,
     activeTree,
+    treeJewels,
     notes: typeof notes === "string" && notes.trim() ? notes.trim() : undefined,
     config: parseConfig(root),
   };
@@ -261,6 +283,7 @@ export function emptyBuild(): BuildData {
     slots: {},
     trees: [],
     activeTree: 0,
+    treeJewels: [],
     config: [],
   };
 }

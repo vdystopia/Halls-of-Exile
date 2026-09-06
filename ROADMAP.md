@@ -15,10 +15,6 @@ mattering.
 
 ## Next
 
-- [ ] Unique-specific item art. Bases are done; a unique currently shows its base type's
-      artwork. RePoE has no unique art, so this needs another source — the wiki's cargo API
-      exposes an inventory icon per unique, which the fetch script could take as a second pass.
-
 - [ ] Replace 3.29's tentative end date once Grinding Gear Games announces it, and clear
       the `endDateEstimated` flag.
 - [ ] Character sorting and filtering on a league page once leagues hold more than a

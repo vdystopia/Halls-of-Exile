@@ -18,6 +18,13 @@ import fs from "node:fs";
 import path from "node:path";
 import index from "../src/lib/item-art-index.json";
 
+// The literal type of a 2000-entry JSON file is too much for the compiler to
+// carry around, and only the art path is needed here.
+const catalogue = index as unknown as {
+  bases: Record<string, { art: string }>;
+  uniques: Record<string, { art: string }>;
+};
+
 const DEFAULT_BASE_URL = "https://web.poecdn.com/image";
 const OUTPUT_ROOT = path.join(process.cwd(), "public", "items");
 const CONCURRENCY = 8;
@@ -60,7 +67,7 @@ async function download(artPath: string): Promise<"saved" | "skipped" | "failed"
 }
 
 async function main() {
-  const entries = Object.values(index) as { art: string }[];
+  const entries = [...Object.values(catalogue.bases), ...Object.values(catalogue.uniques)];
   const paths = [...new Set(entries.map((entry) => entry.art))];
   process.stdout.write(
     `${dryRun ? "would fetch" : "fetching"} ${paths.length} item images from ${baseUrl}\n`,

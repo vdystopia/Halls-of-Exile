@@ -9,12 +9,20 @@
  * facts are all the paper doll needs, so this writes them to a small JSON file
  * that ships with the code; the images themselves are fetched separately by
  * scripts/fetch-item-art.ts.
+ *
+ * Uniques come from the same dump and are indexed by name, because dozens of
+ * uniques share one base — every Prismatic Jewel unique drew the same picture
+ * while art was keyed on the base type alone. Only their art and footprint are
+ * taken: a unique's requirements and block still come from its base type, which
+ * uniques.json does not name.
  */
 import fs from "node:fs";
 import path from "node:path";
 
-const SOURCE =
+const BASE_SOURCE =
   "https://raw.githubusercontent.com/lvlvllvlvllvlvl/RePoE/master/RePoE/data/base_items.json";
+const UNIQUE_SOURCE =
+  "https://raw.githubusercontent.com/lvlvllvlvllvlvl/RePoE/master/RePoE/data/uniques.json";
 const OUTPUT = path.join(process.cwd(), "src", "lib", "item-art-index.json");
 
 /** Only things that can sit in an equipment slot are worth indexing. */
@@ -50,15 +58,34 @@ export type BaseEntry = {
   req: [number, number, number, number];
 };
 
-export type ArtIndex = Record<string, BaseEntry>;
+/** A unique adds nothing to its base but its own picture. */
+export type UniqueEntry = { art: string; w: number; h: number };
+
+export type ArtIndex = {
+  bases: Record<string, BaseEntry>;
+  uniques: Record<string, UniqueEntry>;
+};
+
+type UniqueItem = {
+  name?: string;
+  item_class?: string;
+  inventory_width?: number;
+  inventory_height?: number;
+  is_alternate_art?: boolean;
+  visual_identity?: { dds_file?: string };
+};
+
+async function fetchJson<T>(source: string): Promise<T> {
+  process.stdout.write(`fetching ${source}\n`);
+  const response = await fetch(source);
+  if (!response.ok) throw new Error(`RePoE returned HTTP ${response.status}`);
+  return (await response.json()) as T;
+}
 
 async function main() {
-  process.stdout.write(`fetching ${SOURCE}\n`);
-  const response = await fetch(SOURCE);
-  if (!response.ok) throw new Error(`RePoE returned HTTP ${response.status}`);
-  const data = (await response.json()) as Record<string, BaseItem>;
+  const data = await fetchJson<Record<string, BaseItem>>(BASE_SOURCE);
 
-  const index: ArtIndex = {};
+  const index: Record<string, BaseEntry> = {};
   let skipped = 0;
   for (const item of Object.values(data)) {
     const name = item.name?.trim();
@@ -86,12 +113,31 @@ async function main() {
     index[name] = entry;
   }
 
-  const sorted: ArtIndex = {};
-  for (const key of Object.keys(index).sort()) sorted[key] = index[key];
+  const uniqueData = await fetchJson<Record<string, UniqueItem>>(UNIQUE_SOURCE);
+  const uniques: Record<string, UniqueEntry> = {};
+  for (const item of Object.values(uniqueData)) {
+    const name = item.name?.trim();
+    const dds = item.visual_identity?.dds_file;
+    // Alternate art is a cosmetic variant of an item already in the index, and
+    // it is not what a Path of Building export names.
+    if (!name || !dds || item.is_alternate_art || !dds.endsWith(".dds")) continue;
+    if (uniques[name]) continue;
+    uniques[name] = {
+      art: dds.slice(0, -4),
+      w: item.inventory_width ?? 1,
+      h: item.inventory_height ?? 1,
+    };
+  }
+
+  const sorted: ArtIndex = { bases: {}, uniques: {} };
+  for (const key of Object.keys(index).sort()) sorted.bases[key] = index[key];
+  for (const key of Object.keys(uniques).sort()) sorted.uniques[key] = uniques[key];
 
   fs.writeFileSync(OUTPUT, `${JSON.stringify(sorted, null, 0)}\n`);
   const size = (fs.statSync(OUTPUT).size / 1024).toFixed(0);
-  process.stdout.write(`wrote ${Object.keys(sorted).length} base items to ${OUTPUT} (${size} KB)\n`);
+  process.stdout.write(
+    `wrote ${Object.keys(sorted.bases).length} base items and ${Object.keys(sorted.uniques).length} uniques to ${OUTPUT} (${size} KB)\n`,
+  );
   if (skipped) process.stdout.write(`skipped ${skipped} entries with an unexpected art path\n`);
 }
 
