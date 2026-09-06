@@ -9,10 +9,10 @@
  * scripts/build-item-art-index.ts. A base item's art path on the game's image
  * CDN is the same path RePoE records, so no scraping or guessing is involved.
  *
- * The images are deliberately not committed: they are tens of megabytes of
- * Grinding Gear Games' artwork, and this rebuilds them in a couple of minutes.
- * The site renders placeholder silhouettes for anything missing, so running
- * this is optional.
+ * The site renders placeholder silhouettes for anything missing, so running this
+ * is optional — but public/ is copied into the Docker image, so whatever is on
+ * disk when the image is built is what the container serves. Fetch before
+ * deploying, never after.
  */
 import fs from "node:fs";
 import path from "node:path";

@@ -17,7 +17,10 @@ npm run seed:demo    # demo players; -- --reset wipes users/characters first
 
 Deploy is `.\update.ps1` on the owner's PC, never a bare `docker compose up -d --build`:
 it backs up, pulls, rebuilds, health-checks, rolls back on failure, and holds a lock so two
-runs cannot race.
+runs cannot race. **Item art is baked into the image** (`COPY /app/public`), so `npm run
+art:fetch` has to run *before* the deploy, not after — fetching afterwards leaves the
+container serving the art it was built with. The script counts the images against the
+catalogue and warns when they are behind.
 
 ## Shape of the code
 

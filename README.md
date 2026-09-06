@@ -97,6 +97,11 @@ previous image and commit if the build fails or the new container never reports 
 bad push leaves the running site untouched. The previous image is kept as
 `halls-of-exile:rollback`.
 
+Item art is copied into the image at build time, so it has to be on disk *before* the
+deploy: run `npm run art:fetch` first, then `.\update.ps1`. Fetching afterwards changes
+nothing until the next rebuild. The script counts the images against the catalogue and says
+so if they are behind.
+
 Only one update runs at a time: a second one started while the first is still going exits
 immediately rather than racing it on the git index and the compose project. The lock is a held
 file handle, not a PID file, so a run killed part-way leaves nothing stale to clear.

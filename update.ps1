@@ -136,7 +136,26 @@ try {
         Write-Note 'Already up to date. Rebuilding anyway to pick up any local changes.'
     }
 
-    # --- build and start ---------------------------------------------------------
+    # --- art ---------------------------------------------------------------------
+# public/ is copied into the image, so the art on disk when the image is built
+# is the art the container serves. Fetching it afterwards changes nothing until
+# the next rebuild, which is exactly the trap this check exists to catch.
+$indexPath = Join-Path $PSScriptRoot 'src/lib/item-art-index.json'
+$artRoot = Join-Path $PSScriptRoot 'public/items'
+if (Test-Path $indexPath) {
+    $index = Get-Content $indexPath -Raw | ConvertFrom-Json
+    $paths = @($index.bases.PSObject.Properties.Value.art) + @($index.uniques.PSObject.Properties.Value.art)
+    $wanted = ($paths | Sort-Object -Unique).Count
+    $have = @(Get-ChildItem -Path $artRoot -Filter *.png -Recurse -ErrorAction SilentlyContinue).Count
+    if ($have -lt $wanted) {
+        Write-Bad "Item art is $($wanted - $have) images short of the catalogue ($have of $wanted)."
+        Write-Note 'Run npm run art:fetch and deploy again; the images are baked into the image at build time.'
+    } else {
+        Write-Step "Item art is complete ($have images)"
+    }
+}
+
+# --- build and start ---------------------------------------------------------
     Write-Step 'Building and starting the container'
     docker compose up -d --build
     if ($LASTEXITCODE -ne 0) {
