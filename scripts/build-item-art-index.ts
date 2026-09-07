@@ -26,13 +26,13 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import overrides from "../src/lib/art-overrides.json";
+import overrides from "../src/lib/games/poe1/art-overrides.json";
 
 const BASE_SOURCE =
   "https://raw.githubusercontent.com/lvlvllvlvllvlvl/RePoE/master/RePoE/data/base_items.json";
 const UNIQUE_SOURCE =
   "https://raw.githubusercontent.com/lvlvllvlvllvlvl/RePoE/master/RePoE/data/uniques.json";
-const OUTPUT = path.join(process.cwd(), "src", "lib", "item-art-index.json");
+const OUTPUT = path.join(process.cwd(), "src", "lib", "games", "poe1", "item-art-index.json");
 
 /** Only things that can sit in an equipment slot are worth indexing. */
 const EQUIPPABLE_CLASSES = new Set([

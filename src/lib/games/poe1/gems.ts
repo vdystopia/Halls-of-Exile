@@ -1,5 +1,5 @@
 import colors from "./gem-colors.json";
-import type { Gem } from "./types";
+import type { Gem } from "../../types";
 
 /**
  * A gem's colour is its attribute: red strength, green dexterity, blue

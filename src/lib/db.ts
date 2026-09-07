@@ -2,7 +2,7 @@ import Database from "better-sqlite3";
 import fs from "node:fs";
 import path from "node:path";
 import { LEAGUE_SEED } from "./leagues";
-import { PARSER_VERSION, parsePob } from "./pob";
+import { PARSER_VERSION, parsePob } from "./games/poe1/pob";
 
 const DEFAULT_PATH = path.join(process.cwd(), "data", "archive.db");
 

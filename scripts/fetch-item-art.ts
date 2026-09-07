@@ -5,7 +5,7 @@
  *   npm run art:fetch -- --force   # re-download everything
  *   npm run art:fetch -- --dry-run # list what would be fetched
  *
- * Paths come from src/lib/item-art-index.json, which is generated from RePoE by
+ * Paths come from src/lib/games/poe1/item-art-index.json, which is generated from RePoE by
  * scripts/build-item-art-index.ts. A base item's art path on the game's image
  * CDN is the same path RePoE records, so no scraping or guessing is involved.
  *
@@ -16,8 +16,8 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import index from "../src/lib/item-art-index.json";
-import ascendancy from "../src/lib/ascendancy-icons.json";
+import index from "../src/lib/games/poe1/item-art-index.json";
+import ascendancy from "../src/lib/games/poe1/ascendancy-icons.json";
 
 // The literal type of a 2000-entry JSON file is too much for the compiler to
 // carry around, and only the art path is needed here.

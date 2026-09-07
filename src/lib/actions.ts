@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "./db";
-import { emptyBuild, fetchPobCode, isPobUrl, parsePob, PARSER_VERSION, PobError } from "./pob";
+import { emptyBuild, fetchPobCode, isPobUrl, parsePob, PARSER_VERSION, PobError } from "./games/poe1/pob";
 import { parsePlayed } from "./format";
 import { getLeagueByPatch, getUser } from "./queries";
 import type { BuildData } from "./types";

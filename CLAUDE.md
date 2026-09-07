@@ -30,9 +30,9 @@ src/app/api/health/route.ts   health probe (Docker healthcheck + CI + update.ps1
 src/components/               UI; forms are client components, everything else is server
 src/lib/db.ts                 connection, schema, migrations, league catalogue sync
 src/lib/leagues.ts            the league catalogue itself
-src/lib/pob.ts                Path of Building code decode + XML parse
-src/lib/items.ts              PoB item-text parser, paper-doll layout
-src/lib/stats.ts              which stats are displayed, ordered, formatted
+src/lib/games/index.ts        the game registry; GameModule is in games/types.ts
+src/lib/games/poe1/           everything Path of Exile 1 specific: pob, items, stats,
+                              tooltip, item art, gem colours, ascendancy emblems
 src/lib/queries.ts            reads
 src/lib/actions.ts            writes — server actions only
 tests/                        node:test files
@@ -61,9 +61,18 @@ so a character page never depends on an external link staying alive.
   connects on first use. `next build` imports every route module across one worker per core;
   connecting eagerly raced on the WAL lock and failed the build on machines with enough
   cores. `tests/db.test.ts` fails if importing the query layer creates the file.
-- **Item art is optional and resolved on the server.** `src/lib/item-art-index.json` is
-  generated from RePoE by `npm run art:index`; `findItemArt` runs in `GearGrid` (a server
-  component) so the 223 KB index never reaches the browser, and `GearSlot` falls back to a
+- **Every game's own code lives in `src/lib/games/<game>/`, behind `GameModule`.** The registry
+  in `src/lib/games/index.ts` hands a page or component the module for a game; nothing outside
+  that folder branches on which game it is. Path of Exile and Path of Exile 2 share a vocabulary
+  and almost no mechanics, and the subtlest logic here — the implicit boundary, a shield's block,
+  attribute scaling — is exactly where one game's rules would silently corrupt the other's
+  characters. `PARSER_VERSION` is per game for the same reason.
+- **Item art is optional and resolved on the server.** `src/lib/games/poe1/item-art-index.json` is
+  generated from RePoE by `npm run art:index`; `findItemArt` **and `buildTooltip`** run in
+  `GearGrid` (a server component) so the 223 KB index never reaches the browser — `buildTooltip`
+  reads the catalogue for block and requirements, and calling it from the client component shipped
+  the whole thing to the browser for two weeks. `ItemTooltip` takes finished sections as a prop and
+  `tests/client-bundle.test.ts` walks the client import graph to keep it that way. `GearSlot` falls back to a
   silhouette when an image is missing or fails to load — via a ref as well as `onError`,
   because the tag is server-rendered and a 404 fires before React attaches the handler. Do
   not import the index into a client component. The index holds `bases` keyed by base type
@@ -71,7 +80,7 @@ so a character page never depends on an external link staying alive.
   Prismatic Jewel unique drew the same picture while art was keyed on the base alone. Only a
   unique is looked up by name — a rare's name is randomly generated and could collide. A few
   of RePoE's art paths are not what the CDN serves (Ancient Skull's 404s), so
-  `src/lib/art-overrides.json` corrects them by name and the generator applies it last;
+  `src/lib/games/poe1/art-overrides.json` corrects them by name and the generator applies it last;
   editing the generated index by hand does not survive the next `npm run art:index`. Flask art is a three-frame sheet (glass, metal frame, liquid) that `GearSlot`
   composites with stacked background layers; every flask image is such a sheet and no other
   image is, checked across all 512.
@@ -102,13 +111,13 @@ so a character page never depends on an external link staying alive.
 - **Ascendancy emblems are one sprite sheet, cropped in CSS.** Grinding Gear Games' own
   passive tree export (`grindinggear/skilltree-export`) ships all nineteen in a single image
   with per-class coordinates, which `npm run ascendancy:index` reduces to
-  `src/lib/ascendancy-icons.json`; `npm run art:fetch` downloads the sheet itself to
+  `src/lib/games/poe1/ascendancy-icons.json`; `npm run art:fetch` downloads the sheet itself to
   `public/ascendancy.webp`, which is not committed. Icons are indexed under both the id and
   the display name, because the two differ where a class was renamed (id `Raider`, name
   `Warden`) and which one an export carries depends on its Path of Building version. A
   character with no ascendancy renders no emblem rather than a placeholder.
 - **A gem's colour comes from an index, and no gem leads its group.** Path of Building's
-  export does not carry a gem's attribute, so `src/lib/gem-colors.json` (from RePoE via
+  export does not carry a gem's attribute, so `src/lib/games/poe1/gem-colors.json` (from RePoE via
   `npm run gems:index`) maps metadata id and name to r/g/b/w; supports are indexed with and
   without the trailing "Support", and a transfigured gem resolves through its base gem's id.
   A socket group has no primary skill — four golems are four equal actives — so `orderGems`

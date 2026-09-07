@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { emptyBuild } from "./pob";
+import { emptyBuild } from "./games/poe1/pob";
 import type { BuildData, Character, League, LeagueWithProgress, User } from "./types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

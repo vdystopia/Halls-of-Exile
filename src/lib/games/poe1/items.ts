@@ -1,4 +1,4 @@
-import type { ParsedItem, SocketGroupColor } from "./types";
+import type { ParsedItem, SocketGroupColor } from "../../types";
 
 const INFLUENCE_LINES = new Set([
   "Shaper Item",

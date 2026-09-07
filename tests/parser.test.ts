@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import zlib from "node:zlib";
-import { parseItem } from "../src/lib/items";
-import { decodePobCode, isPobUrl, parsePob, PobError } from "../src/lib/pob";
+import { parseItem } from "../src/lib/games/poe1/items";
+import { decodePobCode, isPobUrl, parsePob, PobError } from "../src/lib/games/poe1/pob";
 
 const encode = (xml: string) =>
   zlib.deflateSync(Buffer.from(xml, "utf8")).toString("base64").replace(/\+/g, "-").replace(/\//g, "_");

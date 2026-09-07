@@ -1,5 +1,5 @@
 import { findItemBase } from "./item-art";
-import type { ParsedItem } from "./types";
+import type { ParsedItem } from "../../types";
 
 /**
  * One standard layout for every item tooltip, so a wand and a shield read the

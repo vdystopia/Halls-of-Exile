@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { artIndexSize, findItemArt, uniqueArtIndexSize } from "../src/lib/item-art";
+import { artIndexSize, findItemArt, uniqueArtIndexSize } from "../src/lib/games/poe1/item-art";
 
 test("the art index covers every equippable base", () => {
   assert.ok(artIndexSize() > 900, `index only has ${artIndexSize()} entries`);
@@ -87,8 +87,8 @@ test("flask art is flagged as a three-layer sheet, other art is not", () => {
  * a correction that never made it into the index.
  */
 test("every art override names a real item and is applied", async () => {
-  const overrides = (await import("../src/lib/art-overrides.json")).default as Record<string, string>;
-  const index = (await import("../src/lib/item-art-index.json")).default as unknown as {
+  const overrides = (await import("../src/lib/games/poe1/art-overrides.json")).default as Record<string, string>;
+  const index = (await import("../src/lib/games/poe1/item-art-index.json")).default as unknown as {
     bases: Record<string, { art: string }>;
     uniques: Record<string, { art: string }>;
   };

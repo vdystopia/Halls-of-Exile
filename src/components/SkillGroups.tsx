@@ -1,4 +1,4 @@
-import { GEM_COLOR_CLASS, gemColor, orderGems } from "@/lib/gems";
+import { GEM_COLOR_CLASS, gemColor, orderGems } from "@/lib/games/poe1/gems";
 import type { Gem, SkillGroup } from "@/lib/types";
 
 function gemLine(level: number | null, quality: number | null) {

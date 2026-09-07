@@ -1,7 +1,7 @@
 import zlib from "node:zlib";
 import { XMLParser } from "fast-xml-parser";
 import { parseItem } from "./items";
-import type { BuildData, Gem, ParsedItem, SkillGroup, TreeSpec } from "./types";
+import type { BuildData, Gem, ParsedItem, SkillGroup, TreeSpec } from "../../types";
 
 const parser = new XMLParser({
   ignoreAttributes: false,

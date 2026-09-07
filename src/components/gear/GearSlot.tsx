@@ -2,8 +2,9 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { rarityClass } from "@/lib/items";
-import type { ItemArt } from "@/lib/item-art";
+import { rarityClass } from "@/lib/games/poe1/items";
+import type { ItemArt } from "@/lib/games/poe1/item-art";
+import type { TooltipSection } from "@/lib/games/poe1/tooltip";
 import type { ParsedItem } from "@/lib/types";
 import { ItemTooltip } from "./ItemTooltip";
 import { SlotIcon, type SlotShape } from "./SlotIcon";
@@ -19,12 +20,15 @@ const RARITY_BORDER: Record<string, string> = {
 export function GearSlot({
   item,
   art,
+  tooltip,
   shape,
   label,
   style,
 }: {
   item?: ParsedItem;
   art?: ItemArt | null;
+  /** Built on the server: see the note in ItemTooltip. */
+  tooltip?: TooltipSection[];
   shape: SlotShape;
   label: string;
   style?: React.CSSProperties;
@@ -127,14 +131,14 @@ export function GearSlot({
         ) : null}
       </div>
 
-      {open && item
+      {open && item && tooltip
         ? createPortal(
             <div
               ref={tip}
               className="pointer-events-none fixed z-[120]"
               style={{ left: coords.left, top: coords.top, opacity: placed ? 1 : 0 }}
             >
-              <ItemTooltip item={item} />
+              <ItemTooltip item={item} sections={tooltip} />
             </div>,
             document.body,
           )

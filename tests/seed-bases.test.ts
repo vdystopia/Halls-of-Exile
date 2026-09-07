@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
-import { findItemArt } from "../src/lib/item-art";
+import { findItemArt } from "../src/lib/games/poe1/item-art";
 
 /**
  * The demo archive is the fixture every screenshot and browser pass is judged

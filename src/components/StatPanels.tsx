@@ -7,7 +7,7 @@ import {
   resolvePanels,
   type StatPanel,
   type StatTone,
-} from "@/lib/stats";
+} from "@/lib/games/poe1/stats";
 
 const TONE_CLASS: Record<StatTone, string> = {
   life: "text-life",

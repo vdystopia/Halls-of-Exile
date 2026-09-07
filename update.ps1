@@ -140,7 +140,7 @@ try {
 # public/ is copied into the image, so the art on disk when the image is built
 # is the art the container serves. Fetching it afterwards changes nothing until
 # the next rebuild, which is exactly the trap this check exists to catch.
-$indexPath = Join-Path $PSScriptRoot 'src/lib/item-art-index.json'
+$indexPath = Join-Path $PSScriptRoot 'src/lib/games/poe1/item-art-index.json'
 $artRoot = Join-Path $PSScriptRoot 'public/items'
 if (Test-Path $indexPath) {
     $index = Get-Content $indexPath -Raw | ConvertFrom-Json

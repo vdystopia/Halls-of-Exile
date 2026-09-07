@@ -16,7 +16,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const SOURCE = "https://raw.githubusercontent.com/lvlvllvlvllvlvl/RePoE/master/RePoE/data/gems.json";
-const OUTPUT = path.join(process.cwd(), "src", "lib", "gem-colors.json");
+const OUTPUT = path.join(process.cwd(), "src", "lib", "games", "poe1", "gem-colors.json");
 
 type Gem = {
   color?: string;

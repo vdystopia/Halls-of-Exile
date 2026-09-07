@@ -1,5 +1,6 @@
-import { findItemArt } from "@/lib/item-art";
-import { FLASK_SLOTS, PAPER_DOLL } from "@/lib/items";
+import { findItemArt } from "@/lib/games/poe1/item-art";
+import { buildTooltip } from "@/lib/games/poe1/tooltip";
+import { FLASK_SLOTS, PAPER_DOLL } from "@/lib/games/poe1/items";
 import type { BuildData, ParsedItem } from "@/lib/types";
 import { GearSlot } from "./gear/GearSlot";
 
@@ -13,8 +14,10 @@ export function GearGrid({ build }: { build: BuildData }) {
     const id = build.slots[slot];
     return id ? byId.get(id) : undefined;
   };
-  // Resolved on the server so the 69 KB art index never reaches the browser.
+  // Both resolved on the server, so neither the art catalogue nor the block and
+  // requirement arithmetic that reads it reaches the browser.
   const artFor = (item?: ParsedItem) => (item ? findItemArt(item) : null);
+  const tooltipFor = (item?: ParsedItem) => (item ? buildTooltip(item) : undefined);
 
   // Path of Building keeps every item a build has ever held in one list, so an
   // item is only shown if the build actually uses it: equipped in a slot, or
@@ -39,6 +42,7 @@ export function GearGrid({ build }: { build: BuildData }) {
             key={cell.slot}
             item={at(cell.slot)}
             art={artFor(at(cell.slot))}
+            tooltip={tooltipFor(at(cell.slot))}
             shape={cell.shape}
             label={cell.label}
             style={{ gridColumn: cell.column, gridRow: cell.row }}
@@ -49,6 +53,7 @@ export function GearGrid({ build }: { build: BuildData }) {
             key={slot}
             item={at(slot)}
             art={artFor(at(slot))}
+            tooltip={tooltipFor(at(slot))}
             shape="flask"
             label={slot}
             style={{ gridColumn: String(index + 2), gridRow: "7 / span 2" }}
@@ -65,6 +70,7 @@ export function GearGrid({ build }: { build: BuildData }) {
                 key={slot}
                 item={at(slot)}
                 art={artFor(at(slot))}
+                tooltip={tooltipFor(at(slot))}
                 shape="jewel"
                 label={slot}
                 style={{ width: CELL, height: CELL }}
@@ -83,6 +89,7 @@ export function GearGrid({ build }: { build: BuildData }) {
                 key={item.id}
                 item={item}
                 art={artFor(item)}
+                tooltip={tooltipFor(item)}
                 shape="jewel"
                 label={item.name}
                 style={{ width: CELL, height: CELL }}

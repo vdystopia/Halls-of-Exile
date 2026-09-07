@@ -1,5 +1,5 @@
-import { SOCKET_COLOR_CLASS } from "@/lib/items";
-import { buildTooltip, type SectionKind, type TooltipLine } from "@/lib/tooltip";
+import { SOCKET_COLOR_CLASS } from "@/lib/games/poe1/items";
+import type { SectionKind, TooltipLine, TooltipSection } from "@/lib/games/poe1/tooltip";
 import type { ParsedItem } from "@/lib/types";
 
 const RARITY_COLOUR: Record<string, string> = {
@@ -92,9 +92,14 @@ function Sockets({ groups }: { groups: ParsedItem["sockets"] }) {
  * read the same way. See src/lib/tooltip.ts for the order and for what is
  * deliberately never shown.
  */
-export function ItemTooltip({ item }: { item: ParsedItem }) {
+/**
+ * Renders sections the server already built. `buildTooltip` reads the item art
+ * catalogue to derive a shield's block and an item's requirements, so calling it
+ * here would ship all 223 KB of that catalogue to the browser — this component
+ * sits inside a client component, and everything it imports goes with it.
+ */
+export function ItemTooltip({ item, sections }: { item: ParsedItem; sections: TooltipSection[] }) {
   const colour = rarityColour(item.rarity);
-  const sections = buildTooltip(item);
 
   return (
     <div

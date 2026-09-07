@@ -1,4 +1,4 @@
-import { ascendancyIcon } from "@/lib/ascendancy";
+import { ascendancyIcon } from "@/lib/games/poe1/ascendancy";
 
 /**
  * The ascendancy's emblem, cropped out of the passive tree's sprite sheet by

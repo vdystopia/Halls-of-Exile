@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { gemColor, orderGems } from "../src/lib/gems";
+import { gemColor, orderGems } from "../src/lib/games/poe1/gems";
 
 const gem = (name: string, gemId?: string, support = false) => ({
   name,

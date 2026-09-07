@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { ascendancyIcon } from "../src/lib/ascendancy";
+import { ascendancyIcon } from "../src/lib/games/poe1/ascendancy";
 
 test("an ascendancy resolves to a crop of the sheet", () => {
   const icon = ascendancyIcon("Elementalist");

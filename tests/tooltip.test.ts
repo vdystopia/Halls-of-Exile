@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { parseItem } from "../src/lib/items";
+import { parseItem } from "../src/lib/games/poe1/items";
 import {
   attributeRequirementMultiplier,
   buildTooltip,
   shieldBlock,
   type SectionKind,
-} from "../src/lib/tooltip";
+} from "../src/lib/games/poe1/tooltip";
 
 const kinds = (item: Parameters<typeof buildTooltip>[0]): SectionKind[] =>
   buildTooltip(item).map((section) => section.kind);

@@ -19,7 +19,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const SOURCE = "https://raw.githubusercontent.com/grindinggear/skilltree-export/master/data.json";
-const OUTPUT = path.join(process.cwd(), "src", "lib", "ascendancy-icons.json");
+const OUTPUT = path.join(process.cwd(), "src", "lib", "games", "poe1", "ascendancy-icons.json");
 
 type Box = { x: number; y: number; w: number; h: number };
 type Sprite = { filename: string; w: number; h: number; coords: Record<string, Box> };

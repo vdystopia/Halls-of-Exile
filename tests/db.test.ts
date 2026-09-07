@@ -57,7 +57,7 @@ test("a schema change is applied to a connection that is already open", async ()
 test("a build stored by an older parser is re-parsed from its share code", async () => {
   const zlib = await import("node:zlib");
   const { db, ensureSchema } = await import("../src/lib/db");
-  const { PARSER_VERSION } = await import("../src/lib/pob");
+  const { PARSER_VERSION } = await import("../src/lib/games/poe1/pob");
 
   const xml = `<PathOfBuilding><Build level="84" className="Ranger" ascendClassName="Deadeye"/><Items><Item>Rarity: RARE
 Blood Coat
@@ -113,7 +113,7 @@ Implicits: 1
 /** A character with no share code cannot be re-parsed, and must not be lost. */
 test("a character with no share code keeps the build it has", async () => {
   const { db, ensureSchema } = await import("../src/lib/db");
-  const { PARSER_VERSION } = await import("../src/lib/pob");
+  const { PARSER_VERSION } = await import("../src/lib/games/poe1/pob");
 
   const user = db
     .prepare(`INSERT INTO users (username, first_name) VALUES ('nocode-tester', 'Test')`)

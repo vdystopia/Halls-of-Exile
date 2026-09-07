@@ -7,7 +7,7 @@ import { SkillGroups } from "@/components/SkillGroups";
 import { AllStatsTable, AttributeStrip, ResistanceBar, StatColumn } from "@/components/StatPanels";
 import { classLine, formatPlayed, leagueWindow } from "@/lib/format";
 import { getCharacter, getLeagueByPatch, getUser } from "@/lib/queries";
-import { DEFENCE_PANELS, humanizeStatKey, OFFENCE_PANELS } from "@/lib/stats";
+import { DEFENCE_PANELS, humanizeStatKey, OFFENCE_PANELS } from "@/lib/games/poe1/stats";
 
 export const dynamic = "force-dynamic";
 

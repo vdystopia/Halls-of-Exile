@@ -9,7 +9,7 @@
 import zlib from "node:zlib";
 import { db } from "../src/lib/db";
 import { parsePlayed } from "../src/lib/format";
-import { parsePob } from "../src/lib/pob";
+import { parsePob } from "../src/lib/games/poe1/pob";
 
 type ItemSpec = { slot: string; text: string };
 type GemSpec = { name: string; level?: number; quality?: number; support?: boolean };
