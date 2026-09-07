@@ -57,8 +57,12 @@ so a character page never depends on an external link staying alive.
   every Path of Exile 2 league — there were no challenges before 0.5 and 0.5's count is not
   recorded anywhere found. Do not fill either in from memory.
 - **Path of Exile 2 leagues gap and overlap; Path of Exile 1's never did.** 0.4 ends four
-  weeks before 0.5 starts, and 0.5.5 runs beside 0.5 rather than after it, so the
+  days before 0.5 starts, and 0.5.5 runs beside 0.5 rather than after it, so the
   hand-over-without-a-gap invariant is enforced for Path of Exile 1 only.
+- **A Path of Exile 2 league and its content update have different names**, exactly as a
+  Path of Exile 1 league and its expansion do: `name` is the league (Fate of the Vaal, Rise
+  of the Abyssal, Runes of Aldur), `expansion` is the update (The Last of the Druids, The
+  Third Edict, Return of the Ancients).
 - **Every new column needs a migration.** SQLite has no `ADD COLUMN IF NOT EXISTS`, and
   live archives exist. Add the column to `SCHEMA` *and* to the `additions` list in
   `migrate()` in `src/lib/db.ts`. Verify against a copy of a populated pre-change database.

@@ -128,3 +128,25 @@ test("no Path of Exile 2 league claims a challenge count", () => {
     assert.equal(league.challengeTotal, null, `${league.patch} claims a challenge total`);
   }
 });
+
+/**
+ * A Path of Exile 2 league and the content update it shipped with have separate
+ * names, the same split Path of Exile 1 has between a league and its expansion.
+ */
+test("a Path of Exile 2 league names its update separately", () => {
+  const byPatch = Object.fromEntries(
+    LEAGUE_SEED.filter((league) => league.game === "poe2").map((league) => [league.patch, league]),
+  );
+  assert.equal(byPatch["0.4"].name, "Fate of the Vaal");
+  assert.equal(byPatch["0.4"].expansion, "The Last of the Druids");
+  assert.equal(byPatch["0.3"].name, "Rise of the Abyssal");
+  assert.equal(byPatch["0.3"].expansion, "The Third Edict");
+  assert.equal(byPatch["0.5"].name, "Runes of Aldur");
+  assert.equal(byPatch["0.5"].expansion, "Return of the Ancients");
+});
+
+/** The only Path of Exile 2 row still without dates is the closed beta. */
+test("only the closed beta has unconfirmed dates", () => {
+  const flagged = LEAGUE_SEED.filter((league) => league.datesUncertain).map((league) => league.patch);
+  assert.deepEqual(flagged, ["beta"]);
+});

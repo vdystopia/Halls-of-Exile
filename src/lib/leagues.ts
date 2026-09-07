@@ -91,7 +91,7 @@ export const LEAGUE_SEED: LeagueSeed[] = [
   // cannot reach pathofexile.com. Anything a source contradicted, or that no
   // source gave, is flagged rather than guessed at quietly.
   //
-  // Two facts here break assumptions Path of Exile 1 made: 0.4 ends four weeks
+  // Two facts here break assumptions Path of Exile 1 made: 0.4 ends four days
   // before 0.5 begins, so leagues do not have to be contiguous, and 0.5.5 runs
   // *alongside* 0.5 rather than after it, so they do not have to be exclusive.
   {
@@ -136,12 +136,16 @@ export const LEAGUE_SEED: LeagueSeed[] = [
   {
     game: "poe2",
     patch: "0.4",
-    name: "The Last of the Druids",
+    // The league and the content update carry different names, the way an
+    // expansion does in Path of Exile 1: Fate of the Vaal was the league, The
+    // Last of the Druids the update that shipped with it.
+    name: "Fate of the Vaal",
+    expansion: "The Last of the Druids",
+    // Owner-confirmed against launch-day and league-ending patch notes, which
+    // beats the secondary source that had this ending on 1 May and left an
+    // implausible four-week gap. Four days to 0.5 is the usual changeover.
     startDate: "2025-12-12",
-    // A single source, and it leaves four weeks before 0.5 starts. Plausible —
-    // 1.0 was being prepared — but unconfirmed, so both dates are flagged.
-    endDate: "2026-05-01",
-    datesUncertain: true,
+    endDate: "2026-05-25",
     challengeTotal: null,
   },
   {
