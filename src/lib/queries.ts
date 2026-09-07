@@ -12,12 +12,14 @@ function mapUser(row: Row): User {
 function mapLeague(row: Row): League {
   return {
     id: row.id,
+    game: row.game,
     patch: row.patch,
     name: row.name,
     expansion: row.expansion,
     startDate: row.start_date,
     endDate: row.end_date,
     endDateEstimated: row.end_date_estimated,
+    datesUncertain: row.dates_uncertain,
     challengeTotal: row.challenge_total,
     isCustom: row.is_custom,
     sortOrder: row.sort_order,

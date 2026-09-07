@@ -33,6 +33,7 @@ src/lib/leagues.ts            the league catalogue itself
 src/lib/games/index.ts        the game registry; GameModule is in games/types.ts
 src/lib/games/poe1/           everything Path of Exile 1 specific: pob, items, stats,
                               tooltip, item art, gem colours, ascendancy emblems
+src/lib/games/poe2/           Path of Exile 2: classes so far, see its README
 src/lib/queries.ts            reads
 src/lib/actions.ts            writes — server actions only
 tests/                        node:test files
@@ -46,7 +47,18 @@ so a character page never depends on an external link staying alive.
 
 - **The league catalogue is code-owned.** Rows with `is_custom = 0` are re-synced from
   `LEAGUE_SEED` on every boot, so editing a built-in league in the database is pointless.
-  User-added leagues (`is_custom = 1`) are never touched by the sync.
+  User-added leagues (`is_custom = 1`) are never touched by the sync. Every seed row carries
+  its `game`, and the key is `(game, patch)`: both games ship a 1.0, so a patch number does
+  not identify a league on its own.
+- **Path of Exile 2's catalogue is sourced, and its gaps are marked.** Grinding Gear Games
+  publish no machine-readable league list, so the 0.1–0.5.5 dates came from secondary sources
+  and one of them (0.3's start) had to be settled between conflicting reports. A row whose
+  dates are unconfirmed or unknown sets `datesUncertain`, and `challengeTotal` is `null` for
+  every Path of Exile 2 league — there were no challenges before 0.5 and 0.5's count is not
+  recorded anywhere found. Do not fill either in from memory.
+- **Path of Exile 2 leagues gap and overlap; Path of Exile 1's never did.** 0.4 ends four
+  weeks before 0.5 starts, and 0.5.5 runs beside 0.5 rather than after it, so the
+  hand-over-without-a-gap invariant is enforced for Path of Exile 1 only.
 - **Every new column needs a migration.** SQLite has no `ADD COLUMN IF NOT EXISTS`, and
   live archives exist. Add the column to `SCHEMA` *and* to the `additions` list in
   `migrate()` in `src/lib/db.ts`. Verify against a copy of a populated pre-change database.

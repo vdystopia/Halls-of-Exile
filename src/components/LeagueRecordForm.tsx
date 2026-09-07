@@ -17,7 +17,7 @@ export function LeagueRecordForm({
   username: string;
   patch: string;
   challengesCompleted: number | null;
-  challengeTotal: number;
+  challengeTotal: number | null;
   notes: string | null;
 }) {
   const [state, formAction] = useActionState(saveLeagueRecordAction, INITIAL);
@@ -56,7 +56,7 @@ export function LeagueRecordForm({
               type="number"
               min={1}
               className="input"
-              defaultValue={challengeTotal}
+              defaultValue={challengeTotal ?? undefined}
             />
           </div>
         </div>

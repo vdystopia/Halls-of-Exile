@@ -274,7 +274,9 @@ export async function saveLeagueRecordAction(_prev: ActionState, formData: FormD
 
   if (completed !== null && completed < 0) return { error: "Challenges completed cannot be negative." };
   if (total !== null && total <= 0) return { error: "Challenge total must be positive." };
-  if (completed !== null && (total ?? league.challengeTotal) < completed) {
+  // A league with no recorded total cannot contradict a completed count.
+  const ceiling = total ?? league.challengeTotal;
+  if (completed !== null && ceiling !== null && ceiling < completed) {
     return { error: "Challenges completed cannot exceed the league total." };
   }
 

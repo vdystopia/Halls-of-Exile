@@ -1,3 +1,5 @@
+import type { GameId } from "./games/types";
+
 export type User = {
   id: number;
   username: string;
@@ -7,6 +9,7 @@ export type User = {
 
 export type League = {
   id: number;
+  game: GameId;
   patch: string;
   name: string;
   expansion: string | null;
@@ -14,7 +17,10 @@ export type League = {
   endDate: string | null;
   /** 1 when endDate is a projection rather than an announced date. */
   endDateEstimated: number;
-  challengeTotal: number;
+  /** 1 when the dates themselves are unconfirmed, not just the end. */
+  datesUncertain: number;
+  /** null where the league has no challenges, or the count is not known. */
+  challengeTotal: number | null;
   isCustom: number;
   sortOrder: number;
 };

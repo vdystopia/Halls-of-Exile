@@ -4,9 +4,14 @@ export function ChallengeMeter({
   size = "md",
 }: {
   completed: number | null;
-  total: number;
+  total: number | null;
   size?: "sm" | "md";
 }) {
+  // A Path of Exile 2 league before 0.5 had no challenges at all, and 0.5's
+  // count is not recorded anywhere found — either way there is no meter to draw.
+  if (total === null) {
+    return <span className="text-xs text-muted/70">no challenges</span>;
+  }
   if (completed === null) {
     return <span className="text-xs text-muted/70">challenges not recorded</span>;
   }

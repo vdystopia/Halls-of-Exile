@@ -17,15 +17,18 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS leagues (
   id              INTEGER PRIMARY KEY AUTOINCREMENT,
-  patch           TEXT NOT NULL UNIQUE,
+  game            TEXT NOT NULL DEFAULT 'poe1',
+  patch           TEXT NOT NULL,
   name            TEXT NOT NULL,
   expansion       TEXT,
   start_date      TEXT,
   end_date        TEXT,
   end_date_estimated INTEGER NOT NULL DEFAULT 0,
-  challenge_total INTEGER NOT NULL DEFAULT 40,
+  dates_uncertain INTEGER NOT NULL DEFAULT 0,
+  challenge_total INTEGER,
   is_custom       INTEGER NOT NULL DEFAULT 0,
-  sort_order      INTEGER NOT NULL DEFAULT 0
+  sort_order      INTEGER NOT NULL DEFAULT 0,
+  UNIQUE (game, patch)
 );
 
 CREATE TABLE IF NOT EXISTS league_records (
@@ -73,13 +76,70 @@ function migrate(db: Database.Database) {
     ["leagues", "end_date_estimated", "INTEGER NOT NULL DEFAULT 0"],
     ["characters", "played_minutes", "INTEGER"],
     ["characters", "parser_version", "INTEGER NOT NULL DEFAULT 0"],
+    ["leagues", "game", "TEXT NOT NULL DEFAULT 'poe1'"],
+    ["leagues", "dates_uncertain", "INTEGER NOT NULL DEFAULT 0"],
   ];
   for (const [table, column, definition] of additions) {
     const columns = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
     if (columns.some((existing) => existing.name === column)) continue;
     db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
   }
+  widenLeagueUniqueness(db);
   reparseStaleBuilds(db);
+}
+
+/**
+ * Path of Exile 2 numbers its patches from 0.1, and Path of Exile 1 already has
+ * a 1.0 in the catalogue — so a patch number stopped identifying a league the
+ * moment the second game arrived, and `UNIQUE (patch)` had to become
+ * `UNIQUE (game, patch)`. SQLite cannot alter a constraint, so the table is
+ * rebuilt: the only migration here that can lose data, which is why it runs in
+ * one transaction and copies by name rather than by column position.
+ */
+function widenLeagueUniqueness(db: Database.Database) {
+  const indexes = db.prepare(`PRAGMA index_list(leagues)`).all() as { name: string; unique: number }[];
+  const patchOnly = indexes.some((index) => {
+    if (!index.unique) return false;
+    const columns = db.prepare(`PRAGMA index_info(${JSON.stringify(index.name)})`).all() as { name: string }[];
+    return columns.length === 1 && columns[0].name === "patch";
+  });
+  if (!patchOnly) return;
+
+  // Foreign keys off while the table is dropped, or the characters and league
+  // records pointing at it would be cascaded away. Must sit outside the
+  // transaction: SQLite ignores the pragma inside one.
+  db.pragma("foreign_keys = OFF");
+  try {
+    db.transaction(() => {
+      db.exec(`
+        CREATE TABLE leagues_rebuilt (
+          id              INTEGER PRIMARY KEY,
+          game            TEXT NOT NULL DEFAULT 'poe1',
+          patch           TEXT NOT NULL,
+          name            TEXT NOT NULL,
+          expansion       TEXT,
+          start_date      TEXT,
+          end_date        TEXT,
+          end_date_estimated INTEGER NOT NULL DEFAULT 0,
+          dates_uncertain INTEGER NOT NULL DEFAULT 0,
+          challenge_total INTEGER,
+          is_custom       INTEGER NOT NULL DEFAULT 0,
+          sort_order      INTEGER NOT NULL DEFAULT 0,
+          UNIQUE (game, patch)
+        );
+        INSERT INTO leagues_rebuilt
+          (id, game, patch, name, expansion, start_date, end_date, end_date_estimated,
+           dates_uncertain, challenge_total, is_custom, sort_order)
+        SELECT id, game, patch, name, expansion, start_date, end_date, end_date_estimated,
+               dates_uncertain, challenge_total, is_custom, sort_order
+        FROM leagues;
+        DROP TABLE leagues;
+        ALTER TABLE leagues_rebuilt RENAME TO leagues;
+      `);
+    })();
+  } finally {
+    db.pragma("foreign_keys = ON");
+  }
 }
 
 /**
@@ -118,15 +178,18 @@ function reparseStaleBuilds(db: Database.Database) {
 function syncLeagueCatalogue(db: Database.Database) {
   const insert = db.prepare(`
     INSERT INTO leagues
-      (patch, name, expansion, start_date, end_date, end_date_estimated, challenge_total, is_custom, sort_order)
+      (game, patch, name, expansion, start_date, end_date, end_date_estimated, dates_uncertain,
+       challenge_total, is_custom, sort_order)
     VALUES
-      (@patch, @name, @expansion, @startDate, @endDate, @endDateEstimated, @challengeTotal, 0, @sortOrder)
-    ON CONFLICT(patch) DO UPDATE SET
+      (@game, @patch, @name, @expansion, @startDate, @endDate, @endDateEstimated, @datesUncertain,
+       @challengeTotal, 0, @sortOrder)
+    ON CONFLICT(game, patch) DO UPDATE SET
       name               = excluded.name,
       expansion          = excluded.expansion,
       start_date         = excluded.start_date,
       end_date           = excluded.end_date,
       end_date_estimated = excluded.end_date_estimated,
+      dates_uncertain    = excluded.dates_uncertain,
       challenge_total    = excluded.challenge_total,
       sort_order         = excluded.sort_order
     WHERE leagues.is_custom = 0
@@ -134,12 +197,14 @@ function syncLeagueCatalogue(db: Database.Database) {
   const run = db.transaction(() => {
     LEAGUE_SEED.forEach((league, index) => {
       insert.run({
+        game: league.game,
         patch: league.patch,
         name: league.name,
         expansion: league.expansion ?? null,
         startDate: league.startDate,
         endDate: league.endDate,
         endDateEstimated: league.endDateEstimated ? 1 : 0,
+        datesUncertain: league.datesUncertain ? 1 : 0,
         challengeTotal: league.challengeTotal,
         sortOrder: (index + 1) * 10,
       });
