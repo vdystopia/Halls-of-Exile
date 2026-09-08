@@ -36,7 +36,7 @@ export function CharacterCard({
               {character.isFavorite ? <span className="text-gold">★</span> : null}
             </div>
             <p className="mt-1 text-sm text-muted">
-              {character.level ? `Level ${character.level} ` : ""}
+              {`Level ${character.level ?? "Unknown"} · `}
               {classLine(character.className, character.ascendancy)}
             </p>
           </div>

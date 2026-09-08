@@ -9,7 +9,8 @@ const INITIAL: ActionState = {};
 
 export function CharacterAdmin({
   username,
-  patch,
+  game,
+  league,
   slug,
   name,
   level,
@@ -18,7 +19,8 @@ export function CharacterAdmin({
   isFavorite,
 }: {
   username: string;
-  patch: string;
+  game: string;
+  league: string;
   slug: string;
   name: string;
   level: number | null;
@@ -38,7 +40,8 @@ export function CharacterAdmin({
       <div className="space-y-6 p-4">
         <form action={formAction} className="space-y-4">
           <input type="hidden" name="username" value={username} />
-          <input type="hidden" name="patch" value={patch} />
+          <input type="hidden" name="game" value={game} />
+          <input type="hidden" name="league" value={league} />
           <input type="hidden" name="slug" value={slug} />
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
@@ -107,7 +110,8 @@ export function CharacterAdmin({
           }}
         >
           <input type="hidden" name="username" value={username} />
-          <input type="hidden" name="patch" value={patch} />
+          <input type="hidden" name="game" value={game} />
+          <input type="hidden" name="league" value={league} />
           <input type="hidden" name="slug" value={slug} />
           <button type="submit" className="btn border-life/40 text-life hover:border-life hover:text-life">
             Delete character

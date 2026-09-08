@@ -9,13 +9,15 @@ const INITIAL: ActionState = {};
 
 export function LeagueRecordForm({
   username,
-  patch,
+  game,
+  league,
   challengesCompleted,
   challengeTotal,
   notes,
 }: {
   username: string;
-  patch: string;
+  game: string;
+  league: string;
   challengesCompleted: number | null;
   challengeTotal: number | null;
   notes: string | null;
@@ -31,7 +33,8 @@ export function LeagueRecordForm({
       </summary>
       <form action={formAction} className="space-y-4 p-4">
         <input type="hidden" name="username" value={username} />
-        <input type="hidden" name="patch" value={patch} />
+        <input type="hidden" name="game" value={game} />
+          <input type="hidden" name="league" value={league} />
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="label" htmlFor="challengesCompleted">

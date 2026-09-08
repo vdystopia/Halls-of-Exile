@@ -95,7 +95,7 @@ export default async function PlayerPage({ params, searchParams }: Props) {
             return (
               <Link
                 key={league.id}
-                href={`/players/${user.username}/${league.slug}`}
+                href={`/players/${user.username}/${league.game}/${league.slug}`}
                 className={`flex flex-wrap items-center gap-4 px-4 py-4 transition-colors hover:bg-white/[0.03] ${
                   empty ? "opacity-55" : ""
                 }`}
@@ -131,7 +131,12 @@ export default async function PlayerPage({ params, searchParams }: Props) {
 
       <AddLeagueForm returnTo={`/players/${user.username}`} />
 
-      <PlayerAdmin username={user.username} characters={totals.characters} />
+      <PlayerAdmin
+        username={user.username}
+        firstName={user.firstName}
+        tagline={user.tagline}
+        characters={totals.characters}
+      />
     </div>
   );
 }

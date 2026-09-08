@@ -83,7 +83,7 @@ export const LEAGUE_SEED: LeagueSeed[] = [
   { game: "poe1", slug: "3.23", patch: "3.23", name: "Affliction", startDate: "2023-12-08", endDate: "2024-03-26", challengeTotal: 40 },
   { game: "poe1", slug: "3.24", patch: "3.24", name: "Necropolis", startDate: "2024-03-29", endDate: "2024-07-23", challengeTotal: 40 },
   { game: "poe1", slug: "3.25", patch: "3.25", name: "Settlers of Kalguur", startDate: "2024-07-26", endDate: "2025-06-09", challengeTotal: 40 },
-  { game: "poe1", slug: "3.26", patch: "3.26", name: "Mercenaries", expansion: "Secrets of the Atlas", startDate: "2025-06-13", endDate: "2025-10-27", challengeTotal: 40 },
+  { game: "poe1", slug: "3.26", patch: "3.26", name: "Mercenaries of Trarthus", expansion: "Secrets of the Atlas", startDate: "2025-06-13", endDate: "2025-10-27", challengeTotal: 40 },
   { game: "poe1", slug: "3.27", patch: "3.27", name: "Keepers of the Flame", startDate: "2025-10-31", endDate: "2026-03-05", challengeTotal: 40 },
   { game: "poe1", slug: "3.28", patch: "3.28", name: "Mirage", startDate: "2026-03-06", endDate: "2026-07-20", challengeTotal: 40 },
   {
@@ -225,7 +225,7 @@ export const LEAGUE_SEED: LeagueSeed[] = [
     // The sheet records this private league's window as unverified.
     startDate: null, endDate: null, datesUncertain: true, challengeTotal: null },
   { game: "poe1", slug: "merciless-gauntlet", patch: "3.26", name: "Merciless Gauntlet", kind: "event",
-    parent: "Mercenaries", startDate: "2025-07-31", endDate: "2025-08-10", challengeTotal: null },
+    parent: "Mercenaries of Trarthus", startDate: "2025-07-31", endDate: "2025-08-10", challengeTotal: null },
   { game: "poe1", slug: "legacy-of-phrecia-2", patch: "3.27", name: "Legacy of Phrecia 2.0", kind: "event",
     parent: "Keepers of the Flame", startDate: "2026-01-29", endDate: "2026-02-19", challengeTotal: null },
   { game: "poe1", slug: "rapture-gauntlet", patch: "3.28", name: "Rapture Gauntlet", kind: "event",

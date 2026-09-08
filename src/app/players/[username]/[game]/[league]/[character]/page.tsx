@@ -6,27 +6,27 @@ import { GearGrid } from "@/components/GearGrid";
 import { SkillGroups } from "@/components/SkillGroups";
 import { AllStatsTable, AttributeStrip, ResistanceBar, StatColumn } from "@/components/StatPanels";
 import { classLine, formatPlayed, leagueTitle, leagueWindow } from "@/lib/format";
-import { getCharacter, getLeagueByPatch, getUser } from "@/lib/queries";
+import { getCharacter, getLeague, getUser } from "@/lib/queries";
 import { DEFENCE_PANELS, humanizeStatKey, OFFENCE_PANELS } from "@/lib/games/poe1/stats";
 
 export const dynamic = "force-dynamic";
 
-type Props = { params: Promise<{ username: string; patch: string; slug: string }> };
+type Props = { params: Promise<{ username: string; game: string; league: string; character: string }> };
 
 export async function generateMetadata({ params }: Props) {
-  const { username, patch, slug } = await params;
+  const { username, game, league: leagueSlug, character: characterSlug } = await params;
   const user = getUser(username);
-  const league = getLeagueByPatch(patch);
-  const character = user && league ? getCharacter(user.id, league.id, slug) : null;
-  return { title: character ? `${character.name} · ${patch} · ${username}` : "Character" };
+  const league = getLeague(game, leagueSlug);
+  const character = user && league ? getCharacter(user.id, league.id, characterSlug) : null;
+  return { title: character ? `${character.name} · ${leagueSlug} · ${username}` : "Character" };
 }
 
 export default async function CharacterPage({ params }: Props) {
-  const { username, patch, slug } = await params;
+  const { username, game, league: leagueSlug, character: characterSlug } = await params;
   const user = getUser(username);
-  const league = getLeagueByPatch(patch);
+  const league = getLeague(game, leagueSlug);
   if (!user || !league) notFound();
-  const character = getCharacter(user.id, league.id, slug);
+  const character = getCharacter(user.id, league.id, characterSlug);
   if (!character) notFound();
 
   const build = character.data;
@@ -42,7 +42,7 @@ export default async function CharacterPage({ params }: Props) {
           {user.username}
         </Link>
         <span className="text-muted">/</span>
-        <Link href={`/players/${user.username}/${league.slug}`} className="link-gold tracking-[0.18em] uppercase">
+        <Link href={`/players/${user.username}/${league.game}/${league.slug}`} className="link-gold tracking-[0.18em] uppercase">
           {leagueTitle(league)}
         </Link>
       </div>
@@ -55,7 +55,7 @@ export default async function CharacterPage({ params }: Props) {
               {character.isFavorite ? <span className="text-lg text-gold">★</span> : null}
             </div>
             <p className="mt-2 text-parchment/80">
-              {character.level ? `Level ${character.level} · ` : ""}
+              {`Level ${character.level ?? "Unknown"} · `}
               {classLine(character.className, character.ascendancy)}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -217,7 +217,8 @@ export default async function CharacterPage({ params }: Props) {
 
       <CharacterAdmin
         username={user.username}
-        patch={league.slug}
+        game={league.game}
+        league={league.slug}
         slug={character.slug}
         name={character.name}
         level={character.level}

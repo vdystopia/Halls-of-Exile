@@ -13,6 +13,7 @@ npm run lint         # eslint
 npx tsc --noEmit     # typecheck
 npm run build        # production build (also what CI and Docker run)
 npm run seed:demo    # demo players; -- --reset wipes users/characters first
+npm run seed:atlas   # the owner's own record, 99 characters; -- --reset re-imports
 ```
 
 Deploy is `.\update.ps1` on the owner's PC, never a bare `docker compose up -d --build`:
@@ -75,6 +76,16 @@ so a character page never depends on an external link staying alive.
   record shows it is wrong: every Path of Exile 1 league closes three or four days early. The
   invariant is now "in order and never overlapping". The thirteen windows the owner's record
   covers are corrected; the rest still carry the old convention and are the ones to distrust.
+- **URLs are `/players/<user>/<game>/<league>/<character>`.** The league segment is its slug,
+  not its patch: both games have an "unspecified" league and a patch does not identify a row.
+  `getLeague(game, slug)` is the only lookup; there is no patch-keyed one.
+- **The owner's own record is `scripts/data/character-atlas.json`**, imported by
+  `npm run seed:atlas`. 99 characters across two players, most predating any Path of Building
+  export, so they carry name, level, class, ascendancy, build, playtime and notes and nothing
+  else. Missing values read "Unknown" rather than blank. A re-run updates in place by player,
+  league and name; `--reset` deletes only rows that file would create, so a character added by
+  hand is never caught in it. The record is also the source that corrected thirteen league
+  windows — it is first-hand and outranks any secondary source.
 - **One format for a league or event everywhere**, from `leagueTitle`: patch, name, then the
   expansion for a league or the parent league for an event — `3.26 Mercenaries Secrets of the
   Atlas`, `3.25 Runic Strife Gauntlet Settlers of Kalguur`. An event never shows an expansion,

@@ -63,8 +63,12 @@ export function leagueTitle(league: {
 }
 
 export function classLine(className: string | null, ascendancy: string | null): string {
-  if (ascendancy && className && ascendancy !== className) return `${ascendancy} · ${className}`;
-  return ascendancy || className || "Unknown class";
+  // An imported record can know the class but not the ascendancy, or neither.
+  const known = (value: string | null) => (value && value !== "Unknown" ? value : null);
+  const cls = known(className);
+  const asc = known(ascendancy);
+  if (asc && cls && asc !== cls) return `${asc} · ${cls}`;
+  return asc || cls || "class unknown";
 }
 
 /**

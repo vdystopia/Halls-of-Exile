@@ -7,7 +7,7 @@ import { isLeagueRunning, leagueDuration, leagueTitle, leagueWindow } from "@/li
 import { getCharacterCountByClass } from "@/lib/insights";
 import {
   getAdjacentLeagues,
-  getLeagueByPatch,
+  getLeague,
   getLeagueProgress,
   getUser,
   listCharacters,
@@ -15,18 +15,18 @@ import {
 
 export const dynamic = "force-dynamic";
 
-type Props = { params: Promise<{ username: string; patch: string }> };
+type Props = { params: Promise<{ username: string; game: string; league: string }> };
 
 export async function generateMetadata({ params }: Props) {
-  const { username, patch } = await params;
-  const league = getLeagueByPatch(patch);
-  return { title: `${username} · ${patch} ${league?.name ?? ""}`.trim() };
+  const { username, game, league: leagueSlug } = await params;
+  const league = getLeague(game, leagueSlug);
+  return { title: `${username} · ${leagueSlug} ${league?.name ?? ""}`.trim() };
 }
 
 export default async function LeaguePage({ params }: Props) {
-  const { username, patch } = await params;
+  const { username, game, league: leagueSlug } = await params;
   const user = getUser(username);
-  const league = getLeagueByPatch(patch);
+  const league = getLeague(game, leagueSlug);
   if (!user || !league) notFound();
 
   const characters = listCharacters(user.id, league.id);
@@ -45,13 +45,13 @@ export default async function LeaguePage({ params }: Props) {
         </Link>
         <div className="flex items-center gap-4">
           {previous ? (
-            <Link href={`/players/${user.username}/${previous.patch}`} className="link-gold">
-              ← {previous.patch} {previous.name}
+            <Link href={`/players/${user.username}/${previous.game}/${previous.slug}`} className="link-gold">
+              ← {leagueTitle(previous)}
             </Link>
           ) : null}
           {next ? (
-            <Link href={`/players/${user.username}/${next.patch}`} className="link-gold">
-              {next.patch} {next.name} →
+            <Link href={`/players/${user.username}/${next.game}/${next.slug}`} className="link-gold">
+              {leagueTitle(next)} →
             </Link>
           ) : null}
         </div>
@@ -99,7 +99,7 @@ export default async function LeaguePage({ params }: Props) {
       <section>
         <div className="mb-4 flex items-baseline justify-between gap-3">
           <h2 className="display text-xl">Characters</h2>
-          <Link href={`/players/${user.username}/${league.slug}/new`} className="btn btn-gold px-3 py-1.5 text-xs">
+          <Link href={`/players/${user.username}/${league.game}/${league.slug}/new`} className="btn btn-gold px-3 py-1.5 text-xs">
             Add character
           </Link>
         </div>
@@ -110,7 +110,7 @@ export default async function LeaguePage({ params }: Props) {
             <p className="mt-2 text-sm text-muted">
               Paste a Path of Building export and the whole character sheet comes with it.
             </p>
-            <Link href={`/players/${user.username}/${league.slug}/new`} className="btn btn-gold mt-6">
+            <Link href={`/players/${user.username}/${league.game}/${league.slug}/new`} className="btn btn-gold mt-6">
               Add the first character
             </Link>
           </div>
@@ -120,7 +120,7 @@ export default async function LeaguePage({ params }: Props) {
               <CharacterCard
                 key={character.id}
                 character={character}
-                href={`/players/${user.username}/${league.slug}/${character.slug}`}
+                href={`/players/${user.username}/${league.game}/${league.slug}/${character.slug}`}
               />
             ))}
           </div>
@@ -129,7 +129,8 @@ export default async function LeaguePage({ params }: Props) {
 
       <LeagueRecordForm
         username={user.username}
-        patch={league.slug}
+        game={league.game}
+        league={league.slug}
         challengesCompleted={progress?.challengesCompleted ?? null}
         challengeTotal={total}
         notes={progress?.notes ?? null}

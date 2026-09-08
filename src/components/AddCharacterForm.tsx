@@ -8,7 +8,15 @@ import { SubmitButton } from "./SubmitButton";
 
 const INITIAL: ActionState = {};
 
-export function AddCharacterForm({ username, patch }: { username: string; patch: string }) {
+export function AddCharacterForm({
+  username,
+  game,
+  league,
+}: {
+  username: string;
+  game: string;
+  league: string;
+}) {
   const [state, formAction] = useActionState(addCharacterAction, INITIAL);
   const [mode, setMode] = useState<"pob" | "manual">("pob");
   const [className, setClassName] = useState<string>("Witch");
@@ -16,7 +24,8 @@ export function AddCharacterForm({ username, patch }: { username: string; patch:
   return (
     <form action={formAction} className="space-y-6">
       <input type="hidden" name="username" value={username} />
-      <input type="hidden" name="patch" value={patch} />
+      <input type="hidden" name="game" value={game} />
+      <input type="hidden" name="league" value={league} />
       <input type="hidden" name="mode" value={mode} />
 
       <div className="flex gap-2">

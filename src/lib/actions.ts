@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { db } from "./db";
 import { emptyBuild, fetchPobCode, isPobUrl, parsePob, PARSER_VERSION, PobError } from "./games/poe1/pob";
 import { parsePlayed } from "./format";
-import { getLeagueByPatch, getUser } from "./queries";
+import { getLeague, getUser } from "./queries";
 import type { BuildData } from "./types";
 
 export type ActionState = { error?: string; ok?: boolean };
@@ -99,9 +99,10 @@ function manualStats(formData: FormData): Record<string, number> {
 
 export async function addCharacterAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const username = text(formData, "username");
-  const patch = text(formData, "patch");
+  const game = text(formData, "game");
+  const leagueSlug = text(formData, "league");
   const user = getUser(username);
-  const league = getLeagueByPatch(patch);
+  const league = getLeague(game, leagueSlug);
   if (!user || !league) return { error: "Unknown player or league." };
 
   let parsed: { data: BuildData; code: string | null; url: string | null };
@@ -155,16 +156,17 @@ export async function addCharacterAction(_prev: ActionState, formData: FormData)
   );
 
   revalidatePath(`/players/${username}`);
-  revalidatePath(`/players/${username}/${patch}`);
-  redirect(`/players/${username}/${patch}/${slug}`);
+  revalidatePath(`/players/${username}/${game}/${leagueSlug}`);
+  redirect(`/players/${username}/${game}/${leagueSlug}/${slug}`);
 }
 
 export async function updateCharacterAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const username = text(formData, "username");
-  const patch = text(formData, "patch");
+  const game = text(formData, "game");
+  const leagueSlug = text(formData, "league");
   const slug = text(formData, "slug");
   const user = getUser(username);
-  const league = getLeagueByPatch(patch);
+  const league = getLeague(game, leagueSlug);
   if (!user || !league) return { error: "Unknown player or league." };
 
   const existing = db
@@ -224,16 +226,17 @@ export async function updateCharacterAction(_prev: ActionState, formData: FormDa
     existing.id,
   );
 
-  revalidatePath(`/players/${username}/${patch}/${slug}`);
+  revalidatePath(`/players/${username}/${game}/${leagueSlug}/${slug}`);
   return { ok: true };
 }
 
 export async function deleteCharacterAction(formData: FormData): Promise<void> {
   const username = text(formData, "username");
-  const patch = text(formData, "patch");
+  const game = text(formData, "game");
+  const leagueSlug = text(formData, "league");
   const slug = text(formData, "slug");
   const user = getUser(username);
-  const league = getLeagueByPatch(patch);
+  const league = getLeague(game, leagueSlug);
   if (!user || !league) return;
 
   db.prepare(`DELETE FROM characters WHERE user_id = ? AND league_id = ? AND slug = ?`).run(
@@ -242,7 +245,7 @@ export async function deleteCharacterAction(formData: FormData): Promise<void> {
     slug,
   );
   revalidatePath(`/players/${username}`);
-  redirect(`/players/${username}/${patch}`);
+  redirect(`/players/${username}/${game}/${leagueSlug}`);
 }
 
 /**
@@ -250,6 +253,43 @@ export async function deleteCharacterAction(formData: FormData): Promise<void> {
  * tables declare ON DELETE CASCADE and the connection runs with foreign keys
  * on. There is no undo, which is why the button asks first.
  */
+/**
+ * Rename a player, or change the name shown beside their handle. The username
+ * is the archive's URL for them, so this moves every one of their pages —
+ * characters and league records travel by id and are untouched.
+ */
+export async function renamePlayerAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const current = text(formData, "username");
+  const username = text(formData, "newUsername");
+  const firstName = text(formData, "firstName");
+  const tagline = text(formData, "tagline") || null;
+
+  const user = getUser(current);
+  if (!user) return { error: "That player is no longer in the archive." };
+  if (!USERNAME_RE.test(username)) {
+    return { error: "Username must be 3-24 characters: letters, numbers, hyphen or underscore." };
+  }
+  if (!firstName || firstName.length > 40) {
+    return { error: "Display name is required (40 characters max)." };
+  }
+  // COLLATE NOCASE, so "Dystopia" does not collide with the row's own "dystopia".
+  const clash = db
+    .prepare(`SELECT 1 FROM users WHERE username = ? COLLATE NOCASE AND id <> ?`)
+    .get(username, user.id);
+  if (clash) return { error: `The name "${username}" is already in the archive.` };
+
+  db.prepare(`UPDATE users SET username = ?, first_name = ?, tagline = ? WHERE id = ?`).run(
+    username,
+    firstName,
+    tagline,
+    user.id,
+  );
+  revalidatePath("/players");
+  revalidatePath("/");
+  revalidatePath(`/players/${current}`);
+  redirect(`/players/${username}`);
+}
+
 export async function deletePlayerAction(formData: FormData): Promise<void> {
   const username = text(formData, "username");
   const user = getUser(username);
@@ -263,9 +303,10 @@ export async function deletePlayerAction(formData: FormData): Promise<void> {
 
 export async function saveLeagueRecordAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const username = text(formData, "username");
-  const patch = text(formData, "patch");
+  const game = text(formData, "game");
+  const leagueSlug = text(formData, "league");
   const user = getUser(username);
-  const league = getLeagueByPatch(patch);
+  const league = getLeague(game, leagueSlug);
   if (!user || !league) return { error: "Unknown player or league." };
 
   const completed = integer(formData, "challengesCompleted");
@@ -290,11 +331,12 @@ export async function saveLeagueRecordAction(_prev: ActionState, formData: FormD
   ).run(user.id, league.id, completed, total, notes);
 
   revalidatePath(`/players/${username}`);
-  revalidatePath(`/players/${username}/${patch}`);
+  revalidatePath(`/players/${username}/${game}/${leagueSlug}`);
   return { ok: true };
 }
 
 export async function addLeagueAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const game = text(formData, "game") || "poe1";
   const patch = text(formData, "patch");
   const name = text(formData, "name");
   const startDate = text(formData, "startDate") || null;
@@ -305,7 +347,9 @@ export async function addLeagueAction(_prev: ActionState, formData: FormData): P
 
   if (!/^\d+(\.\d+)*[a-z]?$/i.test(patch)) return { error: "Patch should look like 3.29 or 3.25.3." };
   if (!name) return { error: "League name is required." };
-  if (db.prepare(`SELECT 1 FROM leagues WHERE patch = ?`).get(patch)) {
+  // A hand-added league is keyed on its patch within its game, the same way the
+  // catalogue is keyed on (game, slug).
+  if (db.prepare(`SELECT 1 FROM leagues WHERE game = ? AND slug = ?`).get(game, patch)) {
     return { error: `Patch ${patch} is already in the archive.` };
   }
 
@@ -313,9 +357,10 @@ export async function addLeagueAction(_prev: ActionState, formData: FormData): P
     .value;
   db.prepare(
     `INSERT INTO leagues
-       (patch, name, expansion, start_date, end_date, end_date_estimated, challenge_total, is_custom, sort_order)
-     VALUES (?, ?, NULL, ?, ?, ?, ?, 1, ?)`,
-  ).run(patch, name, startDate, endDate, endDateEstimated, challengeTotal, (maxOrder ?? 0) + 10);
+       (game, slug, patch, name, expansion, start_date, end_date, end_date_estimated, challenge_total,
+        is_custom, sort_order)
+     VALUES (?, ?, ?, ?, NULL, ?, ?, ?, ?, 1, ?)`,
+  ).run(game, patch, patch, name, startDate, endDate, endDateEstimated, challengeTotal, (maxOrder ?? 0) + 10);
 
   revalidatePath(returnTo || "/players");
   return { ok: true };

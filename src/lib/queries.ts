@@ -130,8 +130,15 @@ export function listAllLeagues(): League[] {
   return rows.map(mapLeague);
 }
 
-export function getLeagueByPatch(patch: string): League | null {
-  const row = db.prepare(`SELECT * FROM leagues WHERE patch = ?`).get(patch) as Row;
+/**
+ * A league is addressed by its game and its slug. The patch alone stopped
+ * working when Path of Exile 2 arrived (both games ship a 1.0) and the slug
+ * alone stopped working when events arrived (both games have an "unspecified").
+ */
+export function getLeague(game: string, slug: string): League | null {
+  const row = db
+    .prepare(`SELECT * FROM leagues WHERE game = ? AND slug = ?`)
+    .get(game, slug) as Row;
   return row ? mapLeague(row) : null;
 }
 
