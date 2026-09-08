@@ -5,7 +5,7 @@ import { CopyButton } from "@/components/CopyButton";
 import { GearGrid } from "@/components/GearGrid";
 import { SkillGroups } from "@/components/SkillGroups";
 import { AllStatsTable, AttributeStrip, ResistanceBar, StatColumn } from "@/components/StatPanels";
-import { classLine, formatPlayed, leagueWindow } from "@/lib/format";
+import { classLine, formatPlayed, leagueTitle, leagueWindow } from "@/lib/format";
 import { getCharacter, getLeagueByPatch, getUser } from "@/lib/queries";
 import { DEFENCE_PANELS, humanizeStatKey, OFFENCE_PANELS } from "@/lib/games/poe1/stats";
 
@@ -42,8 +42,8 @@ export default async function CharacterPage({ params }: Props) {
           {user.username}
         </Link>
         <span className="text-muted">/</span>
-        <Link href={`/players/${user.username}/${league.patch}`} className="link-gold tracking-[0.18em] uppercase">
-          {league.patch} {league.name}
+        <Link href={`/players/${user.username}/${league.slug}`} className="link-gold tracking-[0.18em] uppercase">
+          {leagueTitle(league)}
         </Link>
       </div>
 
@@ -63,7 +63,7 @@ export default async function CharacterPage({ params }: Props) {
                 <span className="tag border-rarity-gem/40 text-rarity-gem">{character.mainSkill}</span>
               ) : null}
               <span className="tag">
-                {league.patch} {league.name}
+                {leagueTitle(league)}
               </span>
               {played ? <span className="tag">/played {played}</span> : null}
               {build.bandit ? <span className="tag">bandit: {build.bandit}</span> : null}
@@ -217,7 +217,7 @@ export default async function CharacterPage({ params }: Props) {
 
       <CharacterAdmin
         username={user.username}
-        patch={league.patch}
+        patch={league.slug}
         slug={character.slug}
         name={character.name}
         level={character.level}

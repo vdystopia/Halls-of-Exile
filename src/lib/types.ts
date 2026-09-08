@@ -10,7 +10,14 @@ export type User = {
 export type League = {
   id: number;
   game: GameId;
-  patch: string;
+  /** URL segment and catalogue key: a patch for a league, its own for an event. */
+  slug: string;
+  /** null for an event with no patch of its own; shown as "###". */
+  patch: string | null;
+  /** "event" for a gauntlet, private league or race; null for a challenge league. */
+  kind: string | null;
+  /** The league an event ran inside. */
+  parent: string | null;
   name: string;
   expansion: string | null;
   startDate: string | null;

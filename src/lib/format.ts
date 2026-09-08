@@ -39,8 +39,27 @@ export function leagueDuration(start: string | null, end: string | null): string
 }
 
 /** "Archnemesis (Siege of the Atlas)" when the league shipped with an expansion. */
-export function leagueTitle(name: string, expansion: string | null): string {
-  return expansion ? `${name} (${expansion})` : name;
+/**
+ * How a league or an event reads everywhere in the archive:
+ *
+ *   3.26 Mercenaries Secrets of the Atlas     patch, league, expansion
+ *   3.25 Runic Strife Gauntlet Settlers of Kalguur   patch, event, parent league
+ *   ### Endless Delve                          an event with no patch of its own
+ *
+ * The third slot is the expansion for a league and the parent league for an
+ * event; an event never shows an expansion. A missing patch reads "###" rather
+ * than collapsing the columns.
+ */
+export function leagueTitle(league: {
+  patch: string | null;
+  name: string;
+  expansion?: string | null;
+  kind?: string | null;
+  parent?: string | null;
+}): string {
+  const isEvent = league.kind === "event";
+  const trailing = isEvent ? league.parent : league.expansion;
+  return [league.patch || "###", league.name, trailing || null].filter(Boolean).join(" ");
 }
 
 export function classLine(className: string | null, ascendancy: string | null): string {

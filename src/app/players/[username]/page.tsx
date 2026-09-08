@@ -95,15 +95,14 @@ export default async function PlayerPage({ params, searchParams }: Props) {
             return (
               <Link
                 key={league.id}
-                href={`/players/${user.username}/${league.patch}`}
+                href={`/players/${user.username}/${league.slug}`}
                 className={`flex flex-wrap items-center gap-4 px-4 py-4 transition-colors hover:bg-white/[0.03] ${
                   empty ? "opacity-55" : ""
                 }`}
               >
-                <span className="w-16 shrink-0 font-display text-lg text-gold tabular-nums">{league.patch}</span>
                 <span className="min-w-[14rem] flex-1">
                   <span className="flex items-baseline gap-2 font-display text-base text-aubergine">
-                    {leagueTitle(league.name, league.expansion)}
+                    {leagueTitle(league)}
                     {running ? (
                       <span className="tag border-gold/50 text-gold">live</span>
                     ) : null}

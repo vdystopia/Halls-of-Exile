@@ -13,7 +13,10 @@ function mapLeague(row: Row): League {
   return {
     id: row.id,
     game: row.game,
+    slug: row.slug,
     patch: row.patch,
+    kind: row.kind,
+    parent: row.parent,
     name: row.name,
     expansion: row.expansion,
     startDate: row.start_date,

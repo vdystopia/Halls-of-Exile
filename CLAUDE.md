@@ -48,8 +48,10 @@ so a character page never depends on an external link staying alive.
 - **The league catalogue is code-owned.** Rows with `is_custom = 0` are re-synced from
   `LEAGUE_SEED` on every boot, so editing a built-in league in the database is pointless.
   User-added leagues (`is_custom = 1`) are never touched by the sync. Every seed row carries
-  its `game`, and the key is `(game, patch)`: both games ship a 1.0, so a patch number does
-  not identify a league on its own.
+  its `game`, and the key is `(game, slug)`. The key widened twice: `patch` broke when Path of
+  Exile 2 arrived, since both games ship a 1.0, and `(game, patch)` broke when events arrived,
+  since three of them run inside 3.25 alone. Display order comes from the start date at sync
+  time, not from the seed file's order, so an event sorts beside the league it ran inside.
 - **Path of Exile 2's catalogue is sourced, and its gaps are marked.** Grinding Gear Games
   publish no machine-readable league list, so the 0.1–0.5.5 dates came from secondary sources
   and one of them (0.3's start) had to be settled between conflicting reports. A row whose
@@ -66,9 +68,17 @@ so a character page never depends on an external link staying alive.
 - **Every new column needs a migration.** SQLite has no `ADD COLUMN IF NOT EXISTS`, and
   live archives exist. Add the column to `SCHEMA` *and* to the `additions` list in
   `migrate()` in `src/lib/db.ts`. Verify against a copy of a populated pre-change database.
-- **Only the newest league may carry `endDateEstimated`.** A test enforces this. When a
+- **Only a game's newest league may carry `endDateEstimated`.** A test enforces this. When a
   real end date is announced, replace the estimate and clear the flag.
-- **Each league ends where the next begins.** A test enforces this too.
+- **A league closes a few days before the next one opens.** This catalogue used to set each
+  end date to the next league's start, and a test enforced that hand-over. The owner's own
+  record shows it is wrong: every Path of Exile 1 league closes three or four days early. The
+  invariant is now "in order and never overlapping". The thirteen windows the owner's record
+  covers are corrected; the rest still carry the old convention and are the ones to distrust.
+- **One format for a league or event everywhere**, from `leagueTitle`: patch, name, then the
+  expansion for a league or the parent league for an event — `3.26 Mercenaries Secrets of the
+  Atlas`, `3.25 Runic Strife Gauntlet Settlers of Kalguur`. An event never shows an expansion,
+  and a missing patch reads `###`.
 - **Migrations must survive a hot reload.** The connection is cached on globalThis so it
   outlives dev-server reloads, so `connection()` re-runs `migrate()` and the catalogue sync
   once per module evaluation. Without that, pulling a schema change left a running dev

@@ -60,9 +60,9 @@ export default async function LeaguePage({ params }: Props) {
       <header className="panel p-6">
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div>
-            <p className="eyebrow">Patch {league.patch}</p>
+            <p className="eyebrow">{league.kind === "event" ? "Event" : `Patch ${league.patch ?? "###"}`}</p>
             <h1 className="font-display mt-2 flex flex-wrap items-baseline gap-3 text-3xl tracking-wide text-aubergine">
-              {leagueTitle(league.name, league.expansion)}
+              {leagueTitle(league)}
               {running ? <span className="tag border-gold/50 text-gold">live now</span> : null}
             </h1>
             <p className="mt-2 text-sm text-forest">
@@ -99,7 +99,7 @@ export default async function LeaguePage({ params }: Props) {
       <section>
         <div className="mb-4 flex items-baseline justify-between gap-3">
           <h2 className="display text-xl">Characters</h2>
-          <Link href={`/players/${user.username}/${league.patch}/new`} className="btn btn-gold px-3 py-1.5 text-xs">
+          <Link href={`/players/${user.username}/${league.slug}/new`} className="btn btn-gold px-3 py-1.5 text-xs">
             Add character
           </Link>
         </div>
@@ -110,7 +110,7 @@ export default async function LeaguePage({ params }: Props) {
             <p className="mt-2 text-sm text-muted">
               Paste a Path of Building export and the whole character sheet comes with it.
             </p>
-            <Link href={`/players/${user.username}/${league.patch}/new`} className="btn btn-gold mt-6">
+            <Link href={`/players/${user.username}/${league.slug}/new`} className="btn btn-gold mt-6">
               Add the first character
             </Link>
           </div>
@@ -120,7 +120,7 @@ export default async function LeaguePage({ params }: Props) {
               <CharacterCard
                 key={character.id}
                 character={character}
-                href={`/players/${user.username}/${league.patch}/${character.slug}`}
+                href={`/players/${user.username}/${league.slug}/${character.slug}`}
               />
             ))}
           </div>
@@ -129,7 +129,7 @@ export default async function LeaguePage({ params }: Props) {
 
       <LeagueRecordForm
         username={user.username}
-        patch={league.patch}
+        patch={league.slug}
         challengesCompleted={progress?.challengesCompleted ?? null}
         challengeTotal={total}
         notes={progress?.notes ?? null}
