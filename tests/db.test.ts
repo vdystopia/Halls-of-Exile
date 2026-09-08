@@ -134,3 +134,37 @@ test("a character with no share code keeps the build it has", async () => {
   assert.equal(row.data, kept);
   assert.equal(row.parser_version, PARSER_VERSION, "it should not be re-checked on every boot");
 });
+
+/**
+ * The catalogue is code-owned, so a row dropped from the seed leaves the
+ * archive — unless something is filed under it. The Path of Exile 2
+ * "unspecified league" was seeded and then removed once it was clear every such
+ * character is a Path of Exile 1 one; without this, it would outlive the code.
+ */
+test("a league dropped from the seed is removed, unless it holds characters", async () => {
+  const { db, ensureSchema } = await import("../src/lib/db");
+
+  const league = db
+    .prepare(`INSERT INTO leagues (game, slug, patch, name, is_custom) VALUES ('poe2', 'gone', NULL, 'Gone', 0)`)
+    .run().lastInsertRowid as number;
+  const kept = db
+    .prepare(`INSERT INTO leagues (game, slug, patch, name, is_custom) VALUES ('poe2', 'occupied', NULL, 'Occupied', 0)`)
+    .run().lastInsertRowid as number;
+  const custom = db
+    .prepare(`INSERT INTO leagues (game, slug, patch, name, is_custom) VALUES ('poe2', 'mine', NULL, 'Hand added', 1)`)
+    .run().lastInsertRowid as number;
+
+  const user = db
+    .prepare(`INSERT INTO users (username, first_name) VALUES ('prune-tester', 'Test')`)
+    .run().lastInsertRowid as number;
+  db.prepare(
+    `INSERT INTO characters (user_id, league_id, slug, name, class_name) VALUES (?, ?, 'someone', 'Someone', 'Witch')`,
+  ).run(user, kept);
+
+  ensureSchema(db);
+
+  const exists = (id: number) => Boolean(db.prepare(`SELECT 1 FROM leagues WHERE id = ?`).get(id));
+  assert.equal(exists(league), false, "a seeded row that left the seed should be gone");
+  assert.equal(exists(kept), true, "a league holding a character is kept whatever the seed says");
+  assert.equal(exists(custom), true, "a hand-added league is never pruned");
+});

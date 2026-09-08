@@ -226,7 +226,20 @@ function syncLeagueCatalogue(db: Database.Database) {
     return a.startDate < b.startDate ? -1 : a.startDate > b.startDate ? 1 : 0;
   });
 
+  // A row dropped from the seed leaves the archive too, as long as nothing is
+  // filed under it — the catalogue is code-owned, so a stale row would otherwise
+  // outlive the code that put it there. A league holding characters is kept
+  // whatever the seed says, and a hand-added league is never touched.
+  const prune = db.prepare(`
+    DELETE FROM leagues
+    WHERE is_custom = 0
+      AND game || '/' || slug NOT IN (SELECT value FROM json_each(?))
+      AND id NOT IN (SELECT league_id FROM characters)
+      AND id NOT IN (SELECT league_id FROM league_records)
+  `);
+
   const run = db.transaction(() => {
+    prune.run(JSON.stringify(LEAGUE_SEED.map((league) => `${league.game}/${league.slug}`)));
     ordered.forEach((league, index) => {
       insert.run({
         game: league.game,

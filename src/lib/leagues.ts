@@ -233,11 +233,11 @@ export const LEAGUE_SEED: LeagueSeed[] = [
   { game: "poe1", slug: "return-of-the-ancestors", patch: "3.28", name: "Return of the Ancestors", kind: "event",
     parent: "Mirage", startDate: "2026-06-25", endDate: "2026-07-16", challengeTotal: null },
 
-  // A home for characters whose league the record does not name. One per game so
-  // a Path of Exile 1 character is never filed under a Path of Exile 2 league.
+  // A home for the twenty-three Path of Exile 1 characters whose league the
+  // owner's record does not name. Path of Exile 1 only, and closed: every
+  // character that will ever land here is already here, and nothing new arrives
+  // without a league.
   { game: "poe1", slug: "unspecified", patch: null, name: "Unspecified league", kind: "event",
-    startDate: null, endDate: null, datesUncertain: true, challengeTotal: null },
-  { game: "poe2", slug: "unspecified", patch: null, name: "Unspecified league", kind: "event",
     startDate: null, endDate: null, datesUncertain: true, challengeTotal: null },
 ];
 

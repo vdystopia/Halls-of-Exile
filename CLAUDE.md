@@ -48,7 +48,9 @@ so a character page never depends on an external link staying alive.
 
 - **The league catalogue is code-owned.** Rows with `is_custom = 0` are re-synced from
   `LEAGUE_SEED` on every boot, so editing a built-in league in the database is pointless.
-  User-added leagues (`is_custom = 1`) are never touched by the sync. Every seed row carries
+  User-added leagues (`is_custom = 1`) are never touched by the sync. A row dropped from the
+  seed is deleted on the next boot unless a character or league record is filed under it, so a
+  stale catalogue row cannot outlive the code that created it. Every seed row carries
   its `game`, and the key is `(game, slug)`. The key widened twice: `patch` broke when Path of
   Exile 2 arrived, since both games ship a 1.0, and `(game, patch)` broke when events arrived,
   since three of them run inside 3.25 alone. Display order comes from the start date at sync
@@ -79,6 +81,10 @@ so a character page never depends on an external link staying alive.
 - **URLs are `/players/<user>/<game>/<league>/<character>`.** The league segment is its slug,
   not its patch: both games have an "unspecified" league and a patch does not identify a row.
   `getLeague(game, slug)` is the only lookup; there is no patch-keyed one.
+- **"Unspecified league" is Path of Exile 1 only, and closed.** The twenty-three characters
+  whose league the owner's record does not name are all Path of Exile 1, and no more are
+  coming — a new character arrives with its league. A second such row would put two
+  identically-titled leagues in one list.
 - **The owner's own record is `scripts/data/character-atlas.json`**, imported by
   `npm run seed:atlas`. 99 characters across two players, most predating any Path of Building
   export, so they carry name, level, class, ascendancy, build, playtime and notes and nothing
