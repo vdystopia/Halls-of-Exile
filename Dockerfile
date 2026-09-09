@@ -31,6 +31,10 @@ COPY --from=builder --chown=node:node /app/public ./public
 COPY --from=builder --chown=node:node /app/.next/standalone ./
 COPY --from=builder --chown=node:node /app/.next/static ./.next/static
 COPY --from=builder --chown=node:node /app/scripts/backup.mjs ./scripts/backup.mjs
+# The archive lives on a volume the host cannot safely open, so the importer has
+# to run in here: docker compose exec halls node scripts/seed-atlas.mjs
+COPY --from=builder --chown=node:node /app/scripts/seed-atlas.mjs ./scripts/seed-atlas.mjs
+COPY --from=builder --chown=node:node /app/scripts/data ./scripts/data
 
 USER node
 EXPOSE 3000

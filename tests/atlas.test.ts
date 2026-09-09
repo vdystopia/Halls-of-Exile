@@ -67,6 +67,19 @@ test("ascendancies resolved out of the free text are real ones", () => {
   }
 });
 
+/**
+ * The importer runs inside the container, where the archive actually lives, and
+ * that has node and better-sqlite3 but no TypeScript. Plain JavaScript is not a
+ * style choice here — a .ts importer cannot run against the real archive.
+ */
+test("the importer is plain JavaScript and ships in the image", () => {
+  assert.ok(fs.existsSync(path.join(process.cwd(), "scripts", "seed-atlas.mjs")));
+  assert.equal(fs.existsSync(path.join(process.cwd(), "scripts", "seed-atlas.ts")), false);
+  const dockerfile = fs.readFileSync(path.join(process.cwd(), "Dockerfile"), "utf8");
+  assert.match(dockerfile, /seed-atlas\.mjs/, "the importer is not copied into the image");
+  assert.match(dockerfile, /scripts\/data/, "the record is not copied into the image");
+});
+
 test("a record with neither class nor ascendancy still reads as something", () => {
   assert.equal(classLine("Unknown", "Unknown"), "class unknown");
   assert.equal(classLine("Marauder", "Unknown"), "Marauder");

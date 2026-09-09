@@ -13,7 +13,7 @@ npm run lint         # eslint
 npx tsc --noEmit     # typecheck
 npm run build        # production build (also what CI and Docker run)
 npm run seed:demo    # demo players; -- --reset wipes users/characters first
-npm run seed:atlas   # the owner's own record, 99 characters; -- --reset re-imports
+npm run seed:atlas   # the owner's own record, 99 characters, into ./data; -- --reset re-imports
 ```
 
 Deploy is `.\update.ps1` on the owner's PC, never a bare `docker compose up -d --build`:
@@ -90,7 +90,10 @@ so a character page never depends on an external link staying alive.
   export, so they carry name, level, class, ascendancy, build, playtime and notes and nothing
   else. Missing values read "Unknown" rather than blank. A re-run updates in place by player,
   league and name; `--reset` deletes only rows that file would create, so a character added by
-  hand is never caught in it. The record is also the source that corrected thirteen league
+  hand is never caught in it. **The deployed archive is on a Docker volume, not in `./data`, so
+  running the importer on the host only ever fills the development database.** Against the real
+  archive it runs inside the container — `docker compose exec halls node scripts/seed-atlas.mjs`
+  — which is why it is plain JavaScript and is copied into the image beside `backup.mjs`. The record is also the source that corrected thirteen league
   windows — it is first-hand and outranks any secondary source.
 - **One format for a league or event everywhere**, from `leagueTitle`: patch, name, then the
   expansion for a league or the parent league for an event — `3.26 Mercenaries Secrets of the

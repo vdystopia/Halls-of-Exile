@@ -146,6 +146,14 @@ if (Test-Path $indexPath) {
     $index = Get-Content $indexPath -Raw | ConvertFrom-Json
     $paths = @($index.bases.PSObject.Properties.Value.art) + @($index.uniques.PSObject.Properties.Value.art)
     $wanted = ($paths | Sort-Object -Unique).Count
+    # An override with an empty value is a path the image CDN does not serve at
+    # all (Ancient Skull's). Counting it would warn on every deploy forever.
+    $overridePath = Join-Path $PSScriptRoot 'src/lib/games/poe1/art-overrides.json'
+    if (Test-Path $overridePath) {
+        $overrides = Get-Content $overridePath -Raw | ConvertFrom-Json
+        $missing = @($overrides.PSObject.Properties | Where-Object { $_.Name -notlike '_*' -and -not $_.Value }).Count
+        $wanted = $wanted - $missing
+    }
     $have = @(Get-ChildItem -Path $artRoot -Filter *.png -Recurse -ErrorAction SilentlyContinue).Count
     if ($have -lt $wanted) {
         Write-Bad "Item art is $($wanted - $have) images short of the catalogue ($have of $wanted)."
