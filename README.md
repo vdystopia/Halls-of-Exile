@@ -36,7 +36,7 @@ handful of server actions.
 ## Running it on a home server (Docker)
 
 ```bash
-git clone <this repo> && cd Halls-of-the-Champions
+git clone <this repo> && cd Halls-of-Exile
 cp .env.example .env        # optional: change the port or timezone
 docker compose up -d --build
 ```

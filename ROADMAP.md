@@ -6,9 +6,6 @@ mattering.
 
 ## Now
 
-- [ ] Decide whether the site is renamed **Halls of Exile** to match the repository, or
-      stays **Halls of Exile**. Touches the page title, header, footer, compose
-      `container_name` and image tag.
 - [ ] Populate the archive with the owner's real characters, and note anything the import
       flow makes awkward while doing it — that friction is the best source of the next few
       items here.
