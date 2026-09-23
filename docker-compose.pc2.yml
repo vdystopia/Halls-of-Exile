@@ -1,0 +1,41 @@
+# Override for pc2, the Ubuntu home server running Docker Engine. Layered over
+# docker-compose.yml, never used alone. Put this in pc2's .env so every
+# `docker compose` command there picks it up, update.sh and backup.sh included:
+#
+#   COMPOSE_FILE=docker-compose.yml:docker-compose.pc2.yml
+#
+# What changes from the base file:
+#   - the archive is bind-mounted from the host (HALLS_DATA_DIR, default
+#     /srv/data/halls) instead of the named volume, so the host's nightly
+#     backup job can see it. On Linux ext4 that is safe; it is Windows paths
+#     under WSL2 that SQLite's locking cannot trust. The directory must exist
+#     and belong to uid 1000, the container's `node` user:
+#       sudo install -d -o 1000 -g 1000 -m 750 /srv/data/halls
+#   - no host port is published. The site is reached through the reverse proxy
+#     on the external `proxy` network, as http://halls-of-exile:3000. Create
+#     the network once if the proxy has not: docker network create proxy
+#   - the healthcheck is inherited unchanged; it probes from inside the
+#     container, so it needs no published port.
+#
+# Needs Docker Compose 2.24 or later for !reset and !override.
+services:
+  halls:
+    ports: !reset []
+    volumes: !override
+      # Long form so a missing directory is an error. The short form would
+      # have Docker create it owned by root, which the container cannot write.
+      - type: bind
+        source: ${HALLS_DATA_DIR:-/srv/data/halls}
+        target: /data
+        bind:
+          create_host_path: false
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
+
+# The base file's named volume is not used here; dropping it stops compose
+# creating an empty one beside the real archive.
+volumes: !reset {}

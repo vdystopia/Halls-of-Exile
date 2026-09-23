@@ -24,6 +24,12 @@ jobs:
         run: npm test
       - name: Production build
         run: npm run build
+      # The Linux deploy path (pc2): shell that only runs on the server, and a
+      # compose override that only a real compose can validate.
+      - name: Lint deploy scripts
+        run: shellcheck update.sh backup.sh
+      - name: pc2 compose override is valid
+        run: docker compose -f docker-compose.yml -f docker-compose.pc2.yml config --quiet
 
   image:
     name: Docker image boots and serves
@@ -71,5 +77,12 @@ jobs:
             echo "${code} ${path}"
             test "${code}" = "200"
           done
+      # What the nightly host job relies on: a consistent, self-contained copy
+      # taken while the server runs, replaced whole on the next run.
+      - name: Online backup writes one consistent file
+        run: |
+          docker exec halls-ci node scripts/backup.mjs /data/backups/archive-latest.db
+          docker exec halls-ci node scripts/backup.mjs /data/backups/archive-latest.db
+          test "$(docker exec halls-ci ls /data/backups)" = "archive-latest.db"
       - if: always()
         run: docker rm -f halls-ci

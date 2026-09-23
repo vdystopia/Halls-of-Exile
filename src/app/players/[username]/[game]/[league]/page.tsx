@@ -2,7 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChallengeMeter } from "@/components/ChallengeMeter";
 import { CharacterCard } from "@/components/CharacterCard";
+import { CharacterFilters } from "@/components/CharacterFilters";
 import { LeagueRecordForm } from "@/components/LeagueRecordForm";
+import { applyCharacterQuery, characterFacets, readCharacterQuery } from "@/lib/character-filters";
 import { isLeagueRunning, leagueDuration, leagueTitle, leagueWindow } from "@/lib/format";
 import { getCharacterCountByClass } from "@/lib/insights";
 import {
@@ -15,7 +17,10 @@ import {
 
 export const dynamic = "force-dynamic";
 
-type Props = { params: Promise<{ username: string; game: string; league: string }> };
+type Props = {
+  params: Promise<{ username: string; game: string; league: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
 
 export async function generateMetadata({ params }: Props) {
   const { username, game, league: leagueSlug } = await params;
@@ -23,13 +28,17 @@ export async function generateMetadata({ params }: Props) {
   return { title: `${username} · ${leagueSlug} ${league?.name ?? ""}`.trim() };
 }
 
-export default async function LeaguePage({ params }: Props) {
+export default async function LeaguePage({ params, searchParams }: Props) {
   const { username, game, league: leagueSlug } = await params;
   const user = getUser(username);
   const league = getLeague(game, leagueSlug);
   if (!user || !league) notFound();
 
   const characters = listCharacters(user.id, league.id);
+  const query = readCharacterQuery(await searchParams);
+  const shown = applyCharacterQuery(characters, query);
+  const facets = characterFacets(characters);
+  const leagueHref = `/players/${user.username}/${league.game}/${league.slug}`;
   const progress = getLeagueProgress(user.id, league.id);
   const total = progress?.challengeTotal ?? league.challengeTotal;
   const duration = leagueDuration(league.startDate, league.endDate);
@@ -115,15 +124,30 @@ export default async function LeaguePage({ params }: Props) {
             </Link>
           </div>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {characters.map((character) => (
-              <CharacterCard
-                key={character.id}
-                character={character}
-                href={`/players/${user.username}/${league.game}/${league.slug}/${character.slug}`}
+          <>
+            {characters.length > 1 ? (
+              <CharacterFilters
+                action={leagueHref}
+                query={query}
+                classes={facets.classes}
+                skills={facets.skills}
+                shown={shown.length}
+                total={characters.length}
               />
-            ))}
-          </div>
+            ) : null}
+            {shown.length === 0 ? (
+              <p className="panel p-6 text-center text-sm text-muted">No character in this league matches.</p>
+            ) : null}
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {shown.map((character) => (
+                <CharacterCard
+                  key={character.id}
+                  character={character}
+                  href={`/players/${user.username}/${league.game}/${league.slug}/${character.slug}`}
+                />
+              ))}
+            </div>
+          </>
         )}
       </section>
 

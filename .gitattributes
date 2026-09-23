@@ -1,0 +1,3 @@
+# The deploy scripts run on Linux. A CRLF checkout on the Windows PC would break
+# them there the moment they were copied across.
+*.sh text eol=lf

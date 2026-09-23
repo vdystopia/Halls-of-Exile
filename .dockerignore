@@ -10,3 +10,7 @@ docker-compose.yml
 .dockerignore
 .env
 .env.local
+update.sh
+backup.sh
+docker-compose.pc2.yml
+docs

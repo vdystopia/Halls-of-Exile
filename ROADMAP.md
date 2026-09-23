@@ -6,9 +6,6 @@ mattering.
 
 ## Now
 
-- [ ] Decide whether the site is renamed **Halls of Exile** to match the repository, or
-      stays **Halls of Exile**. Touches the page title, header, footer, compose
-      `container_name` and image tag.
 - [ ] Populate the archive with the owner's real characters, and note anything the import
       flow makes awkward while doing it — that friction is the best source of the next few
       items here.
@@ -17,11 +14,12 @@ mattering.
 
 - [ ] Replace 3.29's tentative end date once Grinding Gear Games announces it, and clear
       the `endDateEstimated` flag.
-- [ ] Character sorting and filtering on a league page once leagues hold more than a
-      handful of characters (by level, class, main skill).
-- [ ] Search across a player's whole archive: character name, skill, unique item.
-- [ ] Per-player export (JSON) so an archive can be moved or handed over.
-- [ ] Weekly backup as a scheduled task on the server rather than a command to remember.
+- [ ] Import a player export (`docs/export-format.md`) into another instance: the other half of
+      moving an archive. Resolve built-in leagues by `(game, slug)`, create custom ones, re-parse
+      from `pobCode` where the reader's parser is newer.
+- [ ] Move the archive to pc2 (README, "Moving the archive from the Windows server"), point the
+      reverse proxy at `halls-of-exile:3000` on the `proxy` network, and have the nightly host
+      backup job call `backup.sh` before it snapshots. Then retire the Windows instance.
 
 ## Later
 
@@ -42,7 +40,13 @@ mattering.
 - [x] League catalogue 1.0 → 3.29, with challenge totals and per-player challenge records.
 - [x] Docker packaging, health endpoint, online backup script.
 - [x] Renamed to **Halls of Exile**, matching the repository.
+- [x] Character sorting and filtering on a league page (level, name, class, main skill,
+      /played, date added), kept in the query string.
+- [x] Search across a player's whole archive: character name, skill, unique item in use.
+- [x] Per-player JSON export, versioned and documented in `docs/export-format.md`.
 - [x] Per-character `/played` time, summed into the player header.
 - [x] `update.ps1`: backup, pull, rebuild, health-check, automatic rollback.
+- [x] Linux deploy path for pc2: `update.sh`, `backup.sh` for the nightly host job, and
+      `docker-compose.pc2.yml` (bind-mounted data, no host port, external `proxy` network).
 - [x] CI on every push: typecheck, lint, tests, build, and a container that must boot and
       serve before a build is called green.
