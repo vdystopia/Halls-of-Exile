@@ -74,6 +74,10 @@ export default async function PlayerPage({ params, searchParams }: Props) {
         <button type="submit" className="btn px-3 py-2 text-xs">
           Search
         </button>
+        {/* A route handler, not a page: a plain anchor, so the browser downloads it. */}
+        <a href={`/players/${user.username}/export`} download className="link-gold ml-auto text-xs">
+          Export archive (JSON)
+        </a>
       </Form>
 
       {recent.length ? (

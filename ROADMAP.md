@@ -14,7 +14,9 @@ mattering.
 
 - [ ] Replace 3.29's tentative end date once Grinding Gear Games announces it, and clear
       the `endDateEstimated` flag.
-- [ ] Per-player export (JSON) so an archive can be moved or handed over.
+- [ ] Import a player export (`docs/export-format.md`) into another instance: the other half of
+      moving an archive. Resolve built-in leagues by `(game, slug)`, create custom ones, re-parse
+      from `pobCode` where the reader's parser is newer.
 - [ ] Weekly backup as a scheduled task on the server rather than a command to remember.
 
 ## Later
@@ -39,6 +41,7 @@ mattering.
 - [x] Character sorting and filtering on a league page (level, name, class, main skill,
       /played, date added), kept in the query string.
 - [x] Search across a player's whole archive: character name, skill, unique item in use.
+- [x] Per-player JSON export, versioned and documented in `docs/export-format.md`.
 - [x] Per-character `/played` time, summed into the player header.
 - [x] `update.ps1`: backup, pull, rebuild, health-check, automatic rollback.
 - [x] CI on every push: typecheck, lint, tests, build, and a container that must boot and

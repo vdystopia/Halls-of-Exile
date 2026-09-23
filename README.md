@@ -20,6 +20,10 @@ were built in.
   class and main skill — all in the query string, so a filtered view is a link.
 - **Search across a player's whole archive** (`/players/<username>/search?q=`) by character
   name, skill (main skill or any socketed gem) and unique item equipped, across every league.
+- **A per-player JSON export** (`/players/<username>/export`, linked from the player page): the
+  player, their league records, every character with its share code and stored build, and every
+  league those refer to — enough to move an archive to another instance or hand it to its owner.
+  The format is documented in [`docs/export-format.md`](docs/export-format.md).
 - **Per-character `/played` time**, typed in by hand — no export carries it — summed into the
   player header as the archive's total time played.
 - **A character sheet** (`/players/<username>/<game>/<league>/<character>`) laid out like pobb.in: defence
@@ -240,6 +244,7 @@ src/lib/pob.ts                 PoB code decoding and XML parsing
 src/lib/items.ts               PoB item-text parser and the paper-doll layout
 src/lib/stats.ts               which stats are shown, in what order, formatted how
 src/lib/actions.ts             server actions (create player, add/update/delete character, …)
+src/lib/export.ts              per-player JSON export; format in docs/export-format.md
 src/app/api/health/route.ts    health probe used by the Docker healthcheck
 scripts/seed-demo.ts           demo archive, imported through the real parser
 scripts/backup.mjs             consistent online backup of the SQLite archive
