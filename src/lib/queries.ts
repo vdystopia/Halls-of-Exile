@@ -165,17 +165,30 @@ export function listCharacters(userId: number, leagueId: number): Character[] {
   return rows.map(mapCharacter);
 }
 
-export function listRecentCharacters(userId: number, limit = 6): (Character & { patch: string; leagueName: string })[] {
+/**
+ * The card needs the league's game and slug to build a link, not its patch: a
+ * patch does not identify a row and the URL carries the slug.
+ */
+export function listRecentCharacters(
+  userId: number,
+  limit = 6,
+): (Character & { game: string; leagueSlug: string; patch: string | null; leagueName: string })[] {
   const rows = db
     .prepare(
-      `SELECT c.*, l.patch AS patch, l.name AS league_name
+      `SELECT c.*, l.game AS game, l.slug AS league_slug, l.patch AS patch, l.name AS league_name
        FROM characters c JOIN leagues l ON l.id = c.league_id
        WHERE c.user_id = ?
        ORDER BY c.is_favorite DESC, l.sort_order DESC, c.level DESC
        LIMIT ?`,
     )
     .all(userId, limit) as Row[];
-  return rows.map((row) => ({ ...mapCharacter(row), patch: row.patch, leagueName: row.league_name }));
+  return rows.map((row) => ({
+    ...mapCharacter(row),
+    game: row.game,
+    leagueSlug: row.league_slug,
+    patch: row.patch,
+    leagueName: row.league_name,
+  }));
 }
 
 export function getCharacter(userId: number, leagueId: number, slug: string): Character | null {

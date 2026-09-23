@@ -72,6 +72,22 @@ export type ParsedItem = {
   flags: string[];
   implicits: string[];
   explicits: string[];
+  /**
+   * The lines under "Requires", ready to render. Path of Building writes none,
+   * so a build imported from it leaves this unset and the tooltip derives them
+   * from the base; the official API reports the figures the game itself shows,
+   * including a socketed gem's requirement, which cannot be derived.
+   */
+  requires?: { text: string; modified: boolean }[];
+  /**
+   * Display properties the model has no field for — a weapon's damage, a
+   * flask's duration and charges — in the order the game lists them.
+   */
+  properties?: { name: string; value: string }[];
+  /** The official CDN picture, used when the local art catalogue has none. */
+  iconUrl?: string;
+  /** Inventory footprint, for sizing art that came from the CDN. */
+  size?: [number, number];
   raw: string;
 };
 
@@ -84,6 +100,11 @@ export type Gem = {
   enabled: boolean;
   support: boolean;
   count?: number;
+  /**
+   * The gem's attribute, where the source states it. The official API does;
+   * Path of Building's export does not, and is looked up by id or name.
+   */
+  color?: "r" | "g" | "b" | "w";
 };
 
 export type SkillGroup = {
@@ -102,8 +123,20 @@ export type TreeSpec = {
   treeVersion?: string;
 };
 
+/** The named passives an allocation holds, which a node count alone loses. */
+export type PassiveDetail = {
+  /** "alternate" for a Path of Exile 1 event tree, such as Legacy of Phrecia. */
+  variant?: string;
+  keystones: string[];
+  notables: string[];
+  ascendancyNotables: string[];
+  bloodlineNodes: string[];
+  masteries: { name: string; effect: string }[];
+  tattoos: string[];
+};
+
 export type BuildData = {
-  source: "pob" | "manual";
+  source: "pob" | "manual" | "poe-api";
   pobVersion?: string;
   className?: string;
   ascendClassName?: string;
@@ -119,6 +152,10 @@ export type BuildData = {
   activeTree: number;
   /** Item ids socketed into the active passive tree. */
   treeJewels?: number[];
+  /** Named passives, from a source that lists them. */
+  passives?: PassiveDetail;
+  /** Where an imported character came from, and when it was read. */
+  origin?: { account: string; realm: string; lastLogin?: string; fetchedAt?: string };
   notes?: string;
   config: { name: string; value: string }[];
 };

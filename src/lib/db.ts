@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { LEAGUE_SEED } from "./leagues";
 import { PARSER_VERSION, parsePob } from "./games/poe1/pob";
+import { POE_API_VERSION, rebuildFromStoredExport, type StoredPoeExport } from "./games/poe1/poe-api";
 
 const DEFAULT_PATH = path.join(process.cwd(), "data", "archive.db");
 
@@ -61,6 +62,8 @@ CREATE TABLE IF NOT EXISTS characters (
   pob_url      TEXT,
   data         TEXT NOT NULL DEFAULT '{}',
   parser_version INTEGER NOT NULL DEFAULT 0,
+  source_payload TEXT,
+  api_version  INTEGER NOT NULL DEFAULT 0,
   created_at   TEXT NOT NULL DEFAULT (datetime('now')),
   UNIQUE (user_id, league_id, slug)
 );
@@ -84,6 +87,8 @@ function migrate(db: Database.Database) {
     ["leagues", "kind", "TEXT"],
     ["leagues", "parent", "TEXT"],
     ["leagues", "dates_uncertain", "INTEGER NOT NULL DEFAULT 0"],
+    ["characters", "source_payload", "TEXT"],
+    ["characters", "api_version", "INTEGER NOT NULL DEFAULT 0"],
   ];
   for (const [table, column, definition] of additions) {
     const columns = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
@@ -162,32 +167,67 @@ function widenLeagueUniqueness(db: Database.Database) {
 }
 
 /**
- * Re-parse characters whose stored build predates the current parser. The share
- * code is kept alongside the parsed JSON precisely so this is possible; without
- * it, a parser fix would only ever reach characters imported afterwards, and
+ * Re-derive characters whose stored build predates the code that made it. The
+ * source is kept alongside the parsed JSON precisely so this is possible;
+ * without it, a fix would only ever reach characters imported afterwards, and
  * the archive would keep rendering whatever the parser believed on import day.
  *
- * A character with no code cannot be re-parsed, so it is only marked current.
- * A code that no longer parses keeps the build it has rather than losing it.
+ * Each source carries its own version, in its own column, because the two move
+ * independently: a Path of Building fix must not silently mark an API import
+ * current, and the reverse. A character with no source cannot be re-derived, so
+ * it is only marked current, and a source that no longer reads keeps the build
+ * it has rather than losing it.
  */
 function reparseStaleBuilds(db: Database.Database) {
   const stale = db
-    .prepare(`SELECT id, pob_code FROM characters WHERE parser_version < ?`)
-    .all(PARSER_VERSION) as { id: number; pob_code: string | null }[];
+    .prepare(
+      `SELECT id, pob_code, source_payload, parser_version, api_version,
+              json_extract(data, '$.source') AS source
+         FROM characters
+        WHERE parser_version < ? OR api_version < ?`,
+    )
+    .all(PARSER_VERSION, POE_API_VERSION) as {
+    id: number;
+    pob_code: string | null;
+    source_payload: string | null;
+    parser_version: number;
+    api_version: number;
+    source: string | null;
+  }[];
   if (stale.length === 0) return;
 
-  const store = db.prepare(`UPDATE characters SET data = ?, parser_version = ? WHERE id = ?`);
-  const mark = db.prepare(`UPDATE characters SET parser_version = ? WHERE id = ?`);
+  const storePob = db.prepare(`UPDATE characters SET data = ?, parser_version = ? WHERE id = ?`);
+  const markPob = db.prepare(`UPDATE characters SET parser_version = ? WHERE id = ?`);
+  const storeApi = db.prepare(`UPDATE characters SET data = ?, api_version = ? WHERE id = ?`);
+  const markApi = db.prepare(`UPDATE characters SET api_version = ? WHERE id = ?`);
+
   const run = db.transaction(() => {
     for (const row of stale) {
-      if (!row.pob_code) {
-        mark.run(PARSER_VERSION, row.id);
-        continue;
+      // A character can hold both a share code and an export payload — imported
+      // from Path of Building, then filled in from the game. Whichever produced
+      // the build it is showing is the one allowed to rewrite it; the other is
+      // only brought up to date so it stops being re-read every boot.
+      const fromApi = row.source === "poe-api";
+      if (row.parser_version < PARSER_VERSION) {
+        if (!row.pob_code || fromApi) markPob.run(PARSER_VERSION, row.id);
+        else {
+          try {
+            storePob.run(JSON.stringify(parsePob(row.pob_code)), PARSER_VERSION, row.id);
+          } catch {
+            markPob.run(PARSER_VERSION, row.id);
+          }
+        }
       }
-      try {
-        store.run(JSON.stringify(parsePob(row.pob_code)), PARSER_VERSION, row.id);
-      } catch {
-        mark.run(PARSER_VERSION, row.id);
+      if (row.api_version < POE_API_VERSION) {
+        if (!row.source_payload || !fromApi) markApi.run(POE_API_VERSION, row.id);
+        else {
+          try {
+            const stored = JSON.parse(row.source_payload) as StoredPoeExport;
+            storeApi.run(JSON.stringify(rebuildFromStoredExport(stored)), POE_API_VERSION, row.id);
+          } catch {
+            markApi.run(POE_API_VERSION, row.id);
+          }
+        }
       }
     }
   });

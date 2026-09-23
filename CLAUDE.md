@@ -32,17 +32,23 @@ src/components/               UI; forms are client components, everything else i
 src/lib/db.ts                 connection, schema, migrations, league catalogue sync
 src/lib/leagues.ts            the league catalogue itself
 src/lib/games/index.ts        the game registry; GameModule is in games/types.ts
-src/lib/games/poe1/           everything Path of Exile 1 specific: pob, items, stats,
-                              tooltip, item art, gem colours, ascendancy emblems
+src/lib/games/poe1/           everything Path of Exile 1 specific: pob, poe-api, items,
+                              stats, tooltip, item art, gem colours, ascendancy emblems
 src/lib/games/poe2/           Path of Exile 2: classes so far, see its README
 src/lib/queries.ts            reads
 src/lib/actions.ts            writes — server actions only
 tests/                        node:test files
+tools/poe-char-export/        the collector: reads an account off the game's own
+                              character endpoints and writes the JSON the import
+                              page takes. Vendored as handed over, not built or
+                              linted here.
 ```
 
 Data flow: a PoB share code is base64+deflate over XML. `parsePob` turns it into a
 `BuildData`, which is stored as JSON in `characters.data` alongside the original code,
-so a character page never depends on an external link staying alive.
+so a character page never depends on an external link staying alive. A whole account
+read off the game's own endpoints takes the same path through `buildFromPoeExport`,
+and its payload is stored in `characters.source_payload` for the same reason.
 
 ## Rules that must hold
 
@@ -118,9 +124,12 @@ so a character page never depends on an external link staying alive.
   `GearGrid` (a server component) so the 223 KB index never reaches the browser — `buildTooltip`
   reads the catalogue for block and requirements, and calling it from the client component shipped
   the whole thing to the browser for two weeks. `ItemTooltip` takes finished sections as a prop and
-  `tests/client-bundle.test.ts` walks the client import graph to keep it that way. `GearSlot` falls back to a
-  silhouette when an image is missing or fails to load — via a ref as well as `onError`,
-  because the tag is server-rendered and a 404 fires before React attaches the handler. Do
+  `tests/client-bundle.test.ts` walks the client import graph to keep it that way. `GearSlot` falls back to the picture the
+  game itself serves when the local one is missing, and to a silhouette when there is no remote
+  one either — via a ref as well as `onError`, because the tag is server-rendered and a 404
+  fires before React attaches the handler. Only an item read from the game's own endpoints names
+  a remote picture, and that one is already composited, so a flask fetched that way is one frame
+  rather than three. Do
   not import the index into a client component. The index holds `bases` keyed by base type
   and `uniques` keyed by the unique's own name: dozens of uniques share one base, so every
   Prismatic Jewel unique drew the same picture while art was keyed on the base alone. Only a
@@ -168,9 +177,43 @@ so a character page never depends on an external link staying alive.
   without the trailing "Support", and a transfigured gem resolves through its base gem's id.
   A socket group has no primary skill — four golems are four equal actives — so `orderGems`
   puts every active above every support and nothing is promoted to a title.
+- **There are two sources for a build, and they know different things.** A Path of Building
+  export is an engine's opinion: it computes life, resistances and damage, and writes none of
+  the game's own numbers into an item. An export from the game's character endpoints is the
+  opposite: it reports exactly what the game shows — a requirement a socketed gem raised
+  (marked `(gem)`), a shield's modified block, a gem's attribute — and computes nothing at all,
+  so a character imported that way has an empty `stats` and renders no stat panels. Never
+  invent one. `src/lib/games/poe1/poe-api.ts` is the whole mapping; `pob.ts` is the other.
+  Where an item states a figure, the tooltip uses it and does not derive it — `requirementParts`
+  returns `item.requires` when there is one, and `shieldBlock` returns `item.block`. That same
+  export confirmed the derivation's rounding: 115 Int with 18% reduced requirements reports 94,
+  and 115 x 0.82 is 94.3.
+- **A build's source is the only thing allowed to rewrite it.** A character can hold both a
+  share code and an export payload. `parser_version` and `api_version` are separate columns
+  because the two mappers move independently, and `reparseStaleBuilds` reads `data.source` to
+  decide which one may re-derive the row; the other is only marked current so it stops being
+  re-read every boot. Without that, a `PARSER_VERSION` bump would silently replace a build that
+  came from the game with one derived from a stale share code.
+- **The league never comes from the export.** Every character migrates to a permanent league
+  when its own ends, so the league the API reports says nothing about where it was played. The
+  collector guesses from the last login time and grades its own guess — and the owner's record
+  is first-hand and beats it. So the importer matches on name and fills a character in where it
+  already sits; a character the archive has never seen is created only in a league chosen by
+  hand, with the guess offered as a default only where the collector called it `certain`. An
+  import also leaves notes, `/played` and the main skill alone: the record names the build
+  ("golemancer corrupting fever exsanguinate") where the export can only name the gem with the
+  most supports linked to it.
+- **The upload is staged between the two buttons, not re-sent.** React resets a form once its
+  action returns, which empties the file input, so the preview writes the upload to a file under
+  `os.tmpdir()` and the plan carries its name. The token is checked against a UUID pattern before
+  it is joined to a path. Server actions also cap a request body at 1 MB by default and a whole
+  account is several megabytes, which is what `serverActions.bodySizeLimit` in `next.config.ts`
+  is for.
 - **Only equipped and socketed items are gear.** A Path of Building export lists every item
   the build has ever held; `build.slots` and `build.treeJewels` are what "in use" means, and
-  the rest are spares that must not be drawn.
+  the rest are spares that must not be drawn. The reverse holds for a slot the paper doll has
+  no cell for — the weapon swap set, a heist trinket, a socketed abyss jewel: those are worn,
+  so `GearGrid` draws them in a row beneath the doll rather than dropping them.
 - **`BuildData` changes stay additive.** Rows written by older versions must still render;
   `mapCharacter` merges parsed JSON over `emptyBuild()` for exactly this reason.
 - **better-sqlite3 stays in `serverExternalPackages`.** It is a native module; bundling it

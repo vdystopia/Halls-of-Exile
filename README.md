@@ -14,18 +14,18 @@ were built in.
 - **A player directory** at `/players`, listing everyone with their character and league counts.
 - **A league index per player** (`/players/<username>`) covering every patch from 1.0 Domination /
   Nemesis to the current league, with league dates, characters archived, and challenge progress.
-- **A league page** (`/players/<username>/<patch>`) with that league's characters, the player's
+- **A league page** (`/players/<username>/<game>/<league>`) with that league's characters, the player's
   challenge completion (`32/40`), the league window and a note about how the league went.
 - **Per-character `/played` time**, typed in by hand — no export carries it — summed into the
   player header as the archive's total time played.
-- **A character sheet** (`/players/<username>/<patch>/<character>`) laid out like pobb.in: defence
+- **A character sheet** (`/players/<username>/<game>/<league>/<character>`) laid out like pobb.in: defence
   and offence panels, resistances, the full paper-doll of gear with hover tooltips showing every
   mod, the gem setup by socket group, the passive tree summary, the build configuration, and a
   dump of every stat Path of Building computed.
 
-Characters are added either by pasting a **Path of Building export code** (or a pobb.in / pastebin
-/ poe.ninja link), which fills in everything automatically, or by hand for characters whose build
-export is long gone.
+Characters are added by pasting a **Path of Building export code** (or a pobb.in / pastebin /
+poe.ninja link), by **importing a whole account** from the game's own character endpoints, or by
+hand for characters whose build export is long gone and who are no longer on the account.
 
 ## Stack
 
@@ -173,19 +173,61 @@ The importer accepts:
 - a raw Path of Building export code (`Share` → `Generate` in PoB), or
 - a link to `pobb.in`, `pastebin.com` or `poe.ninja/pob`.
 
-Codes are URL-safe base64 over a zlib-deflated PoB XML document. `src/lib/pob.ts` decodes it and
-`src/lib/items.ts` parses PoB's item text format, including `{variant:…}` selection, `{crafted}` /
+Codes are URL-safe base64 over a zlib-deflated PoB XML document. `src/lib/games/poe1/pob.ts` decodes it and
+`src/lib/games/poe1/items.ts` parses PoB's item text format, including `{variant:…}` selection, `{crafted}` /
 `{fractured}` tags and `{range:…}` value rolls, which are resolved the same way PoB displays them.
 The parsed build is stored as JSON alongside the original code, so a character page never depends
 on the link staying alive.
 
 Link imports need outbound HTTPS from the server; pasting the code itself always works offline.
 
+## Importing a whole account
+
+`/players/<username>/import` takes a JSON export of every character on a Path of Exile account
+and fills in their gear, socketed gems, tree jewels and passive allocations in one pass. This is
+the only way to archive a character whose Path of Building export was never saved — which is most
+of them.
+
+The archive never talks to the game. `tools/poe-char-export/` is the collector: one dependency-free
+file that runs in a browser console on pathofexile.com or as a Node CLI, reads the account's public
+characters tab, paces itself against the rate-limit headers, and writes the file the page takes.
+Its own README covers the endpoints and the flags; run it from a home IP, since Cloudflare may
+challenge a datacenter one.
+
+```bash
+node tools/poe-char-export/poe-char-export.js --account "you#1234" --out characters.json
+```
+
+What comes back and what does not:
+
+| | Path of Building code | Account export |
+| --- | --- | --- |
+| Gear, sockets, gems | yes | yes |
+| A gem's attribute colour | looked up by name | stated outright |
+| Item requirements | derived from the base | the game's own figures, `(gem)` marker and all |
+| Shield block | derived from the base | the modified figure |
+| Passives | a node count | every node by name, with the mastery effect chosen |
+| Life, resistances, damage | computed by PoB | **nothing** — the game computes none of it |
+| Which league the character belongs to | — | **no** (see below) |
+
+Because there are no computed stats, an imported character shows no stat panels until a build code
+is added to it. Everything else — the paper doll, the tooltips, the gem setup, the tree — is there.
+
+Uploading shows what the import would do before it does it. A character already in the archive is
+matched by name and filled in where it already sits, keeping its league, memories, `/played` time
+and main skill. A character the archive has never seen needs a league picked by hand: every
+character migrates to a permanent league when its own ends, so the league the game reports is not
+the league it was played in, and the collector's guess from the last login time is offered as a
+default only where it is certain.
+
+The export is kept, per character, in `characters.source_payload`, so a fix to the mapping can be
+replayed over everything already imported without reading the account again.
+
 ## Item art
 
 The paper doll draws each item with the game's own artwork. Two pieces make that work:
 
-- `src/lib/item-art-index.json` maps every equippable base item to its art path and inventory
+- `src/lib/games/poe1/item-art-index.json` maps every equippable base item to its art path and inventory
   size. It is generated from [RePoE](https://github.com/lvlvllvlvllvlvl/RePoE), the canonical
   dump of Path of Exile's item data, by `npm run art:index`, and is committed.
 - The images themselves come from the game's image CDN, at exactly the paths RePoE records:
@@ -201,9 +243,9 @@ placeholder silhouette, so the site works with no art at all — running the fet
 improvement, not a requirement.
 
 Items resolve by base type: a rare or unique names its base separately, and a magic item's base
-is found inside the affixes wrapping it ("Seething **Divine Life Flask** of Staunching"). A
-unique currently shows its base type's art; unique-specific artwork needs a second source and is
-still on the roadmap.
+is found inside the affixes wrapping it ("Seething **Divine Life Flask** of Staunching"). A unique is keyed on its own name,
+because dozens of them share one base. An item read from an account export also names the picture
+the game serves, which is used when the local catalogue has none.
 
 The artwork is Grinding Gear Games'. This is a personal, non-commercial fan archive, which is
 what their fan content policy covers.
@@ -224,7 +266,7 @@ catalogue is refreshed. Per-player challenge totals can also be overridden on th
 | `users` | username (unique, case-insensitive), first name, optional tagline |
 | `leagues` | patch, name, expansion, start/end dates, challenge total, custom flag |
 | `league_records` | one row per player per league: challenges completed, total override, notes |
-| `characters` | name, slug, class, ascendancy, level, main skill, memories, `/played` time, the PoB code and the parsed build JSON |
+| `characters` | name, slug, class, ascendancy, level, main skill, memories, `/played` time, the PoB code or the account-export payload it was built from, and the parsed build JSON |
 
 ## Layout
 

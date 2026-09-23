@@ -10,3 +10,5 @@ docker-compose.yml
 .dockerignore
 .env
 .env.local
+# The collector runs on the machine that can reach the game, not in the image.
+tools

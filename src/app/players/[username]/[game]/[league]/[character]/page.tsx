@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { CharacterAdmin } from "@/components/CharacterAdmin";
 import { CopyButton } from "@/components/CopyButton";
 import { GearGrid } from "@/components/GearGrid";
+import { PassivePanel } from "@/components/PassivePanels";
 import { SkillGroups } from "@/components/SkillGroups";
 import { AllStatsTable, AttributeStrip, ResistanceBar, StatColumn } from "@/components/StatPanels";
 import { classLine, formatPlayed, leagueTitle, leagueWindow } from "@/lib/format";
@@ -89,16 +90,27 @@ export default async function CharacterPage({ params }: Props) {
 
       {!hasStats && build.items.length === 0 ? (
         <div className="panel p-8 text-center text-sm text-muted">
-          This character was written down by hand. Import a Path of Building export from “Manage this character”
-          to fill in gear, gems, tree and stats.
+          This character was written down by hand. Paste a Path of Building code under “Manage this character”,
+          or{" "}
+          <Link href={`/players/${user.username}/import`} className="link-gold">
+            import the whole account
+          </Link>{" "}
+          from the game to fill in its gear, gems and tree.
         </div>
       ) : null}
 
       <div className="grid gap-4 lg:grid-cols-12">
         <div className="space-y-4 lg:col-span-3">
-          <StatColumn title="Defence" panels={DEFENCE_PANELS} stats={stats} />
-          <ResistanceBar stats={stats} />
-          <AttributeStrip stats={stats} />
+          {hasStats ? (
+            <>
+              <StatColumn title="Defence" panels={DEFENCE_PANELS} stats={stats} />
+              <ResistanceBar stats={stats} />
+              <AttributeStrip stats={stats} />
+            </>
+          ) : null}
+          {/* The game's own export computes nothing, so a character read from it
+              has no stats to show and this column carries its passives instead. */}
+          {!hasStats && build.passives ? <PassivePanel passives={build.passives} /> : null}
         </div>
 
         <div className="space-y-4 lg:col-span-6">
@@ -129,7 +141,7 @@ export default async function CharacterPage({ params }: Props) {
         </div>
 
         <div className="space-y-4 lg:col-span-3">
-          <StatColumn title="Offence" panels={OFFENCE_PANELS} stats={stats} />
+          {hasStats ? <StatColumn title="Offence" panels={OFFENCE_PANELS} stats={stats} /> : null}
 
           <section className="panel">
             <div className="panel-header">
@@ -170,6 +182,12 @@ export default async function CharacterPage({ params }: Props) {
                   >
                     Open the tree ↗
                   </a>
+                ) : null}
+                {build.origin ? (
+                  <p className="pt-2 text-xs text-muted">
+                    Read from {build.origin.account}
+                    {build.origin.fetchedAt ? ` on ${build.origin.fetchedAt.slice(0, 10)}` : ""}.
+                  </p>
                 ) : null}
               </div>
             </section>

@@ -1,3 +1,4 @@
+import { attributeRequirementPercent, splitMod, type ModParts } from "./items";
 import { findItemBase } from "./item-art";
 import type { ParsedItem } from "../../types";
 
@@ -24,7 +25,7 @@ export type SectionKind =
   | "explicit"
   | "footer";
 
-export type TooltipLine = { text: string; tags: string[] };
+export type TooltipLine = ModParts;
 export type TooltipSection = { kind: SectionKind; lines: TooltipLine[] };
 
 const SECTION_ORDER: SectionKind[] = [
@@ -48,16 +49,6 @@ const SECTION_ORDER: SectionKind[] = [
 const ANOINT = [/^Allocates\b/i, /^Your\b.*\bTowers?\b/i];
 
 /**
- * Mods are stored as strings; a tagged one carries its tags after a "·"
- * separator, which is the format the parser has always written. Reading them
- * back keeps characters imported before this rendering correctly.
- */
-export function splitMod(line: string): TooltipLine {
-  const [text, tags] = line.split("  ·  ");
-  return { text, tags: tags ? tags.split(", ").map((tag) => tag.trim()) : [] };
-}
-
-/**
  * Inside the implicit region, a crafted tag means the line is not one of the
  * base's own implicits: it is an anoint or, on a flask, an enchantment such as
  * "Used when Charges reach full".
@@ -73,9 +64,13 @@ function classify(line: TooltipLine): Extract<SectionKind, "anoint" | "enchant" 
  * "increased Chance to Block" modifiers, rounded down. Spell block is a
  * separate stat and is deliberately not counted. Path of Building computes
  * this rather than writing it into the item text, so it is derived here from
- * the base's block chance in the catalogue.
+ * the base's block chance in the catalogue — unless the item carries the figure
+ * already, which one read off the official API does.
  */
 export function shieldBlock(item: ParsedItem): number | null {
+  // An item that states its own block needs no arithmetic: the official API
+  // reports the modified figure the game shows.
+  if (item.block !== undefined) return item.block;
   const base = findItemBase(item);
   if (!base?.block) return null;
 
@@ -88,23 +83,6 @@ export function shieldBlock(item: ParsedItem): number | null {
   }
 
   return Math.floor(base.block * (1 + increased / 100));
-}
-
-/**
- * The summed "reduced/increased Attribute Requirements" on an item, as a
- * percentage. Modifiers of the same kind add together, as they do in game, and
- * a requirement cannot be pushed below zero.
- */
-function attributeRequirementPercent(item: ParsedItem): number {
-  let percent = 0;
-  for (const raw of [...item.implicits, ...item.explicits]) {
-    const text = splitMod(raw).text;
-    const reduced = /(\d+(?:\.\d+)?)%\s+reduced\s+Attribute\s+Requirements/i.exec(text);
-    if (reduced) percent -= Number(reduced[1]);
-    const increased = /(\d+(?:\.\d+)?)%\s+increased\s+Attribute\s+Requirements/i.exec(text);
-    if (increased) percent += Number(increased[1]);
-  }
-  return Math.max(-100, percent);
 }
 
 /**
@@ -123,10 +101,14 @@ export function attributeRequirementMultiplier(item: ParsedItem): number {
  * the way the game colours a modified value — the level is never scaled by an
  * attribute modifier, so it stays plain.
  *
- * Rounding is down, matching the rule used for block. The game's own rounding
- * for this is not something the export records, so it is a choice, not a fact.
+ * Rounding is down. Path of Building's export does not record the game's rule,
+ * so this was a choice; a character read off the official API later confirmed
+ * it — a Saintly Chainmail needing 115 Int with 18% reduced requirements reports
+ * 94, and 115 x 0.82 is 94.3. An item that carries its own requirement lines,
+ * as one from the API does, is not derived at all.
  */
 export function requirementParts(item: ParsedItem): { text: string; modified: boolean }[] {
+  if (item.requires) return item.requires;
   const base = findItemBase(item);
   const level = item.levelReq ?? base?.req[0] ?? 0;
   const percent = attributeRequirementPercent(item);
@@ -159,6 +141,14 @@ export function buildTooltip(item: ParsedItem): TooltipSection[] {
   const plain = (text: string) => ({ text, tags: [] });
 
   if (item.quality) push("quality", plain(`Quality: +${item.quality}%`));
+
+  // Properties the model has no field for: a weapon's damage and attack speed,
+  // a flask's duration and charges. Quality has variants — "Quality (Attribute
+  // Modifiers)" — which belong beside quality rather than among the defences.
+  for (const property of item.properties ?? []) {
+    const text = property.value ? `${property.name}: ${property.value}` : property.name;
+    push(property.name.startsWith("Quality") ? "quality" : "defences", plain(text));
+  }
 
   if (item.intangibility) push("special", plain(`Intangibility: ${item.intangibility}`));
   if (item.memoryStrands) push("special", plain(`Memory Strands: ${item.memoryStrands}`));

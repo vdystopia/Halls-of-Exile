@@ -73,6 +73,23 @@ const META_KEY_PATTERNS = [/basepercentile$/, /^unique id$/];
 
 const SOCKET_COLORS = new Set(["R", "G", "B", "W", "A", "D"]);
 
+/**
+ * "R-R-B-G-B R" into two linked groups. Both sources write sockets this way:
+ * Path of Building in its item text, and the official API in its own field.
+ */
+export function parseSocketString(value: string): SocketGroupColor[][] {
+  return value
+    .split(" ")
+    .filter(Boolean)
+    .map((group) =>
+      group
+        .split("-")
+        .map((color) => color.trim().toUpperCase())
+        .filter((color) => SOCKET_COLORS.has(color)) as SocketGroupColor[],
+    )
+    .filter((group) => group.length > 0);
+}
+
 /** Resolve `{range:0.6}(10-20)` style values the way Path of Building displays them. */
 function applyRanges(line: string, ranges: number[]): string {
   let index = 0;
@@ -225,16 +242,7 @@ export function parseItem(raw: string, id: number): ParsedItem {
           item.memoryStrands = value;
           break;
         case "sockets":
-          item.sockets = value
-            .split(" ")
-            .filter(Boolean)
-            .map((group) =>
-              group
-                .split("-")
-                .map((color) => color.trim().toUpperCase())
-                .filter((color) => SOCKET_COLORS.has(color)) as SocketGroupColor[],
-            )
-            .filter((group) => group.length > 0);
+          item.sockets = parseSocketString(value);
           break;
         case "implicits":
           implicitCount = parseInt(value, 10) || 0;
@@ -272,6 +280,41 @@ export function parseItem(raw: string, id: number): ParsedItem {
   });
 
   return item;
+}
+
+/** A stored mod split back into its text and the tags the parser wrote on it. */
+export type ModParts = { text: string; tags: string[] };
+
+/**
+ * Mods are stored as strings; a tagged one carries its tags after a "·"
+ * separator, which is the format the parser has always written. This is the
+ * inverse of `renderMod` above, and reading them back keeps characters imported
+ * before the tooltip rendering correct.
+ */
+export function splitMod(line: string): ModParts {
+  const [text, tags] = line.split("  ·  ");
+  return { text, tags: tags ? tags.split(", ").map((tag) => tag.trim()) : [] };
+}
+
+/**
+ * The summed "reduced/increased Attribute Requirements" on an item, as a
+ * percentage. Modifiers of the same kind add together, as they do in game, and
+ * a requirement cannot be pushed below zero.
+ *
+ * It lives here rather than beside the tooltip that colours the result because
+ * it reads nothing but the item's own mods, and because the tooltip module also
+ * reads the art catalogue — which must not follow this into the browser.
+ */
+export function attributeRequirementPercent(item: ParsedItem): number {
+  let percent = 0;
+  for (const raw of [...item.implicits, ...item.explicits]) {
+    const text = splitMod(raw).text;
+    const reduced = /(\d+(?:\.\d+)?)%\s+reduced\s+Attribute\s+Requirements/i.exec(text);
+    if (reduced) percent -= Number(reduced[1]);
+    const increased = /(\d+(?:\.\d+)?)%\s+increased\s+Attribute\s+Requirements/i.exec(text);
+    if (increased) percent += Number(increased[1]);
+  }
+  return Math.max(-100, percent);
 }
 
 /**

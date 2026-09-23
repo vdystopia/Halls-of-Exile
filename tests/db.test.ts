@@ -168,3 +168,115 @@ test("a league dropped from the seed is removed, unless it holds characters", as
   assert.equal(exists(kept), true, "a league holding a character is kept whatever the seed says");
   assert.equal(exists(custom), true, "a hand-added league is never pruned");
 });
+
+/**
+ * The archive's second source. A character imported from Grinding Gear Games'
+ * own character endpoints keeps the payload it was built from, because the
+ * endpoints are rate-limited and undocumented and a character that was deleted
+ * cannot be fetched again at all — so a fix to the mapping has to be replayed
+ * from what was stored rather than re-read from the game.
+ */
+test("a build stored by an older mapper is re-derived from its payload", async () => {
+  const fsp = await import("node:fs");
+  const { db, ensureSchema } = await import("../src/lib/db");
+  const { POE_API_VERSION, readPoeExport, storedPayload } = await import("../src/lib/games/poe1/poe-api");
+
+  const fixture = path.join(process.cwd(), "tests", "fixtures", "poe-export.json");
+  const exported = readPoeExport(fsp.readFileSync(fixture, "utf8"));
+  const entry = exported.characters.find((row) => row.name === "TheLocalVoid")!;
+  const payload = JSON.stringify(storedPayload(entry, exported));
+
+  const user = db
+    .prepare(`INSERT INTO users (username, first_name) VALUES ('remap-tester', 'Test')`)
+    .run().lastInsertRowid as number;
+  const league = db.prepare(`SELECT id FROM leagues LIMIT 1`).get() as { id: number };
+  // As an older mapper left it: the source is right, the build is empty.
+  db.prepare(
+    `INSERT INTO characters (user_id, league_id, slug, name, class_name, data, parser_version,
+                             source_payload, api_version)
+     VALUES (?, ?, 'remap', 'TheLocalVoid', 'Witch', ?, ?, ?, 0)`,
+  ).run(user, league.id, JSON.stringify({ source: "poe-api", items: [] }), 0, payload);
+
+  ensureSchema(db);
+
+  const row = db.prepare(`SELECT data, api_version FROM characters WHERE slug = 'remap'`).get() as {
+    data: string;
+    api_version: number;
+  };
+  const build = JSON.parse(row.data) as { items: unknown[]; slots: Record<string, number> };
+  assert.equal(row.api_version, POE_API_VERSION);
+  assert.ok(build.items.length > 10, "the build was not re-derived from the payload");
+  assert.ok(build.slots["Body Armour"]);
+});
+
+/**
+ * A character can hold both a share code and an export payload — imported from
+ * Path of Building, then filled in from the game. Only whichever produced the
+ * build it is showing may rewrite it, or a bump to one parser would silently
+ * replace the other's work.
+ */
+test("a character with two sources is only rewritten by the one it came from", async () => {
+  const zlib = await import("node:zlib");
+  const { db, ensureSchema } = await import("../src/lib/db");
+  const { PARSER_VERSION } = await import("../src/lib/games/poe1/pob");
+  const { POE_API_VERSION } = await import("../src/lib/games/poe1/poe-api");
+
+  const xml = `<PathOfBuilding><Build level="84" className="Ranger"/><Items><Item>Rarity: RARE
+Blood Coat
+Necrotic Armour</Item></Items></PathOfBuilding>`;
+  const code = zlib.deflateSync(Buffer.from(xml)).toString("base64").replace(/\+/g, "-").replace(/\//g, "_");
+
+  const user = db
+    .prepare(`INSERT INTO users (username, first_name) VALUES ('twosource-tester', 'Test')`)
+    .run().lastInsertRowid as number;
+  const league = db.prepare(`SELECT id FROM leagues LIMIT 1`).get() as { id: number };
+  const build = JSON.stringify({ source: "poe-api", items: [], slots: {}, marker: "from the game" });
+  db.prepare(
+    `INSERT INTO characters (user_id, league_id, slug, name, class_name, pob_code, data, parser_version,
+                             source_payload, api_version)
+     VALUES (?, ?, 'two', 'Two', 'Ranger', ?, ?, 0, NULL, ?)`,
+  ).run(user, league.id, code, build, POE_API_VERSION);
+
+  ensureSchema(db);
+
+  const row = db.prepare(`SELECT data, parser_version FROM characters WHERE slug = 'two'`).get() as {
+    data: string;
+    parser_version: number;
+  };
+  assert.equal(row.data, build, "the share code overwrote a build that came from the game");
+  assert.equal(row.parser_version, PARSER_VERSION, "it should not be re-checked on every boot");
+});
+
+/** Both new columns reach a database created before either existed. */
+test("the import columns are added to a populated archive", async () => {
+  const { db, ensureSchema } = await import("../src/lib/db");
+  const columns = () =>
+    (db.prepare("PRAGMA table_info(characters)").all() as { name: string }[]).map((c) => c.name);
+
+  const user = db
+    .prepare(`INSERT INTO users (username, first_name) VALUES ('precolumn-tester', 'Test')`)
+    .run().lastInsertRowid as number;
+  const league = db.prepare(`SELECT id FROM leagues LIMIT 1`).get() as { id: number };
+  db.prepare(
+    `INSERT INTO characters (user_id, league_id, slug, name, class_name, data, parser_version)
+     VALUES (?, ?, 'precolumn', 'Before', 'Witch', '{}', 0)`,
+  ).run(user, league.id);
+
+  db.exec("ALTER TABLE characters DROP COLUMN source_payload");
+  db.exec("ALTER TABLE characters DROP COLUMN api_version");
+  assert.equal(columns().includes("api_version"), false);
+
+  ensureSchema(db);
+
+  assert.ok(columns().includes("source_payload"));
+  assert.ok(columns().includes("api_version"));
+  const row = db.prepare(`SELECT name, api_version FROM characters WHERE slug = 'precolumn'`).get() as {
+    name: string;
+    api_version: number;
+  };
+  assert.equal(row.name, "Before", "the existing row did not survive the migration");
+  const { POE_API_VERSION } = await import("../src/lib/games/poe1/poe-api");
+  // It has no payload and never came from the game, so it is marked current
+  // rather than being re-read on every boot.
+  assert.equal(row.api_version, POE_API_VERSION);
+});

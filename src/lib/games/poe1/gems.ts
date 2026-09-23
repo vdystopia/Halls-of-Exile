@@ -13,9 +13,13 @@ export type GemColor = "r" | "g" | "b" | "w";
 
 const COLORS = colors as Record<string, string>;
 
-/** The metadata id is exact; the name is the fallback for anything missing. */
-export function gemColor(gem: Pick<Gem, "name" | "gemId">): GemColor | null {
-  const found = (gem.gemId ? COLORS[gem.gemId] : undefined) ?? COLORS[gem.name.trim()];
+/**
+ * A colour the source stated beats any lookup — the official API reports a
+ * gem's attribute outright. Otherwise the metadata id is exact and the name is
+ * the fallback for anything missing.
+ */
+export function gemColor(gem: Pick<Gem, "name" | "gemId" | "color">): GemColor | null {
+  const found = gem.color ?? (gem.gemId ? COLORS[gem.gemId] : undefined) ?? COLORS[gem.name.trim()];
   return found === "r" || found === "g" || found === "b" || found === "w" ? found : null;
 }
 

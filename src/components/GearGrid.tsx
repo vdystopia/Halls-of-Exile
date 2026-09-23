@@ -27,6 +27,12 @@ export function GearGrid({ build }: { build: BuildData }) {
   const jewels = socketed.map((id) => byId.get(id)).filter((item): item is ParsedItem => Boolean(item));
   const abyssal = Object.keys(build.slots).filter((slot) => /Abyssal Socket/.test(slot));
 
+  // Slots the paper doll has no cell for but the character is genuinely wearing:
+  // the weapon swap set, a heist trinket, anything a source names that this one
+  // does not know. Drawn beneath the doll rather than dropped.
+  const drawn = new Set([...PAPER_DOLL.map((cell) => cell.slot), ...FLASK_SLOTS, ...abyssal]);
+  const extras = Object.keys(build.slots).filter((slot) => !drawn.has(slot));
+
   return (
     <div className="space-y-5">
       <div
@@ -60,6 +66,25 @@ export function GearGrid({ build }: { build: BuildData }) {
           />
         ))}
       </div>
+
+      {extras.length ? (
+        <div>
+          <p className="eyebrow mb-2">Also equipped</p>
+          <div className="flex flex-wrap gap-1.5">
+            {extras.map((slot) => (
+              <GearSlot
+                key={slot}
+                item={at(slot)}
+                art={artFor(at(slot))}
+                tooltip={tooltipFor(at(slot))}
+                shape={/Weapon 2|Offhand/.test(slot) ? "offhand" : /Weapon/.test(slot) ? "weapon" : "jewel"}
+                label={slot}
+                style={{ width: CELL, height: CELL }}
+              />
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       {abyssal.length ? (
         <div>

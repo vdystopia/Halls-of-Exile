@@ -1,0 +1,3477 @@
+{
+"schema_version": 1,
+"exporter": {
+"name": "poe-char-export",
+"version": "1.0.0"
+},
+"generated_at": "2026-09-23T22:38:37.299Z",
+"account": "zxBlasphemy#5164",
+"realm": "pc",
+"source": "pathofexile.com/character-window (get-characters, get-items, get-passive-skills)",
+"auth": "anonymous",
+"stats": {
+"listed": 43,
+"exported": 43,
+"fetched": 43,
+"reused": 0,
+"failed": 0,
+"requests": 90,
+"rate_limit_wait_s": 158,
+"elapsed_s": 190
+},
+"removed_since_previous": [],
+"errors": [],
+"characters": [
+{
+"name": "TheLocalVoid",
+"realm": "pc",
+"league": "Solo Self-Found",
+"level": 85,
+"class": "Necromancer",
+"base_class": "Witch",
+"ascendancy": "Necromancer",
+"bloodline": null,
+"last_login": "2026-07-23T01:48:21Z",
+"last_login_unix": 1784771301,
+"league_flags": {
+"permanent": true,
+"hardcore": false,
+"ssf": true,
+"ruthless": false
+},
+"origin_league": {
+"league": "Mirage",
+"league_full": "Mirage",
+"version": "3.28",
+"basis": "last_login_after_league_end",
+"confidence": "weak",
+"candidates": [
+"Mirage"
+],
+"ssf": true,
+"hardcore": false,
+"ruthless": false
+},
+"gold": null,
+"main_skill": {
+"skill": "Vaal Detonate Dead",
+"utility": false,
+"slot": "BodyArmour",
+"links": 5,
+"supports": [
+"Burning Damage Support",
+"Cruelty Support",
+"Ignite Proliferation Support",
+"Combustion Support"
+],
+"linked_actives": [
+"Vaal Detonate Dead"
+]
+},
+"uniques": [],
+"equipment": [
+{
+"slot": "Gloves",
+"inventory_id": "Gloves",
+"x": 0,
+"y": 0,
+"w": 2,
+"h": 2,
+"swap": false,
+"id": "cec7cba063edc4bfa87e98b6dc02772d4e9f09abcd9d4b6940b3212a7f850ef5",
+"name": "Chimeric Grasp",
+"type_line": "Carnal Mitts",
+"base_type": "Carnal Mitts",
+"rarity": "Rare",
+"frame_type": 2,
+"ilvl": 75,
+"identified": true,
+"league": "Solo Self-Found",
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQXJtb3Vycy9HbG92ZXMvR2xvdmVzRGV4SW50MyIsInciOjIsImgiOjIsInNjYWxlIjoxfV0/060b6ea395/GlovesDexInt3.png",
+"influences": [],
+"flags": {},
+"properties": {
+"Quality": "+20%",
+"Evasion Rating": "115",
+"Energy Shield": "24"
+},
+"requirements": {
+"Level": "68",
+"Dex": "151",
+"Int": "151"
+},
+"mods": {
+"explicit": [
+"+15% chance to Suppress Spell Damage",
+"+16 to Intelligence",
+"Adds 1 to 28 Lightning Damage to Attacks",
+"+74 to maximum Life",
+"+22% to Lightning Resistance"
+],
+"crafted": [
+"Regenerate 20 Life per second",
+"+38 to maximum Mana"
+]
+},
+"sockets": "G-B-B-B",
+"links": 4,
+"socketed": [
+{
+"name": "Vaal Grace",
+"tags": [
+"Aura",
+"Spell",
+"AoE",
+"Duration",
+"Vaal"
+],
+"kind": "gem",
+"support": false,
+"level": 19,
+"quality": null,
+"corrupted": true,
+"colour": "D",
+"socket": 0,
+"group": 0,
+"links": 4,
+"icon": "https://web.poecdn.com/gen/image/WzMwLDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9WYWFsR2Vtcy9WYWFsR3JhY2UiLCJ3IjoxLCJoIjoxLCJzY2FsZSI6MX1d/bbbc8bdd9c/VaalGrace.png"
+},
+{
+"name": "Arcane Surge Support",
+"tags": [
+"Arcane",
+"Support",
+"Spell",
+"Duration"
+],
+"kind": "gem",
+"support": true,
+"level": 6,
+"quality": null,
+"corrupted": false,
+"colour": "I",
+"socket": 1,
+"group": 0,
+"links": 4,
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9TdXBwb3J0L0FyY2FuZVN1cmdlIiwidyI6MSwiaCI6MSwic2NhbGUiOjF9XQ/d3d0499c29/ArcaneSurge.png"
+},
+{
+"name": "Flame Dash",
+"tags": [
+"Spell",
+"Movement",
+"Duration",
+"Fire",
+"Travel",
+"Blink"
+],
+"kind": "gem",
+"support": false,
+"level": 19,
+"quality": null,
+"corrupted": false,
+"colour": "I",
+"socket": 2,
+"group": 0,
+"links": 4,
+"icon": "https://web.poecdn.com/gen/image/WzMwLDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9GbGFtZURhc2giLCJ3IjoxLCJoIjoxLCJzY2FsZSI6MX1d/09b5080831/FlameDash.png"
+},
+{
+"name": "Unbound Ailments Support",
+"tags": [
+"Support"
+],
+"kind": "gem",
+"support": true,
+"level": 19,
+"quality": null,
+"corrupted": false,
+"colour": "I",
+"socket": 3,
+"group": 0,
+"links": 4,
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9TdXBwb3J0L1VuYm91bmRBaWxtZW50cyIsInciOjEsImgiOjEsInNjYWxlIjoxfV0/a5ce74c4dc/UnboundAilments.png"
+}
+]
+},
+{
+"slot": "Ring2",
+"inventory_id": "Ring2",
+"x": 0,
+"y": 0,
+"w": 1,
+"h": 1,
+"swap": false,
+"id": "db86ecc52e28f12e5b86fa32233110b918139b874ee083613bfb46dd3e02eef3",
+"name": "Brood Twirl",
+"type_line": "Sapphire Ring",
+"base_type": "Sapphire Ring",
+"rarity": "Rare",
+"frame_type": 2,
+"ilvl": 59,
+"identified": true,
+"league": "Solo Self-Found",
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvUmluZ3MvUmluZzYiLCJ3IjoxLCJoIjoxLCJzY2FsZSI6MX1d/74a5d719fd/Ring6.png",
+"influences": [],
+"flags": {},
+"properties": {},
+"requirements": {
+"Level": "29"
+},
+"mods": {
+"implicit": [
+"+26% to Cold Resistance"
+],
+"explicit": [
+"+21 to Strength",
+"+11 to maximum Energy Shield",
+"+63 to maximum Life",
+"+27% to Lightning Resistance"
+],
+"crafted": [
+"+18 to Dexterity"
+]
+},
+"sockets": null,
+"links": 0,
+"socketed": []
+},
+{
+"slot": "Offhand (swap)",
+"inventory_id": "Offhand2",
+"x": 0,
+"y": 0,
+"w": 2,
+"h": 3,
+"swap": true,
+"id": "4bef1217a3f3321d8f958f317e24fb6013c855b7774c17c12fa179d0135ee4ce",
+"name": null,
+"type_line": "Elegant Sword",
+"base_type": "Elegant Sword",
+"rarity": "Normal",
+"frame_type": 0,
+"ilvl": 40,
+"identified": true,
+"league": "Solo Self-Found",
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvV2VhcG9ucy9PbmVIYW5kV2VhcG9ucy9PbmVIYW5kU3dvcmRzL09uZUhhbmRTd29yZDciLCJ3IjoyLCJoIjozLCJzY2FsZSI6MX1d/9ac21989c5/OneHandSword7.png",
+"influences": [],
+"flags": {},
+"properties": {
+"One Handed Sword": true,
+"Physical Damage": "20-33",
+"Critical Strike Chance": "5.00%",
+"Attacks per Second": "1.50",
+"Weapon Range: 1.1 metres": true
+},
+"requirements": {
+"Level": "68",
+"Str": "46",
+"Dex": "70",
+"Int": "108"
+},
+"mods": {
+"implicit": [
+"+190 to Accuracy Rating"
+]
+},
+"sockets": "G-B G",
+"links": 2,
+"socketed": [
+{
+"name": "Desecrate",
+"tags": [
+"Spell",
+"AoE",
+"Duration",
+"Chaos"
+],
+"kind": "gem",
+"support": false,
+"level": 11,
+"quality": null,
+"corrupted": false,
+"colour": "D",
+"socket": 0,
+"group": 0,
+"links": 2,
+"icon": "https://web.poecdn.com/gen/image/WzMwLDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9EZXNlY3JhdGUiLCJ3IjoxLCJoIjoxLCJzY2FsZSI6MX1d/7e2985eec3/Desecrate.png"
+},
+{
+"name": "Faster Casting Support",
+"tags": [
+"Support",
+"Spell"
+],
+"kind": "gem",
+"support": true,
+"level": 19,
+"quality": null,
+"corrupted": false,
+"colour": "I",
+"socket": 1,
+"group": 0,
+"links": 2,
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9TdXBwb3J0L0Zhc3RlckNhc3QiLCJ3IjoxLCJoIjoxLCJzY2FsZSI6MX1d/4a65f03270/FasterCast.png"
+},
+{
+"name": "Desecrate",
+"tags": [
+"Spell",
+"AoE",
+"Duration",
+"Chaos"
+],
+"kind": "gem",
+"support": false,
+"level": 11,
+"quality": null,
+"corrupted": false,
+"colour": "D",
+"socket": 2,
+"group": 1,
+"links": 1,
+"icon": "https://web.poecdn.com/gen/image/WzMwLDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9EZXNlY3JhdGUiLCJ3IjoxLCJoIjoxLCJzY2FsZSI6MX1d/7e2985eec3/Desecrate.png"
+}
+]
+},
+{
+"slot": "Offhand",
+"inventory_id": "Offhand",
+"x": 0,
+"y": 0,
+"w": 2,
+"h": 3,
+"swap": false,
+"id": "68c9455d5f2fefa4c47d2e07b3e90540cb136c628d924baacc9bf7f71b88d449",
+"name": "Grim Refuge",
+"type_line": "Angelic Kite Shield",
+"base_type": "Angelic Kite Shield",
+"rarity": "Rare",
+"frame_type": 2,
+"ilvl": 80,
+"identified": true,
+"league": "Solo Self-Found",
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQXJtb3Vycy9TaGllbGRzL1NoaWVsZFN0ckludDUiLCJ3IjoyLCJoIjozLCJzY2FsZSI6MX1d/92beb951d5/ShieldStrInt5.png",
+"influences": [],
+"flags": {},
+"properties": {
+"Quality": "+20%",
+"Chance to Block": "22%",
+"Armour": "539",
+"Energy Shield": "32"
+},
+"requirements": {
+"Level": "68",
+"Str": "71",
+"Int": "108"
+},
+"mods": {
+"implicit": [
+"+12% to all Elemental Resistances"
+],
+"explicit": [
+"12% Chance to Block Spell Damage",
+"100% increased Spell Critical Strike Chance",
+"+108 to maximum Life",
+"7% additional Physical Damage Reduction"
+],
+"crafted": [
+"+315 to Armour"
+]
+},
+"sockets": "B-B-B",
+"links": 3,
+"socketed": [
+{
+"name": "Hextouch Support",
+"tags": [
+"Support",
+"Hex",
+"Trigger"
+],
+"kind": "gem",
+"support": true,
+"level": 18,
+"quality": null,
+"corrupted": false,
+"colour": "I",
+"socket": 0,
+"group": 0,
+"links": 3,
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9TdXBwb3J0L0N1cnNlT25IaXQiLCJ3IjoxLCJoIjoxLCJzY2FsZSI6MX1d/da0ae156c5/CurseOnHit.png"
+},
+{
+"name": "Flammability",
+"tags": [
+"Spell",
+"AoE",
+"Duration",
+"Fire",
+"Curse",
+"Hex"
+],
+"kind": "gem",
+"support": false,
+"level": 19,
+"quality": null,
+"corrupted": false,
+"colour": "I",
+"socket": 1,
+"group": 0,
+"links": 3,
+"icon": "https://web.poecdn.com/gen/image/WzMwLDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9GbGFtbWFiaWxpdHkiLCJ3IjoxLCJoIjoxLCJzY2FsZSI6MX1d/9509f4c3a7/Flammability.png"
+},
+{
+"name": "Wave of Conviction",
+"tags": [
+"Spell",
+"AoE",
+"Duration",
+"Fire",
+"Lightning",
+"Physical"
+],
+"kind": "gem",
+"support": false,
+"level": 19,
+"quality": null,
+"corrupted": false,
+"colour": "I",
+"socket": 2,
+"group": 0,
+"links": 3,
+"icon": "https://web.poecdn.com/gen/image/WzMwLDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9QdXJnZSIsInciOjEsImgiOjEsInNjYWxlIjoxfV0/66ebce3861/Purge.png"
+}
+]
+},
+{
+"slot": "Flask 4",
+"inventory_id": "Flask",
+"x": 3,
+"y": 0,
+"w": 1,
+"h": 2,
+"swap": false,
+"id": "956959c60ec69aeb7d09adb99c3f8941adef17c5c52d6b78a8b05322c7a353d2",
+"name": null,
+"type_line": "Continuous Quartz Flask of the Gazelle",
+"base_type": "Quartz Flask",
+"rarity": "Magic",
+"frame_type": 1,
+"ilvl": 54,
+"identified": true,
+"league": "Solo Self-Found",
+"icon": "https://web.poecdn.com/gen/image/WzksMTQseyJmIjoiMkRJdGVtcy9GbGFza3MvcGhhc2VmbGFzazAxIiwidyI6MSwiaCI6Miwic2NhbGUiOjEsImxldmVsIjoxfV0/6266d738e1/phaseflask01.png",
+"influences": [],
+"flags": {},
+"properties": {
+"Lasts 6 Seconds": true,
+"Consumes 30 of 60 Charges on use": true,
+"Currently has 60 Charges": true
+},
+"requirements": {
+"Level": "27"
+},
+"mods": {
+"utility": [
+"+10% chance to Suppress Spell Damage",
+"Phasing"
+],
+"explicit": [
+"22% increased Charge Recovery",
+"43% increased Evasion Rating during Effect"
+]
+},
+"sockets": null,
+"links": 0,
+"socketed": []
+},
+{
+"slot": "Amulet",
+"inventory_id": "Amulet",
+"x": 0,
+"y": 0,
+"w": 1,
+"h": 1,
+"swap": false,
+"id": "d134dc4333d86f3b1c9b1bfc5ac2c5dbc098e3b25f3329b9f972e6bb0e20f40d",
+"name": "Corruption Idol",
+"type_line": "Citrine Amulet",
+"base_type": "Citrine Amulet",
+"rarity": "Rare",
+"frame_type": 2,
+"ilvl": 76,
+"identified": true,
+"league": "Solo Self-Found",
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQW11bGV0cy9DaXRyaW5lQW11bGV0IiwidyI6MSwiaCI6MSwic2NhbGUiOjF9XQ/95804f838b/CitrineAmulet.png",
+"influences": [],
+"flags": {},
+"properties": {},
+"requirements": {
+"Level": "54"
+},
+"mods": {
+"implicit": [
+"+23 to Strength and Dexterity"
+],
+"explicit": [
+"+42 to Strength",
+"+31 to Dexterity",
+"Adds 1 to 2 Cold Damage to Attacks",
+"18% increased Armour",
+"Regenerate 16.6 Life per second"
+],
+"crafted": [
+"+44 to maximum Life"
+]
+},
+"sockets": null,
+"links": 0,
+"socketed": []
+},
+{
+"slot": "Weapon",
+"inventory_id": "Weapon",
+"x": 0,
+"y": 0,
+"w": 2,
+"h": 3,
+"swap": false,
+"id": "b28d0ec93997b4d2c8e3681b10c42bbafa08228130fc6efb770d72b3e3dc66f9",
+"name": "Pain Ram",
+"type_line": "Opal Sceptre",
+"base_type": "Opal Sceptre",
+"rarity": "Rare",
+"frame_type": 2,
+"ilvl": 69,
+"identified": true,
+"league": "Solo Self-Found",
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvV2VhcG9ucy9PbmVIYW5kV2VhcG9ucy9TY2VwdGVycy9zY2VwdGVyNCIsInciOjIsImgiOjMsInNjYWxlIjoxfV0/c986bafb78/scepter4.png",
+"influences": [],
+"flags": {},
+"properties": {
+"Sceptre": true,
+"Physical Damage": "49-73",
+"Elemental Damage": "8-17",
+"Critical Strike Chance": "8.00%",
+"Attacks per Second": "1.25",
+"Weapon Range: 1.1 metres": true
+},
+"requirements": {
+"Level": "68",
+"Str": "95",
+"Int": "151"
+},
+"mods": {
+"implicit": [
+"40% increased Elemental Damage"
+],
+"explicit": [
+"Adds 8 to 17 Fire Damage",
+"Adds 8 to 14 Fire Damage to Spells",
+"28% increased Spell Critical Strike Chance",
+"+1 to Level of all Fire Spell Skill Gems"
+],
+"crafted": [
+"Trigger a Socketed Spell when you Use a Skill, with a 8 second Cooldown\nSpells Triggered this way have 150% more Cost"
+]
+},
+"sockets": "B-B R",
+"links": 2,
+"socketed": [
+{
+"name": "Bone Offering",
+"tags": [
+"Minion",
+"Spell",
+"Duration"
+],
+"kind": "gem",
+"support": false,
+"level": 19,
+"quality": null,
+"corrupted": false,
+"colour": "I",
+"socket": 0,
+"group": 0,
+"links": 2,
+"icon": "https://web.poecdn.com/gen/image/WzMwLDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9Cb25lT2ZmZXJpbmciLCJ3IjoxLCJoIjoxLCJzY2FsZSI6MX1d/56bfbd6835/BoneOffering.png"
+},
+{
+"name": "Flesh Offering",
+"tags": [
+"Minion",
+"Spell",
+"Duration"
+],
+"kind": "gem",
+"support": false,
+"level": 19,
+"quality": null,
+"corrupted": false,
+"colour": "I",
+"socket": 1,
+"group": 0,
+"links": 2,
+"icon": "https://web.poecdn.com/gen/image/WzMwLDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9GbGVzaE9mZmVyaW5nIiwidyI6MSwiaCI6MSwic2NhbGUiOjF9XQ/bfdcecf055/FleshOffering.png"
+}
+]
+},
+{
+"slot": "Flask 2",
+"inventory_id": "Flask",
+"x": 1,
+"y": 0,
+"w": 1,
+"h": 2,
+"swap": false,
+"id": "69eec505b4bcd83fda66858cc30860988b9805bf71d9b791e43e3a1a8b5795b4",
+"name": null,
+"type_line": "Grand Mana Flask",
+"base_type": "Grand Mana Flask",
+"rarity": "Normal",
+"frame_type": 0,
+"ilvl": 18,
+"identified": true,
+"league": "Solo Self-Found",
+"icon": "https://web.poecdn.com/gen/image/WzksMTQseyJmIjoiMkRJdGVtcy9GbGFza3MvbWFuYWZsYXNrNSIsInciOjEsImgiOjIsInNjYWxlIjoxLCJsZXZlbCI6MX1d/035910bcbc/manaflask5.png",
+"influences": [],
+"flags": {},
+"properties": {
+"Recovers 170 Mana over 4.50 Seconds": true,
+"Consumes 7 of 30 Charges on use": true,
+"Currently has 30 Charges": true
+},
+"requirements": {
+"Level": "18"
+},
+"mods": {},
+"sockets": null,
+"links": 0,
+"socketed": []
+},
+{
+"slot": "Boots",
+"inventory_id": "Boots",
+"x": 0,
+"y": 0,
+"w": 2,
+"h": 2,
+"swap": false,
+"id": "f8645caa4fd3f60e30b85f6cbc9111954af50daa0a51dcde6a8bc4d89299dae5",
+"name": "Eagle Track",
+"type_line": "Dragonscale Boots",
+"base_type": "Dragonscale Boots",
+"rarity": "Rare",
+"frame_type": 2,
+"ilvl": 81,
+"identified": true,
+"league": "Solo Self-Found",
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQXJtb3Vycy9Cb290cy9Cb290c1N0ckRleDMiLCJ3IjoyLCJoIjoyLCJzY2FsZSI6MX1d/3418ad050e/BootsStrDex3.png",
+"influences": [],
+"flags": {},
+"properties": {
+"Armour": "127",
+"Evasion Rating": "127"
+},
+"requirements": {
+"Level": "65",
+"Str": "92",
+"Dex": "85",
+"Int": "81"
+},
+"mods": {
+"explicit": [
+"+21 to Dexterity",
+"+31% to Fire Resistance",
+"+40% to Lightning Resistance",
+"25% increased Movement Speed"
+]
+},
+"sockets": "R-G-R-B",
+"links": 4,
+"socketed": [
+{
+"name": "Cast when Damage Taken Support",
+"tags": [
+"Support",
+"Spell",
+"Trigger"
+],
+"kind": "gem",
+"support": true,
+"level": 1,
+"quality": null,
+"corrupted": false,
+"colour": "S",
+"socket": 0,
+"group": 0,
+"links": 4,
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9TdXBwb3J0L0Nhc3RPbkRtZ1Rha2VuIiwidyI6MSwiaCI6MSwic2NhbGUiOjF9XQ/2f075f5964/CastOnDmgTaken.png"
+},
+{
+"name": "Poacher's Mark",
+"tags": [
+"Physical",
+"Spell",
+"Curse",
+"Mark"
+],
+"kind": "gem",
+"support": false,
+"level": 7,
+"quality": null,
+"corrupted": false,
+"colour": "D",
+"socket": 1,
+"group": 0,
+"links": 4,
+"icon": "https://web.poecdn.com/gen/image/WzMwLDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9Qb2FjaGVyc01hcmsiLCJ3IjoxLCJoIjoxLCJzY2FsZSI6MX1d/ab05aa26e0/PoachersMark.png"
+},
+{
+"name": "Molten Shell",
+"tags": [
+"Spell",
+"AoE",
+"Duration",
+"Fire",
+"Physical",
+"Guard"
+],
+"kind": "gem",
+"support": false,
+"level": 8,
+"quality": null,
+"corrupted": false,
+"colour": "S",
+"socket": 2,
+"group": 0,
+"links": 4,
+"icon": "https://web.poecdn.com/gen/image/WzMwLDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9Nb2x0ZW5TaGVsbCIsInciOjEsImgiOjEsInNjYWxlIjoxfV0/d7b86e4b76/MoltenShell.png"
+},
+{
+"name": "Flesh Offering",
+"tags": [
+"Minion",
+"Spell",
+"Duration"
+],
+"kind": "gem",
+"support": false,
+"level": 7,
+"quality": null,
+"corrupted": false,
+"colour": "I",
+"socket": 3,
+"group": 0,
+"links": 4,
+"icon": "https://web.poecdn.com/gen/image/WzMwLDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9GbGVzaE9mZmVyaW5nIiwidyI6MSwiaCI6MSwic2NhbGUiOjF9XQ/bfdcecf055/FleshOffering.png"
+}
+]
+},
+{
+"slot": "Flask 3",
+"inventory_id": "Flask",
+"x": 2,
+"y": 0,
+"w": 1,
+"h": 2,
+"swap": false,
+"id": "89a32a1f31ab9adbf4782885d5d4b6770026382ac1a7431bcd4f1109d29ec856",
+"name": null,
+"type_line": "Quicksilver Flask",
+"base_type": "Quicksilver Flask",
+"rarity": "Normal",
+"frame_type": 0,
+"ilvl": 73,
+"identified": true,
+"league": "Solo Self-Found",
+"icon": "https://web.poecdn.com/gen/image/WzksMTQseyJmIjoiMkRJdGVtcy9GbGFza3Mvc3ByaW50IiwidyI6MSwiaCI6Miwic2NhbGUiOjEsImxldmVsIjoxfV0/aa66be180b/sprint.png",
+"influences": [],
+"flags": {},
+"properties": {
+"Lasts 6 Seconds": true,
+"Consumes 30 of 60 Charges on use": true,
+"Currently has 60 Charges": true
+},
+"requirements": {
+"Level": "4"
+},
+"mods": {
+"utility": [
+"40% increased Movement Speed"
+]
+},
+"sockets": null,
+"links": 0,
+"socketed": []
+},
+{
+"slot": "BodyArmour",
+"inventory_id": "BodyArmour",
+"x": 0,
+"y": 0,
+"w": 2,
+"h": 3,
+"swap": false,
+"id": "44e64727d77b66acae8488d66d7b705932cd8a75c534da3663f7946db11a222d",
+"name": "Fate Wrap",
+"type_line": "Saintly Chainmail",
+"base_type": "Saintly Chainmail",
+"rarity": "Rare",
+"frame_type": 2,
+"ilvl": 77,
+"identified": true,
+"league": "Solo Self-Found",
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQXJtb3Vycy9Cb2R5QXJtb3Vycy9Cb2R5U3RySW50M0MiLCJ3IjoyLCJoIjozLCJzY2FsZSI6MX1d/900b4f2c03/BodyStrInt3C.png",
+"influences": [],
+"flags": {},
+"properties": {
+"Quality": "+20%",
+"Armour": "1094",
+"Energy Shield": "262"
+},
+"requirements": {
+"Level": "70",
+"Str": "151",
+"Int": "94"
+},
+"mods": {
+"explicit": [
+"18% reduced Attribute Requirements",
+"+263 to Armour",
+"27% increased Armour and Energy Shield",
+"+63 to maximum Energy Shield",
+"+97 to maximum Life",
+"+19% to Lightning Resistance"
+],
+"crafted": [
+"+25 to Strength and Dexterity"
+]
+},
+"sockets": "R-R-B-G-B R",
+"links": 5,
+"socketed": [
+{
+"name": "Burning Damage Support",
+"tags": [
+"Fire",
+"Support"
+],
+"kind": "gem",
+"support": true,
+"level": 19,
+"quality": null,
+"corrupted": false,
+"colour": "S",
+"socket": 0,
+"group": 0,
+"links": 5,
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9TdXBwb3J0L0luY3JlYXNlZEJ1cm5EdXJhdGlvbiIsInciOjEsImgiOjEsInNjYWxlIjoxfV0/46900a1f5b/IncreasedBurnDuration.png"
+},
+{
+"name": "Cruelty Support",
+"tags": [
+"Support",
+"Duration"
+],
+"kind": "gem",
+"support": true,
+"level": 19,
+"quality": null,
+"corrupted": false,
+"colour": "S",
+"socket": 1,
+"group": 0,
+"links": 5,
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9TdXBwb3J0L0ZyYWdpbGl0eSIsInciOjEsImgiOjEsInNjYWxlIjoxfV0/85392d054c/Fragility.png"
+},
+{
+"name": "Ignite Proliferation Support",
+"tags": [
+"Fire",
+"Support",
+"AoE"
+],
+"kind": "gem",
+"support": true,
+"level": 18,
+"quality": null,
+"corrupted": false,
+"colour": "I",
+"socket": 2,
+"group": 0,
+"links": 5,
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9TdXBwb3J0L0lnbml0ZVByb2xpZmVyYXRpb24iLCJ3IjoxLCJoIjoxLCJzY2FsZSI6MX1d/e6a337b58f/IgniteProliferation.png"
+},
+{
+"name": "Vaal Detonate Dead",
+"tags": [
+"Spell",
+"AoE",
+"Vaal",
+"Fire"
+],
+"kind": "gem",
+"support": false,
+"level": 1,
+"quality": null,
+"corrupted": true,
+"colour": "D",
+"socket": 3,
+"group": 0,
+"links": 5,
+"icon": "https://web.poecdn.com/gen/image/WzMwLDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9WYWFsR2Vtcy9WYWFsRGV0b25hdGVEZWFkIiwidyI6MSwiaCI6MSwic2NhbGUiOjF9XQ/28db5033a3/VaalDetonateDead.png"
+},
+{
+"name": "Combustion Support",
+"tags": [
+"Fire",
+"Support"
+],
+"kind": "gem",
+"support": true,
+"level": 19,
+"quality": null,
+"corrupted": false,
+"colour": "I",
+"socket": 4,
+"group": 0,
+"links": 5,
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9TdXBwb3J0L0NoYW5jZXRvSWduaXRlIiwidyI6MSwiaCI6MSwic2NhbGUiOjF9XQ/b24521e59a/ChancetoIgnite.png"
+},
+{
+"name": "Determination",
+"tags": [
+"Aura",
+"Spell",
+"AoE",
+"Physical"
+],
+"kind": "gem",
+"support": false,
+"level": 19,
+"quality": null,
+"corrupted": false,
+"colour": "S",
+"socket": 5,
+"group": 1,
+"links": 1,
+"icon": "https://web.poecdn.com/gen/image/WzMwLDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9EZXRlcm1pbmF0aW9uIiwidyI6MSwiaCI6MSwic2NhbGUiOjF9XQ/9d35188568/Determination.png"
+}
+]
+},
+{
+"slot": "Weapon (swap)",
+"inventory_id": "Weapon2",
+"x": 0,
+"y": 0,
+"w": 2,
+"h": 3,
+"swap": true,
+"id": "8d67f50b05914fc6bd9e7997fb729bed1294ea4094e391ab6870e6a8cdf3d935",
+"name": null,
+"type_line": "Darkwood Sceptre",
+"base_type": "Darkwood Sceptre",
+"rarity": "Normal",
+"frame_type": 0,
+"ilvl": 13,
+"identified": true,
+"league": "Solo Self-Found",
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvV2VhcG9ucy9PbmVIYW5kV2VhcG9ucy9TY2VwdGVycy9zY2VwdGVyMiIsInciOjIsImgiOjMsInNjYWxlIjoxfV0/e3e72321e0/scepter2.png",
+"influences": [],
+"flags": {},
+"properties": {
+"Sceptre": true,
+"Physical Damage": "11-17",
+"Critical Strike Chance": "7.00%",
+"Attacks per Second": "1.20",
+"Weapon Range: 1.1 metres": true
+},
+"requirements": {
+"Level": "68",
+"Dex": "66",
+"Int": "95"
+},
+"mods": {
+"implicit": [
+"12% increased Elemental Damage"
+]
+},
+"sockets": "R-R-B",
+"links": 3,
+"socketed": [
+{
+"name": "Malevolence",
+"tags": [
+"Aura",
+"Spell",
+"AoE"
+],
+"kind": "gem",
+"support": false,
+"level": 19,
+"quality": null,
+"corrupted": false,
+"colour": "I",
+"socket": 2,
+"group": 0,
+"links": 3,
+"icon": "https://web.poecdn.com/gen/image/WzMwLDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9EZWxpcml1bUdlbSIsInciOjEsImgiOjEsInNjYWxlIjoxfV0/86eaac1d34/DeliriumGem.png"
+}
+]
+},
+{
+"slot": "Flask 5",
+"inventory_id": "Flask",
+"x": 4,
+"y": 0,
+"w": 1,
+"h": 2,
+"swap": false,
+"id": "6371b4caab045d53c6bb3fc6d989613704ce38960ad8d923fc275512c668c872",
+"name": null,
+"type_line": "Jade Flask",
+"base_type": "Jade Flask",
+"rarity": "Normal",
+"frame_type": 0,
+"ilvl": 77,
+"identified": true,
+"league": "Solo Self-Found",
+"icon": "https://web.poecdn.com/gen/image/WzksMTQseyJmIjoiMkRJdGVtcy9GbGFza3MvZXZhc2lvbmZsYXNrMDEiLCJ3IjoxLCJoIjoyLCJzY2FsZSI6MSwibGV2ZWwiOjF9XQ/8ead4435df/evasionflask01.png",
+"influences": [],
+"flags": {},
+"properties": {
+"Lasts 6 Seconds": true,
+"Consumes 30 of 60 Charges on use": true,
+"Currently has 60 Charges": true
+},
+"requirements": {
+"Level": "27"
+},
+"mods": {
+"utility": [
+"+1500 to Evasion Rating"
+]
+},
+"sockets": null,
+"links": 0,
+"socketed": []
+},
+{
+"slot": "Helm",
+"inventory_id": "Helm",
+"x": 0,
+"y": 0,
+"w": 2,
+"h": 2,
+"swap": false,
+"id": "6a23630268acb37424ac19ac6bcfd9d4af9f4204efd5d8792a5d3e827f0f51af",
+"name": "Carrion Halo",
+"type_line": "Vaal Mask",
+"base_type": "Vaal Mask",
+"rarity": "Rare",
+"frame_type": 2,
+"ilvl": 73,
+"identified": true,
+"league": "Solo Self-Found",
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQXJtb3Vycy9IZWxtZXRzL0hlbG1ldERleEludDEwIiwidyI6MiwiaCI6Miwic2NhbGUiOjF9XQ/62018602df/HelmetDexInt10.png",
+"influences": [],
+"flags": {},
+"properties": {
+"Quality": "+20%",
+"Evasion Rating": "473",
+"Energy Shield": "85"
+},
+"requirements": {
+"Level": "68",
+"Str": "95",
+"Dex": "95",
+"Int": "97"
+},
+"mods": {
+"explicit": [
+"+1 to Level of Socketed Minion Gems",
+"+23 to Intelligence",
+"69% increased Evasion and Energy Shield",
+"+45% to Fire Resistance",
+"+42% to Cold Resistance",
+"10% increased Stun and Block Recovery"
+]
+},
+"sockets": "B-R-G-B",
+"links": 4,
+"socketed": [
+{
+"name": "Spell Cascade Support",
+"tags": [
+"AoE",
+"Spell",
+"Support"
+],
+"kind": "gem",
+"support": true,
+"level": 17,
+"quality": null,
+"corrupted": false,
+"colour": "I",
+"socket": 0,
+"group": 0,
+"links": 4,
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9TdXBwb3J0L1NwZWxsQ2FzY2FkZSIsInciOjEsImgiOjEsInNjYWxlIjoxfV0/c72a3fbf82/SpellCascade.png"
+},
+{
+"name": "Defiance Banner",
+"tags": [
+"AoE",
+"Spell",
+"Duration",
+"Aura"
+],
+"kind": "gem",
+"support": false,
+"level": 19,
+"quality": 17,
+"corrupted": false,
+"colour": "S",
+"socket": 1,
+"group": 0,
+"links": 4,
+"icon": "https://web.poecdn.com/gen/image/WzMwLDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9Bcm1vdXJhbmRFdmFzaW9uQmFubmVyIiwidyI6MSwiaCI6MSwic2NhbGUiOjF9XQ/7550f4b5f2/ArmourandEvasionBanner.png"
+},
+{
+"name": "Desecrate",
+"tags": [
+"Spell",
+"AoE",
+"Duration",
+"Chaos"
+],
+"kind": "gem",
+"support": false,
+"level": 19,
+"quality": null,
+"corrupted": false,
+"colour": "D",
+"socket": 2,
+"group": 0,
+"links": 4,
+"icon": "https://web.poecdn.com/gen/image/WzMwLDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9EZXNlY3JhdGUiLCJ3IjoxLCJoIjoxLCJzY2FsZSI6MX1d/7e2985eec3/Desecrate.png"
+},
+{
+"name": "Tempest Shield",
+"tags": [
+"Spell",
+"Lightning",
+"Chaining"
+],
+"kind": "gem",
+"support": false,
+"level": 19,
+"quality": null,
+"corrupted": false,
+"colour": "I",
+"socket": 3,
+"group": 0,
+"links": 4,
+"icon": "https://web.poecdn.com/gen/image/WzMwLDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9UZW1wZXN0U2hpZWxkIiwidyI6MSwiaCI6MSwic2NhbGUiOjF9XQ/df5de3f529/TempestShield.png"
+}
+]
+},
+{
+"slot": "Flask 1",
+"inventory_id": "Flask",
+"x": 0,
+"y": 0,
+"w": 1,
+"h": 2,
+"swap": false,
+"id": "b68f1abbff4fdcb7d3486ac28da812b02e291f4d908ce960afc0dafecd36539c",
+"name": null,
+"type_line": "Terrified Divine Life Flask of Movement",
+"base_type": "Divine Life Flask",
+"rarity": "Magic",
+"frame_type": 1,
+"ilvl": 72,
+"identified": true,
+"league": "Solo Self-Found",
+"icon": "https://web.poecdn.com/gen/image/WzksMTQseyJmIjoiMkRJdGVtcy9GbGFza3MvbGlmZWZsYXNrMTEiLCJ3IjoxLCJoIjoyLCJzY2FsZSI6MSwibGV2ZWwiOjF9XQ/54ba3c70ae/lifeflask11.png",
+"influences": [],
+"flags": {},
+"properties": {
+"Quality": "+20%",
+"Recovers 2419 Life over 3.50 Seconds": true,
+"Consumes 15 of 45 Charges on use": true,
+"Currently has 45 Charges": true
+},
+"requirements": {
+"Level": "60"
+},
+"mods": {
+"explicit": [
+"16% reduced Amount Recovered",
+"Instant Recovery when on Low Life",
+"Grants Immunity to Hinder for 8 seconds if used while Hindered",
+"Grants Immunity to Maim for 7 seconds if used while Maimed"
+]
+},
+"sockets": null,
+"links": 0,
+"socketed": []
+},
+{
+"slot": "Ring",
+"inventory_id": "Ring",
+"x": 0,
+"y": 0,
+"w": 1,
+"h": 1,
+"swap": false,
+"id": "84e94d17ff0c32d8a29a4e7f0187ccee73d4b5066165e7e22ad07a74a05d863c",
+"name": "Loath Spiral",
+"type_line": "Two-Stone Ring",
+"base_type": "Two-Stone Ring",
+"rarity": "Rare",
+"frame_type": 2,
+"ilvl": 80,
+"identified": true,
+"league": "Solo Self-Found",
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvUmluZ3MvU2FwcGhpcmVSdWJ5IiwidyI6MSwiaCI6MSwic2NhbGUiOjF9XQ/7df6d65dfd/SapphireRuby.png",
+"influences": [],
+"flags": {},
+"properties": {},
+"requirements": {
+"Level": "35"
+},
+"mods": {
+"implicit": [
+"+13% to Fire and Cold Resistances"
+],
+"explicit": [
+"Adds 4 to 8 Cold Damage to Attacks",
+"+72 to maximum Life",
+"+14% to Cold Resistance",
+"Gain 13 Life per Enemy Killed"
+]
+},
+"sockets": null,
+"links": 0,
+"socketed": []
+},
+{
+"slot": "Belt",
+"inventory_id": "Belt",
+"x": 0,
+"y": 0,
+"w": 2,
+"h": 1,
+"swap": false,
+"id": "f0419870b6d616695bfa9cc30a3c2f256030b2f4582b9321d34980c8162f39c0",
+"name": "Kraken Harness",
+"type_line": "Heavy Belt",
+"base_type": "Heavy Belt",
+"rarity": "Rare",
+"frame_type": 2,
+"ilvl": 73,
+"identified": true,
+"league": "Solo Self-Found",
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQmVsdHMvQmVsdDUiLCJ3IjoyLCJoIjoxLCJzY2FsZSI6MX1d/a513a7e6b4/Belt5.png",
+"influences": [],
+"flags": {},
+"properties": {},
+"requirements": {
+"Level": "57"
+},
+"mods": {
+"implicit": [
+"+32 to Strength"
+],
+"explicit": [
+"+27 to Strength",
+"+52 to Armour",
+"+88 to maximum Life",
+"+16% to Fire Resistance",
+"+25% to Lightning Resistance"
+],
+"crafted": [
+"Regenerate 20 Life per second",
+"+40 to maximum Mana"
+]
+},
+"sockets": null,
+"links": 0,
+"socketed": []
+}
+],
+"passives": {
+"tree_variant": "default",
+"tree_url": "https://www.pathofexile.com/fullscreen-passive-skill-tree/AAAABgMDaQN1BAcHHgj0CaoLDA3iEFgRDxEtEZYSaRZvFxwXLxhlGmwagRs3HRQfAiGwIvQkqiTYJikqjSvALJwulC9dL280SzT3NsU22DbpOlhIjkkbSVFNz1F0VcZV1lZIXgNfBGNfZOdlcma6akNrF2w9bRlwu3DXcXl65n3xf8aApIPbg_eFbYZ3h2WIb44Tjr6P-pE3khuSwZUglS6XhZfBnWOdrqKjppmnCKyYu_a86sFrwfPUjdWB2CTYw9kT2fza3d-w42rsGOxV8NXxbPUv9qL60gAHCZsLDLoaL113JjRL-3198RhIiG81vdSN7qnYww==?accountName=zxBlasphemy%235164&characterName=TheLocalVoid",
+"counts": {
+"allocated": 105,
+"small": 72,
+"mastery": 7,
+"ascendancy_notable": 1,
+"notable": 22,
+"ascendancy": 2,
+"keystone": 1
+},
+"keystones": [
+"Elemental Overload"
+],
+"notables": [
+"Safeguard",
+"Mental Rapidity",
+"Arcanist's Dominion",
+"Breath of Flames",
+"Influence",
+"Written in Blood",
+"Cruel Preparation",
+"Instinct",
+"Explosive Impact",
+"Undertaker",
+"Acrimony",
+"Heart and Soul",
+"Deep Wisdom",
+"Holy Fire",
+"Sovereignty",
+"Fire Walker",
+"Infused Flesh",
+"Searing Heat",
+"Snowforged",
+"Agility",
+"Purity of Flesh",
+"Heart of Flame"
+],
+"ascendancy_notables": [
+"Essence Glutton"
+],
+"bloodline_nodes": [],
+"masteries": [
+{
+"name": "Damage Over Time Mastery",
+"effect_id": 2459,
+"stats": [
+"30% increased Effect of Cruelty"
+]
+},
+{
+"name": "Life Mastery",
+"effect_id": 47642,
+"stats": [
+"+30 to maximum Life"
+]
+},
+{
+"name": "Elemental Mastery",
+"effect_id": 30502,
+"stats": [
+"Critical Strikes against you do not inherently inflict Elemental Ailments"
+]
+},
+{
+"name": "Life Mastery",
+"effect_id": 64381,
+"stats": [
+"10% more Maximum Life if you have at least 6 Life Masteries allocated"
+]
+},
+{
+"name": "Fire Mastery",
+"effect_id": 6216,
+"stats": [
+"Critical Strikes do not inherently Ignite",
+"100% increased Damage with Hits against Ignited Enemies"
+]
+},
+{
+"name": "Spell Suppression Mastery",
+"effect_id": 13757,
+"stats": [
+"You have Phasing if you have Suppressed Spell Damage Recently",
+"+8% chance to Suppress Spell Damage while Phasing"
+]
+},
+{
+"name": "Reservation Mastery",
+"effect_id": 61097,
+"stats": [
+"Auras from your Skills have 10% increased Effect on you"
+]
+}
+],
+"tattoos": [],
+"jewels": [],
+"nodes": [
+{
+"hash": 885,
+"name": "Fire Damage",
+"kind": "small",
+"stats": [
+"12% increased Fire Damage"
+]
+},
+{
+"hash": 1031,
+"name": "Intelligence",
+"kind": "small",
+"stats": [
+"+10 to Intelligence"
+]
+},
+{
+"hash": 1822,
+"name": "Life and Energy Shield",
+"kind": "small",
+"stats": [
+"5% increased maximum Energy Shield",
+"5% increased maximum Life"
+]
+}
+],
+"hashes": [
+885,
+1031,
+1822
+],
+"hashes_ex": [],
+"mastery_effects": {
+"2828": 2459,
+"12125": 47642,
+"13387": 30502,
+"32241": 64381,
+"34927": 6216,
+"54413": 13757,
+"55491": 61097
+}
+},
+"fetched_at": "2026-09-23T22:37:43.463Z",
+"raw": {
+"items": {
+"items": [
+{
+"verified": false,
+"w": 2,
+"h": 3,
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQXJtb3Vycy9Cb2R5QXJtb3Vycy9Cb2R5U3RySW50M0MiLCJ3IjoyLCJoIjozLCJzY2FsZSI6MX1d/900b4f2c03/BodyStrInt3C.png",
+"league": "Solo Self-Found",
+"id": "44e64727d77b66acae8488d66d7b705932cd8a75c534da3663f7946db11a222d",
+"sockets": [
+{
+"group": 0,
+"attr": "S",
+"sColour": "R"
+},
+{
+"group": 0,
+"attr": "S",
+"sColour": "R"
+},
+{
+"group": 0,
+"attr": "I",
+"sColour": "B"
+},
+{
+"group": 0,
+"attr": "D",
+"sColour": "G"
+},
+{
+"group": 0,
+"attr": "I",
+"sColour": "B"
+},
+{
+"group": 1,
+"attr": "S",
+"sColour": "R"
+}
+],
+"name": "Fate Wrap",
+"typeLine": "Saintly Chainmail",
+"baseType": "Saintly Chainmail",
+"rarity": "Rare",
+"ilvl": 77,
+"identified": true,
+"properties": [
+{
+"name": "Quality",
+"values": [
+[
+"+20%",
+1
+]
+],
+"displayMode": 0,
+"type": 6
+},
+{
+"name": "Armour",
+"values": [
+[
+"1094",
+1
+]
+],
+"displayMode": 0,
+"type": 16
+},
+{
+"name": "Energy Shield",
+"values": [
+[
+"262",
+1
+]
+],
+"displayMode": 0,
+"type": 18
+}
+],
+"requirements": [
+{
+"name": "Level",
+"values": [
+[
+"70",
+0
+]
+],
+"displayMode": 0,
+"type": 62
+},
+{
+"name": "Str",
+"values": [
+[
+"151",
+0
+]
+],
+"displayMode": 1,
+"type": 63,
+"suffix": "(gem)"
+},
+{
+"name": "Int",
+"values": [
+[
+"94",
+1
+]
+],
+"displayMode": 1,
+"type": 65
+}
+],
+"explicitMods": [
+{
+"description": "18% reduced Attribute Requirements"
+},
+{
+"description": "+263 to Armour"
+},
+{
+"description": "27% increased Armour and Energy Shield"
+},
+{
+"description": "+63 to maximum Energy Shield"
+},
+{
+"description": "+97 to maximum Life"
+},
+{
+"description": "+19% to Lightning Resistance"
+},
+{
+"description": "+25 to Strength and Dexterity",
+"flags": {
+"crafted": true
+}
+}
+],
+"frameType": 2,
+"frameTypeId": "Rare",
+"x": 0,
+"y": 0,
+"inventoryId": "BodyArmour",
+"socketedItems": [
+{
+"verified": false,
+"w": 1,
+"h": 1,
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9TdXBwb3J0L0luY3JlYXNlZEJ1cm5EdXJhdGlvbiIsInciOjEsImgiOjEsInNjYWxlIjoxfV0/46900a1f5b/IncreasedBurnDuration.png",
+"support": true,
+"league": "Solo Self-Found",
+"id": "46cf61568c8755c3ec335a695c1bd9a91ee0559a845453b33ed690e3b9747c2e",
+"name": "",
+"typeLine": "Burning Damage Support",
+"baseType": "Burning Damage Support",
+"ilvl": 0,
+"identified": true,
+"properties": [
+{
+"name": "Fire, Support",
+"values": [],
+"displayMode": 0
+},
+{
+"name": "Level",
+"values": [
+[
+"19",
+0
+]
+],
+"displayMode": 0,
+"type": 5
+},
+{
+"name": "Cost & Reservation Multiplier",
+"values": [
+[
+"130%",
+0
+]
+],
+"displayMode": 0
+}
+],
+"requirements": [
+{
+"name": "Level",
+"values": [
+[
+"68",
+0
+]
+],
+"displayMode": 0,
+"type": 62
+},
+{
+"name": "Str",
+"values": [
+[
+"68",
+0
+]
+],
+"displayMode": 1,
+"type": 63
+},
+{
+"name": "Int",
+"values": [
+[
+"47",
+0
+]
+],
+"displayMode": 1,
+"type": 65
+}
+],
+"additionalProperties": [
+{
+"name": "Experience",
+"values": [
+[
+"26063765/211508743",
+0
+]
+],
+"displayMode": 2,
+"progress": 0.12,
+"type": 20
+}
+],
+"secDescrText": "Supports any skill that hits enemies, or can deal burning damage directly.",
+"explicitMods": [
+{
+"description": "Supported Skills deal 33% more Burning Damage"
+}
+],
+"descrText": "This is a Support Gem. It does not grant a bonus to your character, but to skills in sockets connected to it. Place into an item socket connected to a socket containing the Skill Gem you wish to augment. Right click to remove from a socket.",
+"frameType": 4,
+"frameTypeId": "Gem",
+"socket": 0,
+"colour": "S"
+},
+{
+"verified": false,
+"w": 1,
+"h": 1,
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9TdXBwb3J0L0ZyYWdpbGl0eSIsInciOjEsImgiOjEsInNjYWxlIjoxfV0/85392d054c/Fragility.png",
+"support": true,
+"league": "Solo Self-Found",
+"id": "c1d71dccc5dae8e97e6e356488cb75c237eabdd319c214dfa09f9e2e35f6d063",
+"name": "",
+"typeLine": "Cruelty Support",
+"baseType": "Cruelty Support",
+"ilvl": 0,
+"identified": true,
+"properties": [
+{
+"name": "Support, Duration",
+"values": [],
+"displayMode": 0
+},
+{
+"name": "Level",
+"values": [
+[
+"19",
+0
+]
+],
+"displayMode": 0,
+"type": 5
+},
+{
+"name": "Cost & Reservation Multiplier",
+"values": [
+[
+"140%",
+0
+]
+],
+"displayMode": 0
+}
+],
+"requirements": [
+{
+"name": "Level",
+"values": [
+[
+"68",
+0
+]
+],
+"displayMode": 0,
+"type": 62
+},
+{
+"name": "Str",
+"values": [
+[
+"68",
+0
+]
+],
+"displayMode": 1,
+"type": 63
+},
+{
+"name": "Int",
+"values": [
+[
+"47",
+0
+]
+],
+"displayMode": 1,
+"type": 65
+}
+],
+"additionalProperties": [
+{
+"name": "Experience",
+"values": [
+[
+"25324878/212002638",
+0
+]
+],
+"displayMode": 2,
+"progress": 0.12,
+"type": 20
+}
+],
+"secDescrText": "Supports any skill that hits enemies. Minions cannot gain Cruelty.",
+"explicitMods": [
+{
+"description": "Supported Skills deal 24% more Damage with Hits"
+},
+{
+"description": "Cruelty has a Base Duration of 4 seconds"
+},
+{
+"description": "Hits from Supported Skills grant Cruelty"
+},
+{
+"description": "18% increased Effect of Cruelty granted by Supported Skills"
+}
+],
+"descrText": "This is a Support Gem. It does not grant a bonus to your character, but to skills in sockets connected to it. Place into an item socket connected to a socket containing the Skill Gem you wish to augment. Right click to remove from a socket.",
+"frameType": 4,
+"frameTypeId": "Gem",
+"socket": 1,
+"colour": "S"
+},
+{
+"verified": false,
+"w": 1,
+"h": 1,
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9TdXBwb3J0L0lnbml0ZVByb2xpZmVyYXRpb24iLCJ3IjoxLCJoIjoxLCJzY2FsZSI6MX1d/e6a337b58f/IgniteProliferation.png",
+"support": true,
+"league": "Solo Self-Found",
+"id": "77bcfc3709d1b14cf42d0b958863f87e3debd27f56b208a464b778149b5fd591",
+"name": "",
+"typeLine": "Ignite Proliferation Support",
+"baseType": "Ignite Proliferation Support",
+"ilvl": 0,
+"identified": true,
+"properties": [
+{
+"name": "Fire, Support, AoE",
+"values": [],
+"displayMode": 0
+},
+{
+"name": "Level",
+"values": [
+[
+"18",
+0
+]
+],
+"displayMode": 0,
+"type": 5
+},
+{
+"name": "Cost & Reservation Multiplier",
+"values": [
+[
+"130%",
+0
+]
+],
+"displayMode": 0
+}
+],
+"requirements": [
+{
+"name": "Level",
+"values": [
+[
+"68",
+0
+]
+],
+"displayMode": 0,
+"type": 62
+},
+{
+"name": "Str",
+"values": [
+[
+"47",
+0
+]
+],
+"displayMode": 1,
+"type": 63
+},
+{
+"name": "Int",
+"values": [
+[
+"68",
+0
+]
+],
+"displayMode": 1,
+"type": 65
+}
+],
+"additionalProperties": [
+{
+"name": "Experience",
+"values": [
+[
+"61096620/86794448",
+0
+]
+],
+"displayMode": 2,
+"progress": 0.7,
+"type": 20
+}
+],
+"secDescrText": "Supports any skill that hits enemies.",
+"explicitMods": [
+{
+"description": "Ignites caused by Supported Skills spread to other Enemies within 1.9 metres"
+},
+{
+"description": "Supported Skills deal 23% more Damage with Ignite"
+}
+],
+"descrText": "This is a Support Gem. It does not grant a bonus to your character, but to skills in sockets connected to it. Place into an item socket connected to a socket containing the Skill Gem you wish to augment. Right click to remove from a socket.",
+"frameType": 4,
+"frameTypeId": "Gem",
+"socket": 2,
+"colour": "I"
+},
+{
+"verified": false,
+"w": 1,
+"h": 1,
+"icon": "https://web.poecdn.com/gen/image/WzMwLDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9WYWFsR2Vtcy9WYWFsRGV0b25hdGVEZWFkIiwidyI6MSwiaCI6MSwic2NhbGUiOjF9XQ/28db5033a3/VaalDetonateDead.png",
+"support": false,
+"league": "Solo Self-Found",
+"id": "ed4df1f3cbb78f74733661f8c7b3c870d86651db66b93c4e888d07fecb6beb35",
+"name": "",
+"typeLine": "Vaal Detonate Dead",
+"baseType": "Vaal Detonate Dead",
+"ilvl": 0,
+"identified": true,
+"corrupted": true,
+"properties": [
+{
+"name": "Spell, AoE, Vaal, Fire",
+"values": [],
+"displayMode": 0
+},
+{
+"name": "Level",
+"values": [
+[
+"1",
+0
+]
+],
+"displayMode": 0,
+"type": 5
+},
+{
+"name": "Cost",
+"values": [
+[
+"5 Mana",
+0
+]
+],
+"displayMode": 0
+},
+{
+"name": "Cast Time",
+"values": [
+[
+"0.60 sec",
+0
+]
+],
+"displayMode": 0
+},
+{
+"name": "Critical Strike Chance",
+"values": [
+[
+"6.00%",
+0
+]
+],
+"displayMode": 0
+},
+{
+"name": "Effectiveness of Added Damage",
+"values": [
+[
+"160%",
+0
+]
+],
+"displayMode": 0
+}
+],
+"requirements": [
+{
+"name": "Level",
+"values": [
+[
+"4",
+0
+]
+],
+"displayMode": 0,
+"type": 62
+}
+],
+"additionalProperties": [
+{
+"name": "Experience",
+"values": [
+[
+"841/841",
+0
+]
+],
+"displayMode": 2,
+"progress": 1,
+"type": 20
+}
+],
+"nextLevelRequirements": [
+{
+"name": "Level",
+"values": [
+[
+"6",
+0
+]
+],
+"displayMode": 0
+}
+],
+"secDescrText": "Targets a corpse, and deals spell damage to enemies around the corpse, as well as causing the corpse to explode, dealing fire damage. The explosion is not affected by modifiers to spell damage and cannot be reflected.",
+"explicitMods": [
+{
+"description": "Deals 15 to 22 Fire Damage"
+},
+{
+"description": "Explosion deals base Fire Damage equal to 6% of the corpse's Maximum Life"
+},
+{
+"description": "Base radius is 2.2 metres"
+}
+],
+"descrText": "Place into an item socket to gain this skill. Right click to remove from a socket.",
+"frameType": 4,
+"frameTypeId": "Gem",
+"socket": 3,
+"colour": "D",
+"hybrid": {
+"isVaalGem": true,
+"baseTypeName": "Detonate Dead",
+"properties": [
+{
+"name": "Souls Per Use",
+"values": [
+[
+"30",
+0
+]
+],
+"displayMode": 0
+},
+{
+"name": "Can Store {0} Use",
+"values": [
+[
+"1",
+0
+]
+],
+"displayMode": 3
+},
+{
+"name": "Soul Gain Prevention",
+"values": [
+[
+"8 sec",
+0
+]
+],
+"displayMode": 0
+},
+{
+"name": "Cast Time",
+"values": [
+[
+"0.60 sec",
+0
+]
+],
+"displayMode": 0
+},
+{
+"name": "Critical Strike Chance",
+"values": [
+[
+"5.00%",
+0
+]
+],
+"displayMode": 0
+},
+{
+"name": "Effectiveness of Added Damage",
+"values": [
+[
+"200%",
+0
+]
+],
+"displayMode": 0
+}
+],
+"explicitMods": [
+"Deals 23 to 33 Fire Damage",
+"Explosion deals base Fire Damage equal to 6% of the corpse's Maximum Life",
+"Base radius is 2.4 metres"
+],
+"secDescrText": "Targets a corpse, and deals spell damage to enemies around the corpse, as well as causing the corpse to explode, dealing fire damage. The explosion is not affected by modifiers to spell damage and cannot be reflected. This will continue to target other corpses in the area, with an increasing delay between each one, until it runs out of corpses or has destroyed 22 corpses."
+}
+},
+{
+"verified": false,
+"w": 1,
+"h": 1,
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9TdXBwb3J0L0NoYW5jZXRvSWduaXRlIiwidyI6MSwiaCI6MSwic2NhbGUiOjF9XQ/b24521e59a/ChancetoIgnite.png",
+"support": true,
+"league": "Solo Self-Found",
+"id": "cfcfd51a5001b2eac39e7391303f2020d617588caa67ceeb0846910efe05470c",
+"name": "",
+"typeLine": "Combustion Support",
+"baseType": "Combustion Support",
+"ilvl": 0,
+"identified": true,
+"properties": [
+{
+"name": "Fire, Support",
+"values": [],
+"displayMode": 0
+},
+{
+"name": "Level",
+"values": [
+[
+"19",
+0
+]
+],
+"displayMode": 0,
+"type": 5
+},
+{
+"name": "Cost & Reservation Multiplier",
+"values": [
+[
+"130%",
+0
+]
+],
+"displayMode": 0
+}
+],
+"requirements": [
+{
+"name": "Level",
+"values": [
+[
+"67",
+0
+]
+],
+"displayMode": 0,
+"type": 62
+},
+{
+"name": "Str",
+"values": [
+[
+"46",
+0
+]
+],
+"displayMode": 1,
+"type": 63
+},
+{
+"name": "Int",
+"values": [
+[
+"67",
+0
+]
+],
+"displayMode": 1,
+"type": 65
+}
+],
+"additionalProperties": [
+{
+"name": "Experience",
+"values": [
+[
+"55148442/242078618",
+0
+]
+],
+"displayMode": 2,
+"progress": 0.23,
+"type": 20
+}
+],
+"secDescrText": "Supports any skill that hits enemies.",
+"explicitMods": [
+{
+"description": "Supported Skills deal 19% more Fire Damage"
+},
+{
+"description": "Supported Skills have 25% chance to Ignite"
+},
+{
+"description": "Enemies Ignited by Supported Skills have -10% to Fire Resistance"
+}
+],
+"descrText": "This is a Support Gem. It does not grant a bonus to your character, but to skills in sockets connected to it. Place into an item socket connected to a socket containing the Skill Gem you wish to augment. Right click to remove from a socket.",
+"frameType": 4,
+"frameTypeId": "Gem",
+"socket": 4,
+"colour": "I"
+},
+{
+"verified": false,
+"w": 1,
+"h": 1,
+"icon": "https://web.poecdn.com/gen/image/WzMwLDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9EZXRlcm1pbmF0aW9uIiwidyI6MSwiaCI6MSwic2NhbGUiOjF9XQ/9d35188568/Determination.png",
+"support": false,
+"league": "Solo Self-Found",
+"id": "73ec825690cf498f56fb8727abc9ac89ea19acf1d6ec4db0244dc2be7889358c",
+"name": "",
+"typeLine": "Determination",
+"baseType": "Determination",
+"ilvl": 0,
+"identified": true,
+"properties": [
+{
+"name": "Aura, Spell, AoE, Physical",
+"values": [],
+"displayMode": 0
+},
+{
+"name": "Level",
+"values": [
+[
+"19",
+0
+]
+],
+"displayMode": 0,
+"type": 5
+},
+{
+"name": "Reservation",
+"values": [
+[
+"50% Mana",
+0
+]
+],
+"displayMode": 0
+},
+{
+"name": "Cooldown Time",
+"values": [
+[
+"1.20 sec",
+0
+]
+],
+"displayMode": 0
+},
+{
+"name": "Cast Time",
+"values": [
+[
+"Instant",
+0
+]
+],
+"displayMode": 0
+}
+],
+"requirements": [
+{
+"name": "Level",
+"values": [
+[
+"68",
+0
+]
+],
+"displayMode": 0,
+"type": 62
+},
+{
+"name": "Str",
+"values": [
+[
+"151",
+0
+]
+],
+"displayMode": 1,
+"type": 63
+}
+],
+"additionalProperties": [
+{
+"name": "Experience",
+"values": [
+[
+"19374501/211877683",
+0
+]
+],
+"displayMode": 2,
+"progress": 0.09,
+"type": 20
+}
+],
+"secDescrText": "Casts an aura that grants armour to you and your allies.",
+"explicitMods": [
+{
+"description": "+1.8 metres to radius"
+},
+{
+"description": "You and nearby allies gain 930 additional Armour"
+},
+{
+"description": "You and nearby allies gain 49% more Armour"
+}
+],
+"descrText": "Place into an item socket to gain this skill. Right click to remove from a socket.",
+"frameType": 4,
+"frameTypeId": "Gem",
+"socket": 5,
+"colour": "S"
+}
+],
+"incubatedItem": {
+"name": "Unique Item",
+"level": 68,
+"progress": 1074,
+"total": 4271
+}
+}
+]
+}
+}
+},
+{
+"name": "vCVRSE",
+"realm": "pc",
+"league": "Allflame",
+"level": 94,
+"class": "Assassin",
+"base_class": "Shadow",
+"ascendancy": "Assassin",
+"bloodline": "Breachlord Bloodline",
+"last_login": "2026-09-23T00:27:42Z",
+"last_login_unix": 1790123262,
+"league_flags": {
+"permanent": false,
+"hardcore": false,
+"ssf": false,
+"ruthless": false
+},
+"origin_league": {
+"league": "Allflame",
+"league_full": "Curse of the Allflame",
+"version": "3.29",
+"basis": "current_league",
+"confidence": "certain",
+"candidates": [
+"Allflame"
+],
+"ssf": false,
+"hardcore": false,
+"ruthless": false
+},
+"gold": null,
+"main_skill": {
+"skill": "Static Strike of Gathering Lightning",
+"utility": false,
+"slot": "BodyArmour",
+"links": 6,
+"supports": [
+"Trinity Support",
+"Nightblade Support",
+"Added Cold Damage Support",
+"Ruthless Support",
+"Elemental Damage with Attacks Support"
+],
+"linked_actives": [
+"Static Strike of Gathering Lightning"
+]
+},
+"uniques": [
+"Lifesprig",
+"Abberath's Horn",
+"The Taming",
+"Yoke of Suffering"
+],
+"equipment": [
+{
+"slot": "Offhand",
+"inventory_id": "Offhand",
+"x": 0,
+"y": 0,
+"w": 2,
+"h": 2,
+"swap": false,
+"id": "4ba5afe8a0d5e8bbb40f80aa3431aad247924238c2f4512541ad0511ed4c1009",
+"name": "Oblivion Spell",
+"type_line": "Harmonic Spirit Shield",
+"base_type": "Harmonic Spirit Shield",
+"rarity": "Rare",
+"frame_type": 2,
+"ilvl": 84,
+"identified": true,
+"league": "Allflame",
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQXJtb3Vycy9TaGllbGRzL1NoaWVsZEludDUiLCJ3IjoyLCJoIjoyLCJzY2FsZSI6MX1d/4bf20f79d1/ShieldInt5.png",
+"influences": [],
+"flags": {},
+"properties": {
+"Quality": "+20%",
+"Chance to Block": "40%",
+"Energy Shield": "158",
+"Memory Strands": "41",
+"Intangibility": "30%"
+},
+"requirements": {
+"Level": "70",
+"Str": "39",
+"Dex": "41",
+"Int": "159"
+},
+"mods": {
+"implicit": [
+"14% increased Spell Damage"
+],
+"explicit": [
+"74% increased Chance to Block",
+"13% Chance to Block Spell Damage",
+"94% increased Spell Critical Strike Chance",
+"+71 to maximum Energy Shield",
+"31% chance to Avoid Elemental Ailments"
+],
+"crafted": [
+"3% additional Physical Damage Reduction"
+]
+},
+"sockets": "B-B-W",
+"links": 3,
+"socketed": [
+{
+"name": "Cast when Damage Taken Support",
+"tags": [
+"Support",
+"Spell",
+"Trigger"
+],
+"kind": "gem",
+"support": true,
+"level": 1,
+"quality": null,
+"corrupted": false,
+"colour": "S",
+"socket": 0,
+"group": 0,
+"links": 3,
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9TdXBwb3J0L0Nhc3RPbkRtZ1Rha2VuIiwidyI6MSwiaCI6MSwic2NhbGUiOjF9XQ/2f075f5964/CastOnDmgTaken.png"
+},
+{
+"name": "Blood Rage",
+"tags": [
+"Spell",
+"Duration",
+"Physical"
+],
+"kind": "gem",
+"support": false,
+"level": 1,
+"quality": 17,
+"corrupted": false,
+"colour": "D",
+"socket": 1,
+"group": 0,
+"links": 3,
+"icon": "https://web.poecdn.com/gen/image/WzMwLDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9CbG9vZFJhZ2UiLCJ3IjoxLCJoIjoxLCJzY2FsZSI6MX1d/199f6b772e/BloodRage.png"
+},
+{
+"name": "Wrath",
+"tags": [
+"Aura",
+"Spell",
+"AoE",
+"Lightning"
+],
+"kind": "gem",
+"support": false,
+"level": 20,
+"quality": null,
+"corrupted": false,
+"colour": "I",
+"socket": 2,
+"group": 0,
+"links": 3,
+"icon": "https://web.poecdn.com/gen/image/WzMwLDE0LHsiZiI6IjJESXRlbXMvR2Vtcy9XcmF0aCIsInciOjEsImgiOjEsInNjYWxlIjoxfV0/6925b79eac/Wrath.png"
+}
+]
+}
+],
+"passives": {
+"tree_variant": "default",
+"tree_url": "https://www.pathofexile.com/fullscreen-passive-skill-tree/AAAABgY1fgEkBLEFfQW1DPINYA3zD6sQexCSEK0RgRX9FqoWvxewGYoajxutHUAfQSHAIuoj9iSLJP0mlSpYKxgwfDIBMjI2bzfUPP494j7PRfRHBkefSO5JUUlSSmpNklFHVUteRV9qYeJirGNDY6dkr2rrbAhsjHBScG5zDngZeK55P3ndexR9sH-Rf6mExYm3idOKOIw2jX2NgY2_j_qSgJhTmyabtaOKpHily6jPsNixs7IZsw60xbZUvG-95r46waDB1cKcwuzDOs3qz3rQ0NN-1gfZhtpI2xrb591G3vjjvudU6NbrFOtj7T_uDvDV8Yr1GPba9xP66_sJ_97_-AAMhcIBJP1rDfPzLB1ALRUrGFYoSmre8mrrJwJ5P69Fed2_VH-R5E_CnJkK475wBP_4?accountName=zxBlasphemy%235164&characterName=vCVRSE",
+"counts": {
+"allocated": 126,
+"mastery": 12,
+"small": 68,
+"notable": 32,
+"ascendancy_notable": 4,
+"ascendancy": 5,
+"keystone": 2,
+"jewel_socket": 3
+},
+"keystones": [
+"Ghost Reaver",
+"Ghost Dance"
+],
+"notables": [
+"From the Shadows",
+"Forces of Nature",
+"Coordination",
+"Charisma",
+"Weapon Artistry",
+"Clever Thief",
+"Thrill of Battle",
+"Claws of the Hawk",
+"One With Nature",
+"Written in Blood",
+"Herbalism",
+"Survivalist",
+"Blood Siphon",
+"Infused",
+"Blood Drinker",
+"Assassination",
+"Aspect of the Lynx",
+"Soul Thief",
+"Mark the Prey",
+"Trickery",
+"Intuition",
+"Frenetic",
+"Fervour",
+"Void Barrier",
+"Acuity",
+"Prowess",
+"Revenge of the Hunted",
+"Finesse",
+"Claws of the Magpie",
+"Thief's Craft",
+"Inveterate",
+"Heartseeker"
+],
+"ascendancy_notables": [
+"Unstable Infusion",
+"Mistwalker",
+"Assassination Style",
+"Deathmarked"
+],
+"bloodline_nodes": [],
+"masteries": [
+{
+"name": "Life Mastery",
+"effect_id": 34242,
+"stats": [
+"15% increased maximum Life if there are no Life Modifiers on Equipped Body Armour"
+]
+},
+{
+"name": "Mana Mastery",
+"effect_id": 64875,
+"stats": [
+"12% increased Mana Reservation Efficiency of Skills"
+]
+},
+{
+"name": "Leech Mastery",
+"effect_id": 62252,
+"stats": [
+"5% of Leech is Instant"
+]
+},
+{
+"name": "Evasion and Energy Shield Mastery",
+"effect_id": 11541,
+"stats": [
+"30% increased Evasion Rating while you have Energy Shield"
+]
+},
+{
+"name": "Claw Mastery",
+"effect_id": 22056,
+"stats": [
+"Skills Supported by Nightblade have 40% increased Effect of Elusive"
+]
+},
+{
+"name": "Evasion Mastery",
+"effect_id": 57074,
+"stats": [
+"+15% chance to Suppress Spell Damage if Equipped Helmet, Body Armour, Gloves, and Boots all have Evasion Rating"
+]
+},
+{
+"name": "Critical Mastery",
+"effect_id": 9986,
+"stats": [
+"50% increased Effect of non-Damaging Ailments you inflict with Critical Strikes"
+]
+},
+{
+"name": "Dagger Mastery",
+"effect_id": 44869,
+"stats": [
+"Elusive also grants +40% to Critical Strike Multiplier for Skills Supported by Nightblade"
+]
+},
+{
+"name": "Mark Mastery",
+"effect_id": 48980,
+"stats": [
+"10% chance to gain a Frenzy Charge when you Hit your Marked Enemy"
+]
+},
+{
+"name": "Spell Suppression Mastery",
+"effect_id": 58447,
+"stats": [
+"Prevent +3% of Suppressed Spell Damage"
+]
+},
+{
+"name": "Accuracy Mastery",
+"effect_id": 39178,
+"stats": [
+"50% more Accuracy Rating at Close Range"
+]
+},
+{
+"name": "Evasion Mastery",
+"effect_id": 28676,
+"stats": [
+"100% increased Evasion Rating from Equipped Body Armour"
+]
+}
+],
+"tattoos": [],
+"jewels": [
+{
+"slot": "PassiveJewels",
+"inventory_id": "PassiveJewels",
+"x": 5,
+"y": 0,
+"w": 1,
+"h": 1,
+"swap": false,
+"id": "624f7c8a6d58dd614ac47b9bbd98418f1e366c95560e31a6048e92019a56d1d7",
+"name": "Foul Arbiter",
+"type_line": "Murderous Eye Jewel",
+"base_type": "Murderous Eye Jewel",
+"rarity": "Rare",
+"frame_type": 2,
+"ilvl": 85,
+"identified": true,
+"league": "Allflame",
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvSmV3ZWxzL011cmRlcm91c0V5ZSIsInciOjEsImgiOjEsInNjYWxlIjoxfV0/439da96896/MurderousEye.png",
+"influences": [],
+"flags": {
+"abyssJewel": true
+},
+"properties": {
+"Abyss": true
+},
+"requirements": {
+"Level": "56"
+},
+"mods": {
+"explicit": [
+"42% chance to Avoid being Shocked",
+"5 to 10 Added Cold Damage with Claw Attacks",
+"2 to 42 Added Lightning Damage with Claw Attacks",
+"8% increased Attack Speed if you've dealt a Critical Strike Recently"
+]
+},
+"sockets": null,
+"links": 0,
+"socketed": [],
+"socket_index": 5,
+"socket_hash": 61834
+},
+{
+"slot": "PassiveJewels",
+"inventory_id": "PassiveJewels",
+"x": 4,
+"y": 0,
+"w": 1,
+"h": 1,
+"swap": false,
+"id": "072cf08028ae7403e05d16dd9fbe16adea523e326576cb8411bb51492a137529",
+"name": "Morbid Song",
+"type_line": "Murderous Eye Jewel",
+"base_type": "Murderous Eye Jewel",
+"rarity": "Rare",
+"frame_type": 2,
+"ilvl": 85,
+"identified": true,
+"league": "Allflame",
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvSmV3ZWxzL011cmRlcm91c0V5ZSIsInciOjEsImgiOjEsInNjYWxlIjoxfV0/439da96896/MurderousEye.png",
+"influences": [],
+"flags": {
+"abyssJewel": true
+},
+"properties": {
+"Abyss": true
+},
+"requirements": {
+"Level": "56"
+},
+"mods": {
+"explicit": [
+"Adds 1 to 30 Lightning Damage to Attacks",
+"47% chance to Avoid being Ignited",
+"13 to 21 Added Fire Damage with Claw Attacks",
+"1 to 23 Added Lightning Damage with Claw Attacks"
+]
+},
+"sockets": null,
+"links": 0,
+"socketed": [],
+"socket_index": 4,
+"socket_hash": 60735
+}
+],
+"nodes": [
+{
+"hash": 292,
+"name": "Life Mastery",
+"kind": "mastery",
+"stats": [
+"15% increased maximum Life if there are no Life Modifiers on Equipped Body Armour"
+],
+"mastery_effect": 34242
+},
+{
+"hash": 1201,
+"name": "Attack Damage",
+"kind": "small",
+"stats": [
+"12% increased Attack Damage"
+]
+},
+{
+"hash": 1405,
+"name": "From the Shadows",
+"kind": "notable",
+"stats": [
+"12% increased Attack Speed with Daggers",
+"40% increased Elusive Effect"
+]
+}
+],
+"hashes": [
+292,
+1201,
+1405
+],
+"hashes_ex": [],
+"mastery_effects": {
+"292": 34242,
+"3571": 64875,
+"7488": 62252,
+"11032": 11541,
+"19050": 22056,
+"27371": 57074,
+"31039": 9986,
+"31197": 44869,
+"32657": 48980,
+"49820": 58447,
+"58302": 39178,
+"65528": 28676
+}
+},
+"fetched_at": "2026-09-23T22:37:49.442Z"
+},
+{
+"name": "WelcomeToMySimulation",
+"realm": "pc",
+"league": "Standard",
+"level": 91,
+"class": "Elementalist",
+"base_class": "Witch",
+"ascendancy": "Elementalist",
+"bloodline": null,
+"last_login": "2025-10-27T19:45:08Z",
+"last_login_unix": 1761594308,
+"league_flags": {
+"permanent": true,
+"hardcore": false,
+"ssf": false,
+"ruthless": false
+},
+"origin_league": {
+"league": "Mercenaries",
+"league_full": "Secrets of the Atlas",
+"version": "3.26",
+"basis": "last_login_window",
+"confidence": "likely",
+"candidates": [
+"Mercenaries"
+],
+"ssf": false,
+"hardcore": false,
+"ruthless": false
+},
+"gold": null,
+"main_skill": {
+"skill": "Vaal Flameblast",
+"utility": false,
+"slot": "Weapon",
+"links": 6,
+"supports": [
+"Awakened Added Chaos Damage Support",
+"Awakened Burning Damage Support",
+"Awakened Unbound Ailments Support",
+"Awakened Swift Affliction Support",
+"Awakened Deadly Ailments Support"
+],
+"linked_actives": [
+"Vaal Flameblast"
+]
+},
+"uniques": [
+"The Devouring Diadem",
+"The Writhing Jar",
+"The Searing Touch",
+"Replica Emberwake",
+"Blackflame",
+"Cane of Kulemak"
+],
+"equipment": [
+{
+"slot": "Belt",
+"inventory_id": "Belt",
+"x": 0,
+"y": 0,
+"w": 2,
+"h": 1,
+"swap": false,
+"id": "f7708952c0e70bc4215627e00c9982514cda1f8bcfa07ce22279e62e9549128a",
+"name": "Viper Leash",
+"type_line": "Stygian Vise",
+"base_type": "Stygian Vise",
+"rarity": "Rare",
+"frame_type": 2,
+"ilvl": 87,
+"identified": true,
+"league": "Standard",
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQmVsdHMvQWJ5c3NCZWx0IiwidyI6MiwiaCI6MSwic2NhbGUiOjF9XQ/973fb5fe7a/AbyssBelt.png",
+"influences": [
+"hunter"
+],
+"flags": {},
+"properties": {
+"Quality (Life and Mana Modifiers)": "+20%"
+},
+"requirements": {
+"Level": "68"
+},
+"mods": {
+"implicit": [
+"Has 1 Abyssal Socket"
+],
+"explicit": [
+"+111 to maximum Life",
+"12% increased maximum Life",
+"Regenerate 108.5 Life per second",
+"+46% to Lightning Resistance",
+"50% increased Elemental Damage with Attack Skills"
+],
+"crafted": [
+"+28 to Strength"
+]
+},
+"sockets": "A",
+"links": 1,
+"socketed": [
+{
+"name": "Hypnotic Eye Jewel",
+"tags": [
+"Abyss"
+],
+"kind": "abyss_jewel",
+"support": false,
+"level": null,
+"quality": null,
+"corrupted": false,
+"colour": null,
+"socket": 0,
+"group": 0,
+"links": 1,
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvSmV3ZWxzL1JpdmV0ZWRFeWUiLCJ3IjoxLCJoIjoxLCJzY2FsZSI6MX1d/a17c4bcc60/RivetedEye.png"
+}
+]
+}
+],
+"passives": {
+"tree_variant": "default",
+"tree_url": "https://www.pathofexile.com/fullscreen-passive-skill-tree/AAAABgMCUAQHCwwRLRJpFVAWbxccFy8aOB0UHwIfGCGwJy8ulDD4McI09zbFOtg8BT1fTItMs1H7UlNV1lnzW_tk52VyZlRmnmf8aFhpnnF5cqmApIKbhXuGd4hvidiOvo9GkFWQ-pLBl4WXlZf0m6Gf36HHogCnCKyYrKqtSq7_uF27Tbv2zRbPg9eW2CTa3d1f323fsONq5nbsOO9L73zxbPfX-tIqAAAAAQADAAUABwAJAAsADAANAA4AEAASABMAFAAeACAAIQAiACQAJQAmAE8AUQBTAFUAVgBXAFkAWgBcAF0AXwBgAGEAYgBtAG4AbwBxAHIAcwB0BQTjCwwGv1v7GEiIb7oaoceGT7hd?accountName=zxBlasphemy%235164&characterName=WelcomeToMySimulation",
+"counts": {
+"allocated": 122,
+"small": 51,
+"mastery": 5,
+"notable": 13,
+"jewel_socket": 3,
+"ascendancy": 4,
+"ascendancy_notable": 4,
+"cluster_small": 16,
+"cluster_jewel_socket": 8,
+"cluster_notable": 18
+},
+"keystones": [],
+"notables": [
+"Might",
+"Breath of Flames",
+"Blast Radius",
+"Acrimony",
+"Corruption",
+"Holy Fire",
+"Sovereignty",
+"Holy Dominion",
+"Devotion",
+"Discipline and Training",
+"Agility",
+"Purity of Flesh",
+"Amplify",
+"Cremator",
+"Disorienting Display",
+"Prismatic Heart",
+"Circling Oblivion",
+"Wasting Affliction",
+"Blessed",
+"Circling Oblivion",
+"Wasting Affliction",
+"Flow of Life",
+"Burning Bright",
+"Disorienting Display",
+"Prismatic Heart",
+"Blowback",
+"Circling Oblivion",
+"Fettle",
+"Circling Oblivion",
+"Wasting Affliction",
+"Blessed"
+],
+"ascendancy_notables": [
+"Shaper of Storms",
+"Shaper of Flames",
+"Heart of Destruction",
+"Mastermind of Discord"
+],
+"bloodline_nodes": [],
+"masteries": [
+{
+"name": "Damage Over Time Mastery",
+"effect_id": 1251,
+"stats": [
+"+10% to Damage over Time Multiplier if you've Killed Recently"
+]
+},
+{
+"name": "Chaos Mastery",
+"effect_id": 1727,
+"stats": [
+"+1% to maximum Chaos Resistance"
+]
+},
+{
+"name": "Fire Mastery",
+"effect_id": 6216,
+"stats": [
+"Critical Strikes do not inherently Ignite",
+"100% increased Damage with Hits against Ignited Enemies"
+]
+},
+{
+"name": "Life Mastery",
+"effect_id": 47642,
+"stats": [
+"+30 to maximum Life"
+]
+},
+{
+"name": "Reservation Mastery",
+"effect_id": 34383,
+"stats": [
+"+1% to all maximum Elemental Resistances if you have Reserved Life and Mana"
+]
+}
+],
+"tattoos": [],
+"jewels": [],
+"nodes": [
+{
+"hash": 1031,
+"name": "Intelligence",
+"kind": "small",
+"stats": [
+"+10 to Intelligence"
+]
+},
+{
+"hash": 2828,
+"name": "Damage Over Time Mastery",
+"kind": "mastery",
+"stats": [
+"+10% to Damage over Time Multiplier if you've Killed Recently"
+],
+"mastery_effect": 1251
+},
+{
+"hash": 4397,
+"name": "Intelligence",
+"kind": "small",
+"stats": [
+"+10 to Intelligence"
+]
+}
+],
+"hashes": [
+1031,
+2828,
+4397
+],
+"hashes_ex": [
+0,
+1,
+3,
+5,
+7,
+9,
+11,
+12,
+13,
+14,
+16,
+18,
+19,
+20,
+30,
+32,
+33,
+34,
+36,
+37,
+38,
+79,
+81,
+83,
+85,
+86,
+87,
+89,
+90,
+92,
+93,
+95,
+96,
+97,
+98,
+109,
+110,
+111,
+113,
+114,
+115,
+116
+],
+"mastery_effects": {
+"2828": 1251,
+"23547": 1727,
+"34927": 6216,
+"41415": 47642,
+"47197": 34383
+}
+},
+"fetched_at": "2026-09-23T22:38:31.471Z",
+"raw": {
+"items": {
+"items": [
+{
+"verified": false,
+"w": 2,
+"h": 1,
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQmVsdHMvQWJ5c3NCZWx0IiwidyI6MiwiaCI6MSwic2NhbGUiOjF9XQ/973fb5fe7a/AbyssBelt.png",
+"league": "Standard",
+"id": "f7708952c0e70bc4215627e00c9982514cda1f8bcfa07ce22279e62e9549128a",
+"influences": {
+"hunter": true
+},
+"sockets": [
+{
+"group": 0,
+"attr": "A",
+"sColour": "A"
+}
+],
+"name": "Viper Leash",
+"typeLine": "Stygian Vise",
+"baseType": "Stygian Vise",
+"rarity": "Rare",
+"ilvl": 87,
+"identified": true,
+"properties": [
+{
+"name": "Quality (Life and Mana Modifiers)",
+"values": [
+[
+"+20%",
+1
+]
+],
+"displayMode": 0,
+"type": 6
+}
+],
+"requirements": [
+{
+"name": "Level",
+"values": [
+[
+"68",
+0
+]
+],
+"displayMode": 0,
+"type": 62
+}
+],
+"implicitMods": [
+{
+"description": "Has 1 Abyssal Socket"
+}
+],
+"explicitMods": [
+{
+"description": "+111 to maximum Life"
+},
+{
+"description": "12% increased maximum Life"
+},
+{
+"description": "Regenerate 108.5 Life per second"
+},
+{
+"description": "+46% to Lightning Resistance"
+},
+{
+"description": "50% increased Elemental Damage with Attack Skills"
+},
+{
+"description": "+28 to Strength",
+"flags": {
+"crafted": true
+}
+}
+],
+"frameType": 2,
+"frameTypeId": "Rare",
+"x": 0,
+"y": 0,
+"inventoryId": "Belt",
+"socketedItems": [
+{
+"verified": false,
+"w": 1,
+"h": 1,
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvSmV3ZWxzL1JpdmV0ZWRFeWUiLCJ3IjoxLCJoIjoxLCJzY2FsZSI6MX1d/a17c4bcc60/RivetedEye.png",
+"league": "Standard",
+"id": "20bf921d287c92830991cb4f27fa0cecbc33584fa283521e0af2efdc1280070f",
+"abyssJewel": true,
+"name": "Morbid Iridescence",
+"typeLine": "Hypnotic Eye Jewel",
+"baseType": "Hypnotic Eye Jewel",
+"rarity": "Rare",
+"ilvl": 83,
+"identified": true,
+"properties": [
+{
+"name": "Abyss",
+"values": [],
+"displayMode": 0
+}
+],
+"requirements": [
+{
+"name": "Level",
+"values": [
+[
+"31",
+0
+]
+],
+"displayMode": 0,
+"type": 62
+}
+],
+"explicitMods": [
+{
+"description": "+8 to Strength and Dexterity"
+},
+{
+"description": "Adds 2 to 19 Lightning Damage to Spells"
+},
+{
+"description": "+25 to maximum Life"
+},
+{
+"description": "2 to 18 Added Spell Lightning Damage while wielding a Two Handed Weapon"
+}
+],
+"descrText": "Place into an Abyssal Socket on an Item or into an allocated Jewel Socket on the Passive Skill Tree. Right click to remove from the Socket.",
+"frameType": 2,
+"frameTypeId": "Rare",
+"socket": 0,
+"colour": null
+}
+]
+}
+]
+}
+}
+},
+{
+"name": "BEVSTCHEESE",
+"realm": "pc",
+"league": "Phrecia 2.0",
+"level": 90,
+"class": "Herald",
+"base_class": "Witch",
+"ascendancy": "Herald",
+"bloodline": null,
+"last_login": "2026-02-01T18:24:39Z",
+"last_login_unix": 1769970279,
+"league_flags": {
+"permanent": false,
+"hardcore": false,
+"ssf": false,
+"ruthless": false
+},
+"origin_league": {
+"league": "Phrecia 2.0",
+"league_full": "Legacy of Phrecia 2.0",
+"version": "3.27",
+"basis": "current_league",
+"confidence": "certain",
+"candidates": [
+"Phrecia 2.0"
+],
+"ssf": false,
+"hardcore": false,
+"ruthless": false
+},
+"gold": null,
+"main_skill": null,
+"uniques": [
+"Foulborn The Baron"
+],
+"equipment": [
+{
+"slot": "Helm",
+"inventory_id": "Helm",
+"x": 0,
+"y": 0,
+"w": 2,
+"h": 2,
+"swap": false,
+"id": "59160d1dd57664b6d8c6d829c7f776a02b1ff2ecf38defdb22da8443a8416d7f",
+"name": "Foulborn The Baron",
+"type_line": "Close Helmet",
+"base_type": "Close Helmet",
+"rarity": "Unique",
+"frame_type": 3,
+"ilvl": 26,
+"identified": true,
+"league": "Phrecia 2.0",
+"icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQXJtb3Vycy9IZWxtZXRzL1RoZUJhcm9uIiwidyI6MiwiaCI6Miwic2NhbGUiOjEsIm11dGF0ZWQiOnRydWV9XQ/0ce6553605/TheBaron.png",
+"influences": [],
+"flags": {
+"mutated": true
+},
+"properties": {
+"Armour": "142"
+},
+"requirements": {
+"Level": "26",
+"Str": "58"
+},
+"mods": {
+"explicit": [
+"+2 to Level of Socketed Minion Gems",
+"Minions have 15% increased maximum Life",
+"Half of your Strength is added to your Minions",
+"With at least 1000 Strength, 1.94% of Damage dealt by your Raised Zombies is Leeched to you as Life"
+],
+"mutated": [
+"+1 to maximum number of Raised Zombies per 500 Intelligence"
+]
+},
+"sockets": "R-R-R-R",
+"links": 4,
+"socketed": []
+}
+],
+"passives": {
+"tree_variant": "alternate",
+"tree_url": "https://www.pathofexile.com/fullscreen-passive-skill-tree/alternate/AAAABgMCdQQHBjkGugicC2ENzREtFJkWbxo4GmwbNxzOHNwdFB4IHwIfGCI0JKolIScvK1AvXTYmNuk6WDrGOuk8LT0PRZ1G_kqfTLNNz1B6UT1RYFH7U1JVxlYuWfNakWD4YvRjv2WFZlRmnmdxaFho8mo7aqxxsnKpfIN98YNfg9uFe4b4iGWJ2Itli8-Mdo6-jxqPRpBVksGYCZrgnHqg5qIApqynCKcoqH2qqayqr2yvp7UEtzG7vr5JxPbFisaKxq7NFtAf0a3T-9ZB15bZv9rd30XfsONq6jbr7uw47-vwH_MG9S_2ovrS-6r-VAAIuhovXf1rNiZ3lGO_hcJ98d9bhvgRlJgJEN-nKJyJ1kE=?accountName=zxBlasphemy%235164&characterName=BEVSTCHEESE",
+"counts": {
+"allocated": 117,
+"small": 75,
+"ascendancy_notable": 4,
+"ascendancy": 5,
+"notable": 19,
+"jewel_socket": 6,
+"mastery": 8
+},
+"keystones": [],
+"notables": [
+"Safeguard",
+"Enduring Bond",
+"Redemption",
+"Mystic Bulwark",
+"Righteous Army",
+"Sanctuary",
+"Quick Recovery",
+"Cruel Preparation",
+"Nomadic Teachings",
+"Sanctity",
+"Gravepact",
+"Fearsome Force",
+"Faith and Steel",
+"Devotion",
+"Discipline and Training",
+"Spiritual Command",
+"Agility",
+"Purity of Flesh",
+"Tireless"
+],
+"ascendancy_notables": [
+"Herald Specialty",
+"Coming Calamity",
+"Apocalypse",
+"Scourge"
+],
+"bloodline_nodes": [],
+"masteries": [
+{
+"name": "Life Mastery",
+"effect_id": 47642,
+"stats": [
+"+30 to maximum Life"
+]
+},
+{
+"name": "Mana Mastery",
+"effect_id": 64875,
+"stats": [
+"12% increased Mana Reservation Efficiency of Skills"
+]
+},
+{
+"name": "Shield Mastery",
+"effect_id": 30612,
+"stats": [
+"+1% Chance to Block Attack Damage per 5% Chance to Block on Equipped Shield"
+]
+},
+{
+"name": "Life Mastery",
+"effect_id": 34242,
+"stats": [
+"15% increased maximum Life if there are no Life Modifiers on Equipped Body Armour"
+]
+},
+{
+"name": "Minion Offence Mastery",
+"effect_id": 57179,
+"stats": [
+"20% increased effect of Offerings"
+]
+},
+{
+"name": "Block Mastery",
+"effect_id": 4500,
+"stats": [
+"+1% Chance to Block Spell Damage per 5% Chance to Block Attack Damage"
+]
+},
+{
+"name": "Protection Mastery",
+"effect_id": 4319,
+"stats": [
+"Your Elemental Resistances cannot be lowered by Curses"
+]
+},
+{
+"name": "Minion Offence Mastery",
+"effect_id": 40073,
+"stats": [
+"Minions have 25% chance to gain Unholy Might for 4 seconds on Kill"
+]
+}
+],
+"tattoos": [],
+"jewels": [],
+"nodes": [
+{
+"hash": 1031,
+"name": "Intelligence",
+"kind": "small",
+"stats": [
+"+10 to Intelligence"
+]
+},
+{
+"hash": 1593,
+"name": "Shield Block and Elemental Resistances with a Shield",
+"kind": "small",
+"stats": [
+"+3% Chance to Block Attack Damage while holding a Shield",
+"+3% Elemental Resistances while holding a Shield"
+]
+},
+{
+"hash": 1722,
+"name": "Minion Critical Strike Multiplier",
+"kind": "small",
+"stats": [
+"Minions have +20% to Critical Strike Multiplier"
+]
+}
+],
+"hashes": [
+1031,
+1593,
+1722
+],
+"hashes_ex": [],
+"mastery_effects": {
+"12125": 47642,
+"13862": 64875,
+"25535": 30612,
+"32241": 34242,
+"34552": 57179,
+"38921": 4500,
+"42792": 4319,
+"54849": 40073
+}
+},
+"fetched_at": "2026-09-23T22:35:32.457Z"
+}
+]
+}

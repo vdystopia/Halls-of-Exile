@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // The collector is vendored as it was handed over and runs in a browser
+    // console as well as in Node; it is not part of the site's build.
+    "tools/**",
   ]),
 ]);
 

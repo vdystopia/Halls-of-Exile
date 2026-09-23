@@ -66,8 +66,8 @@ export default async function PlayerPage({ params, searchParams }: Props) {
               <CharacterCard
                 key={character.id}
                 character={character}
-                href={`/players/${user.username}/${character.patch}/${character.slug}`}
-                meta={`${character.patch} ${character.leagueName}`}
+                href={`/players/${user.username}/${character.game}/${character.leagueSlug}/${character.slug}`}
+                meta={`${character.patch ?? "###"} ${character.leagueName}`}
               />
             ))}
           </div>
@@ -130,6 +130,14 @@ export default async function PlayerPage({ params, searchParams }: Props) {
       </section>
 
       <AddLeagueForm returnTo={`/players/${user.username}`} />
+
+      <Link href={`/players/${user.username}/import`} className="panel block p-4 hover:bg-surface-2/60">
+        <span className="text-sm text-parchment">Import an account from Path of Exile</span>
+        <span className="mt-1 block text-xs text-muted">
+          Fill in gear, gems and the passive tree for every character at once, from an export of the game&rsquo;s
+          own character list.
+        </span>
+      </Link>
 
       <PlayerAdmin
         username={user.username}

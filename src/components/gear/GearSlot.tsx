@@ -35,7 +35,10 @@ export function GearSlot({
 }) {
   const [open, setOpen] = useState(false);
   // Art is optional: the images are fetched separately and may not be present.
-  const [artBroken, setArtBroken] = useState(false);
+  // A local picture that fails falls through to the one the game serves, when
+  // the item came from an export that names it — so a base added since the last
+  // `npm run art:fetch` still draws something.
+  const [artStep, setArtStep] = useState(0);
   const [placed, setPlaced] = useState(false);
   const [coords, setCoords] = useState({ left: 0, top: 0 });
   const tile = useRef<HTMLDivElement>(null);
@@ -68,6 +71,13 @@ export function GearSlot({
   const hide = () => setOpen(false);
   const border = item ? (RARITY_BORDER[item.rarity.toUpperCase()] ?? RARITY_BORDER.NORMAL) : null;
 
+  const remote = item?.iconUrl && item.iconUrl !== art?.src ? item.iconUrl : null;
+  // The game's own picture is already composited, so it is one frame where a
+  // local flask sheet is three.
+  const fallback = art && remote ? { ...art, src: remote, frames: 1 } : null;
+  const shown = artStep === 0 ? art : artStep === 1 ? fallback : null;
+  const onBroken = () => setArtStep((step) => (step === 0 && fallback ? 1 : 2));
+
   return (
     <>
       <div
@@ -85,16 +95,16 @@ export function GearSlot({
             : "border-dashed border-line/60 bg-black/20"
         }`}
       >
-        {item && art && !artBroken ? (
-          art.frames > 1 ? (
+        {item && shown ? (
+          shown.frames > 1 ? (
             // Composite the sheet's layers on top of each other, which is what
             // the game does to draw a filled flask.
             <span
               aria-hidden
               className="block h-[88%] w-[88%] bg-no-repeat"
               style={{
-                backgroundImage: `url(${art.src}), url(${art.src}), url(${art.src})`,
-                backgroundSize: `${art.frames * 100}% 100%`,
+                backgroundImage: `url(${shown.src}), url(${shown.src}), url(${shown.src})`,
+                backgroundSize: `${shown.frames * 100}% 100%`,
                 backgroundPosition: "0% 50%, 50% 50%, 100% 50%",
               }}
             />
@@ -107,13 +117,14 @@ export function GearSlot({
               // before React attaches onError and the tile keeps the browser's
               // broken-image glyph. A ref catches the failure that already
               // happened; onError catches the ones that happen after.
+              key={shown.src}
               ref={(node) => {
-                if (node?.complete && node.naturalWidth === 0) setArtBroken(true);
+                if (node?.complete && node.naturalWidth === 0) onBroken();
               }}
-              src={art.src}
+              src={shown.src}
               alt=""
               draggable={false}
-              onError={() => setArtBroken(true)}
+              onError={onBroken}
               className="h-[88%] w-[88%] object-contain"
             />
           )

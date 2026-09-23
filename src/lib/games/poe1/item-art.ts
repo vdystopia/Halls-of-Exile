@@ -60,11 +60,25 @@ export function findItemBase(item: { name: string; base: string }): BaseEntry | 
  * keyed on the base type alone. Only a unique is looked up this way — a rare's
  * name is randomly generated and could collide.
  */
-export function findItemArt(item: { name: string; base: string; rarity?: string }): ItemArt | null {
+export function findItemArt(item: {
+  name: string;
+  base: string;
+  rarity?: string;
+  /** The official CDN picture, when the item came from an API export. */
+  iconUrl?: string;
+  size?: [number, number];
+}): ItemArt | null {
   const rarity = item.rarity?.toUpperCase();
   const unique = rarity === "UNIQUE" || rarity === "RELIC" ? UNIQUES[item.name.trim()] : undefined;
   const entry = unique ?? findItemBase(item);
-  if (!entry) return null;
+  // A base the catalogue does not know still has a picture if the item came
+  // from the official API, which names the exact image the game serves. That is
+  // a remote URL rather than a file in public/, and it is already composited,
+  // so a flask fetched this way is one frame rather than three.
+  if (!entry) {
+    if (!item.iconUrl) return null;
+    return { src: item.iconUrl, width: item.size?.[0] ?? 1, height: item.size?.[1] ?? 1, frames: 1 };
+  }
   return {
     src: `/items/${entry.art}.png`,
     width: entry.w,
