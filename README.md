@@ -14,8 +14,10 @@ were built in.
 - **A player directory** at `/players`, listing everyone with their character and league counts.
 - **A league index per player** (`/players/<username>`) covering every patch from 1.0 Domination /
   Nemesis to the current league, with league dates, characters archived, and challenge progress.
-- **A league page** (`/players/<username>/<patch>`) with that league's characters, the player's
-  challenge completion (`32/40`), the league window and a note about how the league went.
+- **A league page** (`/players/<username>/<game>/<league>`) with that league's characters, the
+  player's challenge completion (`32/40`), the league window and a note about how the league went.
+  The characters sort by level, name, class, main skill, `/played` or date added, and filter by
+  class and main skill — all in the query string, so a filtered view is a link.
 - **Per-character `/played` time**, typed in by hand — no export carries it — summed into the
   player header as the archive's total time played.
 - **A character sheet** (`/players/<username>/<patch>/<character>`) laid out like pobb.in: defence

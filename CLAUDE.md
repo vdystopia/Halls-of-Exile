@@ -36,6 +36,7 @@ src/lib/games/poe1/           everything Path of Exile 1 specific: pob, items, s
                               tooltip, item art, gem colours, ascendancy emblems
 src/lib/games/poe2/           Path of Exile 2: classes so far, see its README
 src/lib/queries.ts            reads
+src/lib/character-filters.ts  league page sort/filter (query string, in memory)
 src/lib/actions.ts            writes — server actions only
 tests/                        node:test files
 ```

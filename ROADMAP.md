@@ -14,8 +14,6 @@ mattering.
 
 - [ ] Replace 3.29's tentative end date once Grinding Gear Games announces it, and clear
       the `endDateEstimated` flag.
-- [ ] Character sorting and filtering on a league page once leagues hold more than a
-      handful of characters (by level, class, main skill).
 - [ ] Search across a player's whole archive: character name, skill, unique item.
 - [ ] Per-player export (JSON) so an archive can be moved or handed over.
 - [ ] Weekly backup as a scheduled task on the server rather than a command to remember.
@@ -39,6 +37,8 @@ mattering.
 - [x] League catalogue 1.0 → 3.29, with challenge totals and per-player challenge records.
 - [x] Docker packaging, health endpoint, online backup script.
 - [x] Renamed to **Halls of Exile**, matching the repository.
+- [x] Character sorting and filtering on a league page (level, name, class, main skill,
+      /played, date added), kept in the query string.
 - [x] Per-character `/played` time, summed into the player header.
 - [x] `update.ps1`: backup, pull, rebuild, health-check, automatic rollback.
 - [x] CI on every push: typecheck, lint, tests, build, and a container that must boot and
