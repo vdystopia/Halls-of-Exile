@@ -223,6 +223,31 @@ default only where it is certain.
 The export is kept, per character, in `characters.source_payload`, so a fix to the mapping can be
 replayed over everything already imported without reading the account again.
 
+### Why this rather than a generated Path of Building code
+
+Path of Building imports from the same place. Its Import tab calls
+`https://api.pathofexile.com/character/<name>` and hands the response to the same two functions
+that read `equipment`, `jewels` and `passives` — all of which the collector already stores. So a
+Path of Building route would return no item, gem or passive that this one misses.
+
+What it would return is the stats. `<PlayerStat>` elements are written when a build is saved,
+from the calculation engine's own output, and no export from Grinding Gear Games contains them at
+any price. Getting them means running the engine, which is possible without a human: PoB ships
+`src/HeadlessWrapper.lua` with a `loadBuildFromJSON` entry point, a share code is one line of
+Lua, and the project publishes the container image its own CI runs headless in. A collected
+character rearranges into what the importer wants without any new data — `equipment` is
+`raw.items.items`, `jewels` is `raw.passives.items`, `passives` is `raw.passives`.
+
+Two things temper it, both stated in PoB's own wrapper: an imported build has no main skill
+selected and no configuration set. Life, energy shield and resistances would be sound; damage
+would be whatever the defaults produce, which is not the number anyone would quote.
+
+Either way the export payload stays. A share code is a Path of Building-shaped re-encoding and
+drops the last login time, each item's id, the league the character is in now, the game's own
+displayed figures — the `(gem)` requirement marker above all — and the passive names, since a
+code stores node hashes and naming them needs tree data the archive does not ship. Deletions only
+fall out of diffing one snapshot against the next, which no code can do either.
+
 ## Item art
 
 The paper doll draws each item with the game's own artwork. Two pieces make that work:

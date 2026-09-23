@@ -188,6 +188,34 @@ and its payload is stored in `characters.source_payload` for the same reason.
   returns `item.requires` when there is one, and `shieldBlock` returns `item.block`. That same
   export confirmed the derivation's rounding: 115 Int with 18% reduced requirements reports 94,
   and 115 x 0.82 is 94.3.
+- **Path of Building imports the same data this does, and adds arithmetic — not facts.** Its
+  Import tab calls `https://api.pathofexile.com/character/<name>` (`src/Classes/PoEAPI.lua`,
+  OAuth, `client_id=pob`) and hands the response straight to `ImportItemsAndSkills` and
+  `ImportPassiveTreeAndJewels`, which read `equipment`, `jewels`, `passives`, `class`, `league`
+  and `level`. The collector stores every one of those in `raw`, so a Path of Building route
+  would bring back no item, gem, jewel or passive that the export route is missing. What it
+  would bring back is `<PlayerStat>`: those elements are written at save time from
+  `calcsTab.mainOutput`, the calculation engine's own numbers, and they are the one thing no
+  export of any kind contains.
+  The route exists and is checked: `src/HeadlessWrapper.lua` has `loadBuildFromJSON`, whose own
+  comment points at the official character endpoint, and a share code is one line —
+  `common.base64.encode(Deflate(build:SaveDB("code")))` with the base64 made URL-safe. Grinding
+  Gear Games' community repository publishes the image its own CI runs headless in,
+  `ghcr.io/pathofbuildingcommunity/pathofbuilding-tests`. Restructuring a collected character
+  into what the importer wants is rearrangement, not new data: `equipment` is `raw.items.items`,
+  `jewels` is `raw.passives.items`, `passives` is `raw.passives`, and name, class, league and
+  level are `raw.character`. Two caveats that would decide whether the numbers are worth
+  storing, both stated by the wrapper itself: an imported build has no main skill selected and
+  no configuration set, so life, energy shield and resistances would be sound while damage would
+  be whatever the defaults produce — not a figure the owner would quote. The export's
+  `main_skill` heuristic is the obvious thing to point at the socket group.
+- **A generated share code would not replace the stored export payload.** A code is a Path of
+  Building-shaped re-encoding and drops what that program has no field for: the last login time
+  the origin-league inference runs on, each item's 64-hex id, the league a character sits in now,
+  the game's own displayed figures — the `(gem)` requirement marker above all — and the passive
+  names, since a code stores node hashes and naming them needs the tree data the archive does not
+  ship. It also cannot say which characters have been deleted, because that only falls out of
+  diffing one snapshot against the next. Whatever route produces the stats, the payload stays.
 - **A build's source is the only thing allowed to rewrite it.** A character can hold both a
   share code and an export payload. `parser_version` and `api_version` are separate columns
   because the two mappers move independently, and `reparseStaleBuilds` reads `data.source` to
