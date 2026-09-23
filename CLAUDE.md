@@ -16,12 +16,14 @@ npm run seed:demo    # demo players; -- --reset wipes users/characters first
 npm run seed:atlas   # the owner's own record, 99 characters, into ./data; -- --reset re-imports
 ```
 
-Deploy is `.\update.ps1` on the owner's PC, never a bare `docker compose up -d --build`:
-it backs up, pulls, rebuilds, health-checks, rolls back on failure, and holds a lock so two
-runs cannot race. **Item art is baked into the image** (`COPY /app/public`), so `npm run
-art:fetch` has to run *before* the deploy, not after — fetching afterwards leaves the
-container serving the art it was built with. The script counts the images against the
-catalogue and warns when they are behind.
+Deploy is `.\update.ps1` on the owner's Windows PC and `./update.sh` on pc2 (the Ubuntu server
+the archive is moving to), never a bare `docker compose up -d --build`. Both back up, pull,
+rebuild, health-check, roll back on failure, and hold a lock so two runs cannot race; a change to
+one's behaviour belongs in the other too. pc2 layers `docker-compose.pc2.yml` through
+`COMPOSE_FILE` in its `.env` (see the README's pc2 section). **Item art is baked into the image**
+(`COPY /app/public`), so `npm run art:fetch` has to run *before* the deploy, not after —
+fetching afterwards leaves the container serving the art it was built with. The script counts
+the images against the catalogue and warns when they are behind.
 
 ## Shape of the code
 
@@ -183,7 +185,13 @@ so a character page never depends on an external link staying alive.
 - **No auth exists, by design.** Anything reachable can be edited by anyone. Do not add
   features that assume a trusted caller without saying so.
 - **Do not bind-mount the SQLite file to a Windows path.** WSL2 file-share locking is
-  unreliable for SQLite. The named volume is deliberate.
+  unreliable for SQLite. The named volume is deliberate on Windows. pc2's bind mount to
+  `/srv/data/halls` is on a Linux filesystem, which is fine, and exists so the host's nightly
+  backup job can reach the data; it must be owned by uid 1000.
+- **A backup file is complete at every instant.** `scripts/backup.mjs` writes to `<name>.partial`,
+  switches the copy out of WAL mode, integrity-checks it and only then renames it over the target,
+  because pc2's host job snapshots `backups/archive-latest.db` right after `backup.sh` returns.
+  Restore from a backup, never from a snapshot of the live `archive.db` (its data may be in `-wal`).
 - **The export format is a contract.** `docs/export-format.md` documents every field
   `buildPlayerExport` writes, and a test fails if one is missing. Within a version fields are only
   added; renaming, retyping or removing one bumps `EXPORT_VERSION`. Leagues are referenced by
