@@ -116,3 +116,12 @@ export function formatPlayed(minutes: number | null | undefined): string | null 
   if (hours) return rest ? `${hours}h ${rest}m` : `${hours}h`;
   return `${rest}m`;
 }
+
+/** `/players/<user>/<game>/<league>/<character>`: the league segment is its slug, never its patch. */
+export function characterHref(
+  username: string,
+  league: { game: string; slug: string },
+  character: { slug: string },
+): string {
+  return `/players/${username}/${league.game}/${league.slug}/${character.slug}`;
+}

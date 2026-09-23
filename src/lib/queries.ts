@@ -165,17 +165,45 @@ export function listCharacters(userId: number, leagueId: number): Character[] {
   return rows.map(mapCharacter);
 }
 
-export function listRecentCharacters(userId: number, limit = 6): (Character & { patch: string; leagueName: string })[] {
+/** A character with the league it is filed under, for lists that span leagues. */
+export type ArchivedCharacter = Character & { league: League };
+
+const withLeague = `SELECT c.*, l.id AS l_id, l.game AS l_game, l.slug AS l_slug, l.patch AS l_patch, l.kind AS l_kind,
+                          l.parent AS l_parent, l.name AS l_name, l.expansion AS l_expansion,
+                          l.start_date AS l_start_date, l.end_date AS l_end_date,
+                          l.end_date_estimated AS l_end_date_estimated, l.dates_uncertain AS l_dates_uncertain,
+                          l.challenge_total AS l_challenge_total, l.is_custom AS l_is_custom,
+                          l.sort_order AS l_sort_order
+                   FROM characters c JOIN leagues l ON l.id = c.league_id`;
+
+function mapArchived(row: Row): ArchivedCharacter {
+  const league: Row = {};
+  for (const [key, value] of Object.entries(row)) if (key.startsWith("l_")) league[key.slice(2)] = value;
+  return { ...mapCharacter(row), league: mapLeague(league) };
+}
+
+export function listRecentCharacters(userId: number, limit = 6): ArchivedCharacter[] {
   const rows = db
     .prepare(
-      `SELECT c.*, l.patch AS patch, l.name AS league_name
-       FROM characters c JOIN leagues l ON l.id = c.league_id
+      `${withLeague}
        WHERE c.user_id = ?
        ORDER BY c.is_favorite DESC, l.sort_order DESC, c.level DESC
        LIMIT ?`,
     )
     .all(userId, limit) as Row[];
-  return rows.map((row) => ({ ...mapCharacter(row), patch: row.patch, leagueName: row.league_name }));
+  return rows.map(mapArchived);
+}
+
+/** Every character a player has, newest league first: what search runs over. */
+export function listArchive(userId: number): ArchivedCharacter[] {
+  const rows = db
+    .prepare(
+      `${withLeague}
+       WHERE c.user_id = ?
+       ORDER BY l.sort_order DESC, c.level DESC, c.name COLLATE NOCASE ASC`,
+    )
+    .all(userId) as Row[];
+  return rows.map(mapArchived);
 }
 
 export function getCharacter(userId: number, leagueId: number, slug: string): Character | null {

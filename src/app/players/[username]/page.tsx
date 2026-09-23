@@ -1,10 +1,11 @@
+import Form from "next/form";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddLeagueForm } from "@/components/AddLeagueForm";
 import { ChallengeMeter } from "@/components/ChallengeMeter";
 import { CharacterCard } from "@/components/CharacterCard";
 import { PlayerAdmin } from "@/components/PlayerAdmin";
-import { formatPlayed, isLeagueRunning, leagueTitle, leagueWindow } from "@/lib/format";
+import { characterHref, formatPlayed, isLeagueRunning, leagueTitle, leagueWindow } from "@/lib/format";
 import { getUser, getUserTotals, listLeaguesForUser, listRecentCharacters } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -58,6 +59,23 @@ export default async function PlayerPage({ params, searchParams }: Props) {
         </div>
       </header>
 
+      <Form action={`/players/${user.username}/search`} className="flex flex-wrap items-center gap-3">
+        <label htmlFor="archive-search" className="sr-only">
+          Search {user.username}&apos;s archive
+        </label>
+        <input
+          id="archive-search"
+          name="q"
+          type="search"
+          minLength={2}
+          placeholder="Search characters, skills and uniques…"
+          className="input max-w-md flex-1"
+        />
+        <button type="submit" className="btn px-3 py-2 text-xs">
+          Search
+        </button>
+      </Form>
+
       {recent.length ? (
         <section>
           <h2 className="display mb-4 text-xl">Pinned &amp; most recent</h2>
@@ -66,8 +84,8 @@ export default async function PlayerPage({ params, searchParams }: Props) {
               <CharacterCard
                 key={character.id}
                 character={character}
-                href={`/players/${user.username}/${character.patch}/${character.slug}`}
-                meta={`${character.patch} ${character.leagueName}`}
+                href={characterHref(user.username, character.league, character)}
+                meta={leagueTitle(character.league)}
               />
             ))}
           </div>

@@ -18,9 +18,11 @@ were built in.
   player's challenge completion (`32/40`), the league window and a note about how the league went.
   The characters sort by level, name, class, main skill, `/played` or date added, and filter by
   class and main skill — all in the query string, so a filtered view is a link.
+- **Search across a player's whole archive** (`/players/<username>/search?q=`) by character
+  name, skill (main skill or any socketed gem) and unique item equipped, across every league.
 - **Per-character `/played` time**, typed in by hand — no export carries it — summed into the
   player header as the archive's total time played.
-- **A character sheet** (`/players/<username>/<patch>/<character>`) laid out like pobb.in: defence
+- **A character sheet** (`/players/<username>/<game>/<league>/<character>`) laid out like pobb.in: defence
   and offence panels, resistances, the full paper-doll of gear with hover tooltips showing every
   mod, the gem setup by socket group, the passive tree summary, the build configuration, and a
   dump of every stat Path of Building computed.
