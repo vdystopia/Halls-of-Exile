@@ -173,3 +173,28 @@ export function compareDates(a: string | null, b: string | null, direction: 1 | 
   if (a === b) return 0;
   return direction * (a < b ? -1 : 1);
 }
+
+/** The same rule for a plain number: unknown last, either way round. */
+export function compareNumbers(a: number | null, b: number | null, direction: 1 | -1 = 1): number {
+  if (a === null && b === null) return 0;
+  if (a === null) return 1;
+  if (b === null) return -1;
+  return direction * (a - b);
+}
+
+/**
+ * How far through a league's challenges a player got, as a fraction.
+ *
+ * What the challenge column sorts on, and deliberately not the raw count: a
+ * league's total has ranged from 8 to 40 over the years, so 7 of 8 is a better
+ * run than 20 of 40 and has to sort above it. Null where there is nothing to
+ * divide — a league with no challenges, or one whose count was never recorded —
+ * so those sort to the bottom rather than reading as zero, which would put them
+ * below a genuine nil.
+ *
+ * Capped at 1 so the bar and the sort agree about what finished looks like.
+ */
+export function challengeFraction(completed: number | null, total: number | null): number | null {
+  if (completed === null || total === null || total <= 0) return null;
+  return Math.min(1, completed / total);
+}

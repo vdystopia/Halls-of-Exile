@@ -2,12 +2,25 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { compareDates, comparePatches, isLeagueRunning, leagueLabel, leagueWindow } from "@/lib/format";
+import {
+  challengeFraction,
+  compareDates,
+  compareNumbers,
+  comparePatches,
+  isLeagueRunning,
+  leagueLabel,
+  leagueWindow,
+} from "@/lib/format";
 import type { LeagueWithProgress } from "@/lib/types";
 import { ChallengeMeter } from "./ChallengeMeter";
 
-type Column = "game" | "patch" | "league";
+type Column = "game" | "patch" | "league" | "characters" | "best" | "challenges";
 type Direction = "asc" | "desc";
+
+/** A league record can override the catalogue's own challenge count. */
+function challengeTotal(league: LeagueWithProgress): number | null {
+  return league.challengeTotalOverride ?? league.challengeTotal;
+}
 
 /**
  * The catalogue's own order is by start date, newest first — that is what
@@ -209,6 +222,24 @@ export function LeagueIndex({
         return byGame || comparePatches(a.patch, b.patch, order) || byDate;
       }
       if (sort.column === "patch") return comparePatches(a.patch, b.patch, order) || byDate;
+      if (sort.column === "characters") {
+        return compareNumbers(a.characterCount, b.characterCount, order) || byDate;
+      }
+      if (sort.column === "best") return compareNumbers(a.maxLevel, b.maxLevel, order) || byDate;
+      if (sort.column === "challenges") {
+        // By how far through they got, not by how many were done: the total has
+        // ranged from 8 to 40 over the years, so 7 of 8 beats 20 of 40. A tie
+        // goes to the bigger league, which is what separates 40/40 from 8/8.
+        return (
+          compareNumbers(
+            challengeFraction(a.challengesCompleted, challengeTotal(a)),
+            challengeFraction(b.challengesCompleted, challengeTotal(b)),
+            order,
+          ) ||
+          compareNumbers(challengeTotal(a), challengeTotal(b), order) ||
+          byDate
+        );
+      }
       return byDate || a.name.localeCompare(b.name);
     });
 
@@ -234,14 +265,20 @@ export function LeagueIndex({
             <FilterMenu label="league" options={nameOptions} selected={names} onChange={setNames} />
           </div>
         </div>
-        <span className="w-28 shrink-0 text-[11px] tracking-[0.18em] text-muted uppercase">Characters</span>
-        <span className="w-24 shrink-0 text-[11px] tracking-[0.18em] text-muted uppercase">Best</span>
-        <span className="w-24 shrink-0 text-[11px] tracking-[0.18em] text-muted uppercase">Challenges</span>
+        <div className="w-28 shrink-0">
+          <SortButton label="Characters" column="characters" sort={sort} onSort={onSort} />
+        </div>
+        <div className="w-20 shrink-0">
+          <SortButton label="Best" column="best" sort={sort} onSort={onSort} />
+        </div>
+        <div className="w-32 shrink-0">
+          <SortButton label="Challenges" column="challenges" sort={sort} onSort={onSort} />
+        </div>
       </div>
 
       <div className="divide-y divide-line">
         {shown.map((league) => {
-          const total = league.challengeTotalOverride ?? league.challengeTotal;
+          const total = challengeTotal(league);
           const empty = league.characterCount === 0;
           const running = isLeagueRunning(league.startDate, league.endDate);
           return (
@@ -276,11 +313,14 @@ export function LeagueIndex({
                   ? `${league.characterCount} character${league.characterCount === 1 ? "" : "s"}`
                   : "no characters"}
               </span>
-              <span className="w-24 shrink-0 text-sm text-muted">
+              <span className="w-20 shrink-0 text-sm text-muted">
                 {league.maxLevel ? `lvl ${league.maxLevel}` : ""}
               </span>
-              <span className="w-24 shrink-0">
-                <ChallengeMeter completed={league.challengesCompleted} total={total} size="sm" />
+              {/* Wide enough for the meter, and with the meter's own label off:
+                  the column header already says Challenges, and the two side by
+                  side are what pushed "40/40" out of the table. */}
+              <span className="w-32 shrink-0">
+                <ChallengeMeter completed={league.challengesCompleted} total={total} size="sm" label={false} />
               </span>
             </Link>
           );

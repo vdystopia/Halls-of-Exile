@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  challengeFraction,
+  compareNumbers,
   comparePatches,
   formatPlayed,
   isLeagueRunning,
@@ -286,4 +288,41 @@ test("a league label leaves the patch out and brackets the second name", () => {
     leagueLabel({ name: "Mercenaries of Trarthus", expansion: "Secrets of the Atlas" }),
     "Mercenaries of Trarthus (Secrets of the Atlas)",
   );
+});
+
+/**
+ * Challenge counts are not comparable between leagues: the total has been 8,
+ * 12, 32 and 40 over the years, so the raw number finished says more about
+ * which league it was than about how far anyone got.
+ */
+test("challenges compare as a fraction, so 7 of 8 beats 20 of 40", () => {
+  const short = challengeFraction(7, 8);
+  const long = challengeFraction(20, 40);
+  assert.ok(short !== null && long !== null);
+  assert.ok(short > long, "7/8 should rank above 20/40");
+  assert.equal(compareNumbers(short, long, 1) > 0, true);
+});
+
+test("a league with no challenges, or none recorded, has no fraction", () => {
+  assert.equal(challengeFraction(null, 40), null, "nothing recorded");
+  assert.equal(challengeFraction(12, null), null, "a league with no challenges");
+  assert.equal(challengeFraction(null, null), null);
+  // Zero completed is a real result and must not read as unknown: someone who
+  // finished none of forty still ranks above a league with no count at all.
+  assert.equal(challengeFraction(0, 40), 0);
+});
+
+test("a finished league is a full bar however many challenges it had", () => {
+  assert.equal(challengeFraction(40, 40), 1);
+  assert.equal(challengeFraction(8, 8), 1);
+  // A miscount cannot push the bar past the end.
+  assert.equal(challengeFraction(45, 40), 1);
+});
+
+test("numbers sort with the unknown last, either way round", () => {
+  const levels = [96, null, 84];
+  assert.deepEqual([...levels].sort((a, b) => compareNumbers(a, b, 1)), [84, 96, null]);
+  assert.deepEqual([...levels].sort((a, b) => compareNumbers(a, b, -1)), [96, 84, null]);
+  // Zero is a value, not an absence, and stays in the ordering.
+  assert.deepEqual([0, null, 3].sort((a, b) => compareNumbers(a, b, 1)), [0, 3, null]);
 });

@@ -166,7 +166,20 @@ and its payload is stored in `characters.source_payload` for the same reason.
   top on the second click. Ties fall back to the start date — three events share 3.25 and both
   closed beta rounds are 0.0. Sorting the League column sorts by date, not by name: the
   catalogue's own order is chronological so an event sits beside the league it ran inside, and
-  alphabetical order would break exactly that.
+  alphabetical order would break exactly that. Characters, best level and challenges sort too.
+- **Challenges sort as a fraction, never as a count.** A league's challenge total has been 8,
+  12, 32 and 40 over the years, so the raw number finished says more about which league it was
+  than about how far anyone got: 7 of 8 is the better run and has to rank above 20 of 40.
+  `challengeFraction` in `format.ts` is what both the bar and the sort read, so the two cannot
+  disagree about what finished looks like. A league with no challenges, or one whose count was
+  never recorded, has no fraction and sorts last rather than reading as zero — a genuine nil out
+  of forty is a result and ranks above them. A tie goes to the bigger league, separating 40/40
+  from 8/8.
+- **`ChallengeMeter` drops its own label inside the index.** The word "Challenges" beside the
+  count needs about 160px, and in a narrower column the two were pushed apart until the count
+  sat outside the table. The column header already says it, so `label={false}` there; the meter
+  also carries `min-w-0`, without which a flex child refuses to shrink below its content and
+  overflows rather than fitting.
 - **Migrations must survive a hot reload.** The connection is cached on globalThis so it
   outlives dev-server reloads, so `connection()` re-runs `migrate()` and the catalogue sync
   once per module evaluation. Without that, pulling a schema change left a running dev
