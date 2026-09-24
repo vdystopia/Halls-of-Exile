@@ -9,6 +9,9 @@ jobs:
   check:
     name: Types, lint, tests, build
     runs-on: ubuntu-latest
+    # This job runs in well under a minute. A cap turns a hang into a failure
+    # that says so, instead of a run that sits there looking busy.
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -45,6 +48,11 @@ jobs:
   image:
     name: Docker image boots and serves
     runs-on: ubuntu-latest
+    # Normally about a minute. It has twice sat on "Build image" for twenty and
+    # counting with nothing in the diff to explain it, which is the layer cache
+    # backend rather than the build - and an unbounded job hides that, holds a
+    # runner, and blocks the merge it is meant to gate.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
