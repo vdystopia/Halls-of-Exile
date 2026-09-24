@@ -223,6 +223,39 @@ default only where it is certain.
 The export is kept, per character, in `characters.source_payload`, so a fix to the mapping can be
 replayed over everything already imported without reading the account again.
 
+### Running itself
+
+One command, once:
+
+```powershell
+.\watch.ps1 -Install
+```
+
+From then on the archive keeps itself current. Two scheduled tasks are registered: one looks
+every few minutes for a new commit on `Main` whose build is green and runs `update.ps1` when it
+finds one, the other runs `collect.ps1` daily. Both survive a reboot and need no window left
+open. `.\watch.ps1 -Once` shows what the next check would decide; `-Uninstall` removes them;
+`logs\watch.log` is the record.
+
+A red build is never deployed, and neither is one whose build has not finished or cannot be
+read — it waits for the next check instead, and starts saying so in the log if that goes on for
+about an hour. Everything else is `update.ps1`'s job: the backup, the health check, and the
+rollback if the new container does not come up.
+
+Why this exists: the archive runs behind a home network with no port forwarded and no SSH
+exposed, so nothing outside can push a deploy in. The machine has to reach out and ask.
+
+The simpler answer, if you are driving this with Claude Code, is to run the session **on that
+machine** instead. It installs natively on Windows with no WSL:
+
+```powershell
+irm https://claude.ai/install.ps1 | iex
+```
+
+then `cd X:\halls; claude`. A session started there runs `update.ps1` and `collect.ps1`
+directly, so there is nothing to poll and nothing to schedule. The watcher above is for when no
+session is open — which is still the right home for the daily collection.
+
 ### Refreshing every character on its own
 
 A player's Path of Exile account needs no setting up: the archive's own are kept in code and

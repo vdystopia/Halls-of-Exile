@@ -31,7 +31,7 @@ jobs:
         shell: pwsh
         run: |
           $errors = $null
-          foreach ($script in 'update.ps1', 'collect.ps1') {
+          foreach ($script in 'update.ps1', 'collect.ps1', 'watch.ps1') {
             [System.Management.Automation.Language.Parser]::ParseFile(
               (Resolve-Path $script), [ref]$null, [ref]$errors) | Out-Null
             if ($errors) {

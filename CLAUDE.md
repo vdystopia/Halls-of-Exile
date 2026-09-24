@@ -22,6 +22,24 @@ any yet: it reads each player's account out of the running archive, runs the col
 rewrites a character that already holds a build and never creates one — see the first rule
 below — so a second run writes nothing, which is what makes it safe to schedule.
 
+**Do not hand the owner commands to run. Run them.** The merge to Main, the push, the checks —
+all of that works from anywhere and is the assistant's job. Only two things need the owner's own
+machine, because the archive lives behind their network with no port forwarded and no SSH
+exposed (deliberately), so nothing outside can reach in: `update.ps1`, which drives their Docker,
+and `collect.ps1`, which must read Path of Exile from a residential address.
+
+There are two ways to make even those unattended, and the first is much better:
+
+1. **Run the session on that box.** Claude Code installs natively on Windows, no WSL:
+   `irm https://claude.ai/install.ps1 | iex`, then `cd X:\halls; claude`. A session started
+   there can run `update.ps1` and `collect.ps1` directly as tool calls — nothing to poll, nothing
+   to install beyond Claude Code itself, and the whole loop closes. Git for Windows is worth
+   having so the Bash tool works; without it the shell tool is PowerShell, which is fine here.
+2. **`.\watch.ps1 -Install`**, run once, for when no session is open. It registers two scheduled
+   tasks: one checks every few minutes whether Main has moved and its build is green and runs
+   `update.ps1` if so, the other runs `collect.ps1` daily. Useful when the assistant is working
+   from a sandbox, and for the daily collection either way.
+
 Deploy is `.\update.ps1` on the owner's PC, never a bare `docker compose up -d --build`:
 it backs up, pulls, rebuilds, health-checks, rolls back on failure, and holds a lock so two
 runs cannot race. **Item art is baked into the image** (`COPY /app/public`), so `npm run
@@ -256,6 +274,14 @@ and its payload is stored in `characters.source_payload` for the same reason.
   finished character should be replaced. So `applyImport` is given a `leagueFor` that always
   returns null and an `overwrite` that always returns false, and the response names what it
   skipped for each reason. Both need the upload page.
+- **A red or unproven build is never deployed, and a watcher that cannot tell says so.**
+  `watch.ps1` reads the commit's check runs before handing over to `update.ps1`, and treats
+  four states separately: green deploys, red refuses, pending waits, and unreachable waits but
+  starts logging loudly after about an hour. Pending and unreachable must not read the same in
+  the log — pending clears itself in minutes, while unreachable, repeated, means the thing is
+  deploying nothing while looking healthy, which is the failure worth shouting about. The
+  status is read anonymously, which is 60 requests an hour per address and far more than the
+  few this needs; `GITHUB_TOKEN` in the environment lifts it if that is ever the obstacle.
 - **A player's Path of Exile account lives on the player row**, in `users.poe_account`. It is
   there so the collector script holds no configuration: it asks `/api/players` which accounts to
   read, and every export names the account it came from, so `playerForAccount` matches the two

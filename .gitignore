@@ -50,3 +50,6 @@ next-env.d.ts
 
 # written by collect.ps1: one export per account, kept so collection stays incremental
 /collect
+
+# written by watch.ps1
+/logs
