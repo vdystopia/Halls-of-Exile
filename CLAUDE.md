@@ -231,6 +231,36 @@ and its payload is stored in `characters.source_payload` for the same reason.
   Requirements" mods and floored. The requires section holds one line per figure ("Level 63",
   "130 Dex") so the tooltip can colour a scaled attribute without colouring the level beside it;
   scale with integer percentages rather than a multiplier, since 70 x 0.7 is 48.99999999999999.
+- **The passive tree is drawn on the page, from a static SVG per version.** `npm run tree:svg`
+  turns Grinding Gear Games' 6.7 MB `skilltree-export` `data.json` into `public/trees/<ver>.svg`
+  — one `<circle id="n<skillid>">` per node at a resolved x/y, one `<line>` or `<path>` per
+  connection with `id="c<a>-<b>"`, and nothing else. Node positions are polar in the source
+  (`group.x/y` plus `constants.orbitRadii[orbit]` at an angle from `orbitIndex`), resolved once
+  here so the browser never sees the maths or the file. The output is the **empty** tree, the
+  same for every character who played that version, so it is one cacheable asset rather than a
+  render each. It is committed, like the ascendancy portraits and for the same reason.
+  **Allocation is a stylesheet, never a mutation**: every circle and line takes its colour from
+  `currentColor`, so lighting a build is one `#n1234{color:…}` rule per allocated node, and a
+  connection is lit only when both ends are. That is O(allocated) against a static three
+  thousand element document. The SVG is loaded through an `<object>` on purpose — those
+  elements have no business in React's reconciler or in the page's HTML — and the stylesheet
+  **must be constructed in the SVG document's own window**: Chrome refuses to adopt one built
+  by the parent, which took the whole page down the first time.
+- **A build is drawn on the tree it was made on.** Node ids are stable between versions but
+  positions are not — about a third of an old build's nodes sit somewhere else on a current
+  tree — so `treeAsset` matches `treeVersion` to a generated SVG. Only `3.29` is generated;
+  adding one is `npm run tree:svg -- 3.25`, and the script finds the commit itself by reading
+  the export repository's history, since that repo has two branches and marks versions by
+  commit message. A version that has not been generated falls back to the newest and the page
+  **says so** rather than drawing a wrong tree quietly. A build from the game's own endpoints
+  carries no version at all and is drawn on the newest, which is exact: the API reports what a
+  character has allocated today.
+- **Cluster jewel passives are not drawn, and the count says so.** Their node ids are invented
+  by Path of Building when the jewel is socketed and exist nowhere in the game's export, so
+  there is no position to draw them at. The tree reports how many of a character's passives it
+  could not place instead of silently showing fewer than the panel claims. Class start nodes
+  *are* drawn, for the same reason in reverse: every build allocates one, and leaving it out
+  made every character report one phantom missing passive.
 - **A stored build is a cache of the parser, so parser fixes need `PARSER_VERSION`.**
   A character's items are parsed once, at import, and written to `characters.data` as JSON;
   the archive went on rendering base percentiles as mods for days after the parser stopped

@@ -198,3 +198,19 @@ test("a gem keeps its metadata id", () => {
   const build = parsePob(encode(xml));
   assert.equal(build.skillGroups[0].gems[0].gemId, "Metadata/Items/Gems/SkillGemFrostblink");
 });
+
+/**
+ * A build code is the only copy of which passives a character took, so the
+ * parser keeping the ids is what makes the tree drawable at all. Before this
+ * the archive knew a character had 103 passives and nothing about which.
+ */
+test("a spec with no nodes leaves the list off rather than storing an empty one", () => {
+  const xml = `<?xml version="1.0"?>
+<PathOfBuilding>
+  <Build level="12" className="Marauder"/>
+  <Tree activeSpec="1"><Spec title="Empty" nodes=""/></Tree>
+</PathOfBuilding>`;
+  const build = parsePob(encode(xml));
+  assert.equal(build.trees[0].nodeCount, 0);
+  assert.equal(build.trees[0].nodes, undefined);
+});

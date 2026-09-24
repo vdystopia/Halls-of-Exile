@@ -127,6 +127,17 @@ export type TreeSpec = {
   nodeCount: number;
   masteryCount: number;
   treeVersion?: string;
+  /**
+   * The allocated nodes, by the game's own skill id — what the tree on the
+   * character page lights up. Both sources carry them (Path of Building in the
+   * spec's `nodes` attribute, the game's endpoint in `passives.hashes`) and
+   * both used to count them and throw them away, which left the archive holding
+   * the number of a character's passives but not which ones.
+   *
+   * Optional because a row written before this existed has only the count, and
+   * older rows must still render.
+   */
+  nodes?: number[];
 };
 
 /** The named passives an allocation holds, which a node count alone loses. */

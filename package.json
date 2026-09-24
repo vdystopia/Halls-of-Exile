@@ -15,6 +15,7 @@
     "gems:art": "tsx scripts/build-gem-art-index.ts",
     "ascendancy:index": "tsx scripts/build-ascendancy-index.ts",
     "ascendancy:art": "tsx scripts/fetch-ascendancy-art.ts",
+    "tree:svg": "tsx scripts/build-tree-svg.ts",
     "art:fetch": "tsx scripts/fetch-item-art.ts"
   },
   "dependencies": {

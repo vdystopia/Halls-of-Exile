@@ -5,6 +5,7 @@ import { CharacterAdmin } from "@/components/CharacterAdmin";
 import { CopyButton } from "@/components/CopyButton";
 import { GearGrid } from "@/components/GearGrid";
 import { PassivePanel } from "@/components/PassivePanels";
+import { PassiveTree } from "@/components/PassiveTree";
 import { SkillGroups } from "@/components/SkillGroups";
 import { SkillIcon } from "@/components/SkillIcon";
 import { AllStatsTable, AttributeStrip, ResistanceBar, StatColumn } from "@/components/StatPanels";
@@ -12,6 +13,7 @@ import { classLine, formatPlayed, leagueTitle, leagueWindow } from "@/lib/format
 import { leagueModifierLabel, leagueModifierTitle } from "@/lib/league-modifiers";
 import { getCharacter, getLeague, getUser } from "@/lib/queries";
 import { gemArt, skillNames } from "@/lib/games/poe1/gems";
+import { treeAsset } from "@/lib/games/poe1/tree";
 import { DEFENCE_PANELS, humanizeStatKey, OFFENCE_PANELS } from "@/lib/games/poe1/stats";
 
 export const dynamic = "force-dynamic";
@@ -44,6 +46,10 @@ export default async function CharacterPage({ params }: Props) {
   // exact gem name resolves, so prose draws nothing rather than a wrong gem.
   const skill = character.skillGem ?? character.mainSkill;
   const skillArt = gemArt(skill);
+  // Which generated tree this build is drawn on, resolved here because the
+  // index of what has been generated is server-side data.
+  const treeNodes = tree?.nodes ?? [];
+  const treeArt = treeNodes.length ? treeAsset(tree?.treeVersion) : null;
 
   return (
     <div className="space-y-6">
@@ -244,6 +250,31 @@ export default async function CharacterPage({ params }: Props) {
           ) : null}
         </div>
       </div>
+
+      {/* Full width, because a tree drawn small is a smudge. The panel beside
+          the gear keeps the counts and the link out; this is the tree itself. */}
+      {treeArt && treeNodes.length ? (
+        <section className="panel">
+          <div className="panel-header">
+            <h2 className="panel-title">Passive tree</h2>
+            <span className="text-xs text-muted">
+              {treeArt.exact
+                ? "scroll to zoom, drag to pan"
+                : `drawn on the ${treeArt.version} tree — this build is ${tree?.treeVersion}, so some nodes sit elsewhere`}
+            </span>
+          </div>
+          <div className="p-4">
+            <PassiveTree
+              src={treeArt.src}
+              nodes={treeNodes}
+              ascendancy={character.ascendancy}
+              allocatedCount={tree?.nodeCount ?? treeNodes.length}
+              treeVersion={tree?.treeVersion || treeArt.version}
+              className="h-[420px] md:h-[620px]"
+            />
+          </div>
+        </section>
+      ) : null}
 
       {build.notes ? (
         <details className="panel group">

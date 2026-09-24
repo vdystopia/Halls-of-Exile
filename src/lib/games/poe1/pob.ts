@@ -164,12 +164,20 @@ function parseTrees(root: Node): { trees: TreeSpec[]; activeTree: number } {
     const nodes: string = spec["@_nodes"] ?? "";
     const masteries: string = spec["@_masteryEffects"] ?? "";
     const url = typeof spec.URL === "string" ? spec.URL : spec.URL?.["#text"];
+    // Kept, not just counted: these ids are what the tree on the character page
+    // draws. They were being reduced to a number here, which meant the archive
+    // knew a character had 103 passives and nothing about which.
+    const allocated = nodes
+      .split(",")
+      .map((id) => Number(id.trim()))
+      .filter((id) => Number.isFinite(id) && id > 0);
     return {
       title: spec["@_title"] || `Tree ${index + 1}`,
       url: typeof url === "string" ? url.trim() : undefined,
-      nodeCount: nodes ? nodes.split(",").filter(Boolean).length : 0,
+      nodeCount: allocated.length,
       masteryCount: masteries ? masteries.split("},{").length : 0,
       treeVersion: (spec["@_treeVersion"] ?? "").replace(/_/g, "."),
+      nodes: allocated.length ? allocated : undefined,
     };
   });
   const active = num(treeNode?.["@_activeSpec"]) ?? 1;
@@ -232,7 +240,7 @@ function parseConfig(root: Node): { name: string; value: string }[] {
  *     tell them from the spares Path of Building keeps in the same list, and a
  *     gem carries its metadata id so its colour can be looked up.
  */
-export const PARSER_VERSION = 3;
+export const PARSER_VERSION = 4;
 
 /** Turn a Path of Building export into the structure the character page renders. */
 export function parsePob(code: string): BuildData {

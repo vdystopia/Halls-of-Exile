@@ -35,8 +35,10 @@ export const POE_EXPORT_SCHEMA = 1;
  * fix here reaches only later imports unless the stored payload is replayed.
  *
  * 1 — the first mapper.
+ * 2 — keeps the allocated passive ids rather than only counting them, so the
+ *     character page can draw the tree.
  */
-export const POE_API_VERSION = 1;
+export const POE_API_VERSION = 2;
 
 export class PoeExportError extends Error {}
 
@@ -476,6 +478,12 @@ export function buildFromPoeExport(character: PoeExportCharacter, export_: PoeEx
 
   const passives = source?.passives ?? {};
   const counts = passives?.counts ?? {};
+  // The allocated nodes by skill id. Kept rather than counted, for the same
+  // reason the parser now keeps them: the tree on the character page needs to
+  // know which ones, and no other field carries that.
+  const allocatedHashes: number[] = (Array.isArray(passives?.hashes) ? passives.hashes : [])
+    .map((hash: unknown) => Number(hash))
+    .filter((hash: number) => Number.isFinite(hash) && hash > 0);
 
   return {
     source: "poe-api",
@@ -493,8 +501,13 @@ export function buildFromPoeExport(character: PoeExportCharacter, export_: PoeEx
       {
         title: "Passive tree",
         url: str(passives?.tree_url) ?? undefined,
-        nodeCount: numeric(counts?.allocated) ?? (Array.isArray(passives?.hashes) ? passives.hashes.length : 0),
+        nodeCount: numeric(counts?.allocated) ?? allocatedHashes.length,
         masteryCount: numeric(counts?.mastery) ?? 0,
+        // The endpoint reports what the character has allocated *now*, against
+        // whatever tree is live, so there is no version to record and the page
+        // draws it on the newest one. That is right for this source: an export
+        // is a reading taken today, not a record of an older tree.
+        nodes: allocatedHashes.length ? allocatedHashes : undefined,
       },
     ],
     activeTree: 0,
