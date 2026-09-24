@@ -16,11 +16,13 @@ export function PlayerAdmin({
   username,
   firstName,
   tagline,
+  poeAccount,
   characters,
 }: {
   username: string;
   firstName: string;
   tagline: string | null;
+  poeAccount: string | null;
   characters: number;
 }) {
   const [state, renameAction] = useActionState(renamePlayerAction, INITIAL);
@@ -71,6 +73,23 @@ export function PlayerAdmin({
             Tagline <span className="text-muted/60">(optional)</span>
           </label>
           <input id="tagline" name="tagline" className="input" defaultValue={tagline ?? ""} autoComplete="off" />
+        </div>
+        <div>
+          <label className="label" htmlFor="poeAccount">
+            Path of Exile account <span className="text-muted/60">(optional)</span>
+          </label>
+          <input
+            id="poeAccount"
+            name="poeAccount"
+            className="input"
+            defaultValue={poeAccount ?? ""}
+            placeholder="Name#1234"
+            autoComplete="off"
+          />
+          <p className="mt-1 text-xs text-muted">
+            Set this and <code className="font-mono">collect.ps1</code> refreshes this player&rsquo;s gear on its
+            own — an export says which account it came from, and this is what matches it to a player.
+          </p>
         </div>
         <FormError message={state.error} />
         <SubmitButton pendingLabel="Renaming…">Save changes</SubmitButton>

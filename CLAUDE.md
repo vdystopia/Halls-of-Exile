@@ -16,6 +16,11 @@ npm run seed:demo    # demo players; -- --reset wipes users/characters first
 npm run seed:atlas   # the owner's own record, 99 characters, into ./data; -- --reset re-imports
 ```
 
+`.\collect.ps1` on the owner's PC refreshes every archived character's gear from the game:
+it reads each player's account out of the running archive, runs the collector in
+`tools/poe-char-export/` against it, and posts the result to `/api/import/poe`. It only ever
+updates characters that already exist — see the rule below — so it is safe to schedule.
+
 Deploy is `.\update.ps1` on the owner's PC, never a bare `docker compose up -d --build`:
 it backs up, pulls, rebuilds, health-checks, rolls back on failure, and holds a lock so two
 runs cannot race. **Item art is baked into the image** (`COPY /app/public`), so `npm run
@@ -28,6 +33,8 @@ catalogue and warns when they are behind.
 ```
 src/app/                      routes; every data page is force-dynamic
 src/app/api/health/route.ts   health probe (Docker healthcheck + CI + update.ps1 all use it)
+src/app/api/players/route.ts  players and their accounts, so collect.ps1 holds no config
+src/app/api/import/poe/route.ts  unattended ingest for collect.ps1
 src/components/               UI; forms are client components, everything else is server
 src/lib/db.ts                 connection, schema, migrations, league catalogue sync
 src/lib/leagues.ts            the league catalogue itself
@@ -37,6 +44,8 @@ src/lib/games/poe1/           everything Path of Exile 1 specific: pob, poe-api,
 src/lib/games/poe2/           Path of Exile 2: classes so far, see its README
 src/lib/queries.ts            reads
 src/lib/actions.ts            writes — server actions only
+src/lib/import.ts             applying an account export, shared by the upload
+                              page and the unattended endpoint
 tests/                        node:test files
 tools/poe-char-export/        the collector: reads an account off the game's own
                               character endpoints and writes the JSON the import
@@ -222,6 +231,17 @@ and its payload is stored in `characters.source_payload` for the same reason.
   decide which one may re-derive the row; the other is only marked current so it stops being
   re-read every boot. Without that, a `PARSER_VERSION` bump would silently replace a build that
   came from the game with one derived from a stale share code.
+- **An unattended import updates and never creates.** `collect.ps1` and `/api/import/poe` run
+  with nobody watching, and the league a character belongs to is the one thing no export can
+  answer, so `applyImport` is given a `leagueFor` that always returns null: a character the
+  archive has never seen is named in the response and left alone. Creating one needs the upload
+  page, where a league is chosen by hand. That is also what makes a scheduled run idempotent —
+  running it twice is the same as running it once, which `tests/import.test.ts` pins down.
+- **A player's Path of Exile account lives on the player row**, in `users.poe_account`, set
+  under "Manage player". It is there so the collector script holds no configuration: it asks
+  `/api/players` which accounts to read, and every export names the account it came from, so
+  `playerForAccount` matches the two without anyone passing a flag. Two players cannot claim one
+  account. Both endpoints are unauthenticated, like every other write here.
 - **The league never comes from the export.** Every character migrates to a permanent league
   when its own ends, so the league the API reports says nothing about where it was played. The
   collector guesses from the last login time and grades its own guess — and the owner's record

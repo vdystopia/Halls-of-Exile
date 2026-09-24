@@ -223,6 +223,33 @@ default only where it is certain.
 The export is kept, per character, in `characters.source_payload`, so a fix to the mapping can be
 replayed over everything already imported without reading the account again.
 
+### Refreshing every character on its own
+
+Once a player's Path of Exile account is set under **Manage player** on their page, one command
+on the server does the whole loop:
+
+```powershell
+.\collect.ps1
+```
+
+It asks the running archive which accounts to read, runs the collector against each, and posts
+the result back. Matched characters get their gear, gems, tree jewels and passives replaced with
+what the game currently reports; their league, memories, `/played` time and main skill are left
+alone. `-Player dystopia` does one player, `-Full` refetches everything instead of only what
+changed.
+
+**It never creates a character.** A name the archive has never seen is printed at the end and
+skipped, because the league it belongs to is the one thing no export can answer and the script
+has nobody to ask. Those go through the upload page.
+
+That makes it safe to repeat, so it can go in Task Scheduler. Collection is incremental — after
+the first run it costs two requests, plus two per character that levelled, changed league or was
+played in the last twelve hours — and the collector paces itself against the rate-limit headers,
+so a quiet run is mostly waiting on purpose.
+
+`collect/` holds one export per account between runs, which is what makes them incremental. It is
+not committed.
+
 ### Why this rather than a generated Path of Building code
 
 Path of Building imports from the same place. Its Import tab calls

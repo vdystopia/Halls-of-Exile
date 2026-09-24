@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
   username   TEXT NOT NULL COLLATE NOCASE UNIQUE,
   first_name TEXT NOT NULL,
   tagline    TEXT,
+  poe_account TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -89,6 +90,7 @@ function migrate(db: Database.Database) {
     ["leagues", "dates_uncertain", "INTEGER NOT NULL DEFAULT 0"],
     ["characters", "source_payload", "TEXT"],
     ["characters", "api_version", "INTEGER NOT NULL DEFAULT 0"],
+    ["users", "poe_account", "TEXT"],
   ];
   for (const [table, column, definition] of additions) {
     const columns = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];

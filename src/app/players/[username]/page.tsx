@@ -143,6 +143,7 @@ export default async function PlayerPage({ params, searchParams }: Props) {
         username={user.username}
         firstName={user.firstName}
         tagline={user.tagline}
+        poeAccount={user.poeAccount}
         characters={totals.characters}
       />
     </div>

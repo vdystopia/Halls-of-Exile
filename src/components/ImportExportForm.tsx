@@ -1,12 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import {
-  importPoeExportAction,
-  previewPoeExportAction,
-  type ImportRow,
-  type ImportState,
-} from "@/lib/actions";
+import { importPoeExportAction, previewPoeExportAction, type ImportState } from "@/lib/actions";
+import type { ImportRow } from "@/lib/import";
 import type { League } from "@/lib/types";
 import { FormError } from "./FormError";
 import { SubmitButton } from "./SubmitButton";

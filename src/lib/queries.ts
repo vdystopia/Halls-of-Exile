@@ -6,7 +6,13 @@ import type { BuildData, Character, League, LeagueWithProgress, User } from "./t
 type Row = any;
 
 function mapUser(row: Row): User {
-  return { id: row.id, username: row.username, firstName: row.first_name, createdAt: row.created_at };
+  return {
+    id: row.id,
+    username: row.username,
+    firstName: row.first_name,
+    poeAccount: row.poe_account ?? null,
+    createdAt: row.created_at,
+  };
 }
 
 function mapLeague(row: Row): League {

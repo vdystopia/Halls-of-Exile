@@ -24,6 +24,23 @@ jobs:
         run: npm test
       - name: Production build
         run: npm run build
+      # The deploy and collection scripts only ever run on the owner's Windows
+      # box, so nothing else here would notice a syntax error in them until it
+      # failed in front of him. pwsh is preinstalled on the runner.
+      - name: Parse the PowerShell scripts
+        shell: pwsh
+        run: |
+          $errors = $null
+          foreach ($script in 'update.ps1', 'collect.ps1') {
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $script), [ref]$null, [ref]$errors) | Out-Null
+            if ($errors) {
+              Write-Host "$script :"
+              $errors | ForEach-Object { Write-Host "  $_" }
+              exit 1
+            }
+            Write-Host "$script parses"
+          }
 
   image:
     name: Docker image boots and serves
@@ -71,5 +88,24 @@ jobs:
             echo "${code} ${path}"
             test "${code}" = "200"
           done
+      # The ingest endpoint is what collect.ps1 talks to, and it loads the whole
+      # export mapper — so this proves that module survived the standalone trace
+      # as well. A fresh container has no players, so the account cannot resolve;
+      # both failures must be the considered ones, not a stack trace.
+      - name: The ingest endpoint answers
+        run: |
+          test "$(curl -fsS http://127.0.0.1:3000/api/players)" = "[]"
+          bad=$(curl -s -o /tmp/bad.json -w '%{http_code}' -X POST \
+            -H 'Content-Type: application/json' -d '{"nope":1}' \
+            http://127.0.0.1:3000/api/import/poe)
+          cat /tmp/bad.json; echo
+          test "${bad}" = "400"
+          missing=$(curl -s -o /tmp/missing.json -w '%{http_code}' -X POST \
+            -H 'Content-Type: application/json' \
+            -d '{"schema_version":1,"account":"Nobody#0000","characters":[{"name":"x"}]}' \
+            http://127.0.0.1:3000/api/import/poe)
+          cat /tmp/missing.json; echo
+          test "${missing}" = "404"
+          grep -q 'Nobody#0000' /tmp/missing.json
       - if: always()
         run: docker rm -f halls-ci
