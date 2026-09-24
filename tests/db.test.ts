@@ -351,3 +351,55 @@ test("an account another player already holds is not duplicated", async () => {
   const row = db.prepare(`SELECT poe_account FROM users WHERE id = ?`).get(other) as { poe_account: string | null };
   assert.equal(row.poe_account, null);
 });
+
+/**
+ * Account names are public, so the archive's own two live in code and are
+ * applied on boot. No setup step, nothing to type, nothing to forget — the
+ * collector works the moment the container comes up.
+ */
+test("the archive's own accounts are set on boot", async () => {
+  const { db, ensureSchema } = await import("../src/lib/db");
+  const { ACCOUNT_SEED } = await import("../src/lib/accounts");
+
+  const [username, account] = Object.entries(ACCOUNT_SEED)[0];
+  db.prepare(`DELETE FROM users WHERE username = ? COLLATE NOCASE`).run(username);
+  // Earlier tests in this file import the fixture, whose payloads name this
+  // same account, so a test user may already have derived it — and the seed
+  // rightly refuses to give one account to two players.
+  db.prepare(`UPDATE users SET poe_account = NULL WHERE poe_account = ? COLLATE NOCASE`).run(account);
+  const id = db
+    .prepare(`INSERT INTO users (username, first_name) VALUES (?, 'Test')`)
+    .run(username).lastInsertRowid as number;
+
+  ensureSchema(db);
+
+  const row = db.prepare(`SELECT poe_account FROM users WHERE id = ?`).get(id) as { poe_account: string };
+  assert.equal(row.poe_account, account);
+});
+
+/** An account changed under "Manage player" is not undone by the next boot. */
+test("an account set by hand survives the seed", async () => {
+  const { db, ensureSchema } = await import("../src/lib/db");
+  const { ACCOUNT_SEED } = await import("../src/lib/accounts");
+
+  const [username] = Object.entries(ACCOUNT_SEED)[0];
+  db.prepare(`DELETE FROM users WHERE username = ? COLLATE NOCASE`).run(username);
+  const id = db
+    .prepare(`INSERT INTO users (username, first_name, poe_account) VALUES (?, 'Test', 'Changed#9999')`)
+    .run(username).lastInsertRowid as number;
+
+  ensureSchema(db);
+
+  const row = db.prepare(`SELECT poe_account FROM users WHERE id = ?`).get(id) as { poe_account: string };
+  assert.equal(row.poe_account, "Changed#9999");
+});
+
+/** Every seeded account must be distinct, or two players would claim one. */
+test("no two seeded players share an account", async () => {
+  const { ACCOUNT_SEED } = await import("../src/lib/accounts");
+  const accounts = Object.values(ACCOUNT_SEED).map((account) => account.toLowerCase());
+  assert.equal(new Set(accounts).size, accounts.length);
+  for (const account of Object.values(ACCOUNT_SEED)) {
+    assert.match(account, /^.+#\d{3,5}$/, `${account} is not an account name`);
+  }
+});

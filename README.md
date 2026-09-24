@@ -225,10 +225,10 @@ replayed over everything already imported without reading the account again.
 
 ### Refreshing every character on its own
 
-A player's Path of Exile account is worked out from what they have already imported — every
-character carries the payload it came from and that payload names the account — so it is only
-typed in under **Manage player** for a player who has imported nothing yet. After that, one
-command on the server does the whole loop:
+A player's Path of Exile account needs no setting up: the archive's own are kept in code and
+applied on boot, and any other is worked out from what that player has already imported, since
+every character carries the payload it came from and that payload names the account. One command
+on the server does the whole loop:
 
 ```powershell
 .\collect.ps1
@@ -239,11 +239,12 @@ the result back. An archived character with no gear yet gets its gear, gems, tre
 passives filled in; its league, memories, `/played` time and main skill are left alone.
 `-Player dystopia` does one player, `-Full` refetches everything instead of only what changed.
 
-A player who has imported nothing yet has no account to work out. Give it once, on the command
-line, and the archive keeps it:
+The two accounts this archive's players use are in `src/lib/accounts.ts` and set on boot, so
+there is nothing to configure. For a player who is not listed there and has imported nothing
+yet, give it once on the command line and the archive keeps it:
 
 ```powershell
-.\collect.ps1 -Player valkyrie -Account "Name#1234"
+.\collect.ps1 -Player someone -Account "Name#1234"
 ```
 
 **It never rewrites a character that already has a build, and never creates one.** Both need a

@@ -267,11 +267,13 @@ and its payload is stored in `characters.source_payload` for the same reason.
   someone to type it into a form is asking them to re-enter a fact the archive can see, and it
   is the second time they would have done it. It only ever fills a blank: an account set by hand
   is never second-guessed, and one another player already holds is left alone rather than
-  duplicated. A player with nothing imported yet has nothing to infer from, so their first
-  account arrives one of two ways and then never again: the field under "Manage player", or
-  `.\collect.ps1 -Player <name> -Account "Name#1234"`, which the import records through
-  `rememberAccount`. No account name belongs in the repository — they are per-archive facts,
-  and the two ways in exist so none has to be.
+  duplicated. This archive's own two accounts are in `src/lib/accounts.ts` and applied on boot,
+  before the inference, so there is no setup step at all: account names are public — the profile
+  page serves the character list under one — so there is nothing to protect and no reason to
+  make anyone type one in. A player not listed there has two other ways in, each needed once:
+  the field under "Manage player", or `.\collect.ps1 -Player <name> -Account "Name#1234"`,
+  which the import records through `rememberAccount`. All three fill a blank and nothing more,
+  so they cannot fight each other and an account changed by hand always wins.
 - **The league never comes from the export.** Every character migrates to a permanent league
   when its own ends, so the league the API reports says nothing about where it was played. The
   collector guesses from the last login time and grades its own guess — and the owner's record

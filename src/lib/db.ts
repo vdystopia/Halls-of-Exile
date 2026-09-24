@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import fs from "node:fs";
 import path from "node:path";
+import { ACCOUNT_SEED } from "./accounts";
 import { LEAGUE_SEED } from "./leagues";
 import { PARSER_VERSION, parsePob } from "./games/poe1/pob";
 import { POE_API_VERSION, rebuildFromStoredExport, type StoredPoeExport } from "./games/poe1/poe-api";
@@ -103,22 +104,38 @@ function migrate(db: Database.Database) {
 }
 
 /**
- * Work out a player's Path of Exile account from what the archive already
- * holds, rather than asking for it again.
+ * Give a player their Path of Exile account without anyone typing it in.
  *
- * Every character imported from an account export stores the payload it came
- * from, and that payload names the account. So a player who has imported
- * anything has already told the archive which account they play on — typing it
- * into a form is re-entering a fact the database can see. This fills the blank
- * on the next boot, which also covers the player who only ever used the upload
- * page, since that route never asked for an account at all.
+ * Two sources, in order. `ACCOUNT_SEED` names the accounts this archive's own
+ * players play on, which are public and so belong in code where they need no
+ * setup step. After that, every character imported from an account export
+ * stores the payload it came from and that payload names the account, so a
+ * player who has imported anything has already told the archive which account
+ * they play on — asking again is asking them to re-enter a fact the database
+ * can see. That second source also covers the player who only ever used the
+ * upload page, since that route never asked for an account at all.
  *
- * It only ever fills a blank: an account set by hand is never second-guessed,
+ * Both only ever fill a blank: an account set by hand is never second-guessed,
  * and an account another player already claims is left alone rather than
  * duplicated. Where a player's characters name more than one account, the one
  * that appears most often wins.
  */
 function backfillAccounts(db: Database.Database) {
+  const free = db.prepare(`SELECT 1 FROM users WHERE poe_account = ? COLLATE NOCASE AND id <> ?`);
+  const claim = db.prepare(`UPDATE users SET poe_account = ? WHERE id = ?`);
+
+  const blank = db.prepare(
+    `SELECT id FROM users WHERE username = ? COLLATE NOCASE AND (poe_account IS NULL OR poe_account = '')`,
+  );
+  const seeded = db.transaction(() => {
+    for (const [username, account] of Object.entries(ACCOUNT_SEED)) {
+      const user = blank.get(username) as { id: number } | undefined;
+      if (!user || free.get(account, user.id)) continue;
+      claim.run(account, user.id);
+    }
+  });
+  seeded();
+
   const found = db
     .prepare(
       `SELECT c.user_id AS userId, json_extract(c.source_payload, '$.account') AS account, count(*) AS seen
@@ -133,18 +150,16 @@ function backfillAccounts(db: Database.Database) {
     .all() as { userId: number; account: string; seen: number }[];
   if (found.length === 0) return;
 
-  const taken = db.prepare(`SELECT 1 FROM users WHERE poe_account = ? COLLATE NOCASE AND id <> ?`);
-  const set = db.prepare(`UPDATE users SET poe_account = ? WHERE id = ?`);
   const claimed = new Set<number>();
-  const run = db.transaction(() => {
+  const derived = db.transaction(() => {
     for (const row of found) {
       if (claimed.has(row.userId)) continue;
-      if (taken.get(row.account, row.userId)) continue;
-      set.run(row.account, row.userId);
+      if (free.get(row.account, row.userId)) continue;
+      claim.run(row.account, row.userId);
       claimed.add(row.userId);
     }
   });
-  run();
+  derived();
 }
 
 /**
