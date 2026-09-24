@@ -69,7 +69,11 @@ type Node = {
   isAscendancyStart?: boolean;
   ascendancyName?: string;
   classStartIndex?: number;
-  expansionJewel?: unknown;
+  /**
+   * Set on a jewel socket that belongs to the cluster jewel system. A `parent`
+   * means the socket lives *inside* another jewel rather than on the tree.
+   */
+  expansionJewel?: { size?: number; index?: number; proxy?: string; parent?: string };
 };
 
 type Group = { x: number; y: number; orbits?: number[]; nodes?: string[]; isProxy?: boolean };
@@ -236,6 +240,14 @@ function build(tree: Tree, version: string, sha: string): string {
     if (id === "root" || node.isProxy) continue;
     // Blighted nodes belong to a league mechanic's own overlay, not the tree.
     if (node.isBlighted) continue;
+    // A jewel socket with a parent is one of the sockets *inside* a cluster
+    // jewel — 18 small and 18 medium — and only exists once such a jewel is
+    // socketed. The export still gives them coordinates, parked in the margins
+    // beside the six large sockets they belong to, which drew them as isolated
+    // dots and three-node chains scattered off the corners of the tree. The 18
+    // basic sockets and the 6 large ones have no parent and are kept: those are
+    // really there.
+    if (node.expansionJewel?.parent !== undefined) continue;
     const at = place(node, tree);
     if (!at) continue;
 

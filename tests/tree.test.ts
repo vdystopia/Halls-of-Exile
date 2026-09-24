@@ -220,3 +220,73 @@ test("the generated tree hides a mastery and its links together", () => {
   assert.match(svg, /\.nodes circle\.mastery\{color:transparent\}/);
   assert.match(svg, /\.connections \.mastery\{color:transparent\}/);
 });
+
+/**
+ * The drawn tree is one connected graph, plus one island per ascendancy.
+ *
+ * Anything else floating loose is something that should not have been drawn.
+ * What it caught: the 18 small and 18 medium jewel sockets that live *inside* a
+ * cluster jewel. The export gives them coordinates — parked in the margins
+ * beside the six large sockets they belong to — so they came out as isolated
+ * dots and three-node chains scattered off the corners of the tree, looking for
+ * all the world like a rendering fault.
+ *
+ * Stated as connectivity rather than as a list of things to exclude, because
+ * the next stray will be some other category nobody thought of, and it will
+ * fail this test the same way.
+ */
+test("nothing floats loose but the ascendancies", () => {
+  const svg = fs.readFileSync(path.join(process.cwd(), "public", "trees", `${versions[0]}.svg`), "utf8");
+
+  const adjacency = new Map<string, string[]>();
+  const ascendancy = new Set<string>();
+  for (const match of svg.matchAll(/<circle id="n(\d+)"([^>]*)>/g)) {
+    adjacency.set(match[1], []);
+    if (/data-kind="Ascendancy"/.test(match[2])) ascendancy.add(match[1]);
+  }
+  for (const match of svg.matchAll(/id="c(\d+)-(\d+)"/g)) {
+    adjacency.get(match[1])?.push(match[2]);
+    adjacency.get(match[2])?.push(match[1]);
+  }
+
+  const seen = new Set<string>();
+  const islands: string[][] = [];
+  for (const start of adjacency.keys()) {
+    if (seen.has(start)) continue;
+    const stack = [start];
+    const island: string[] = [];
+    seen.add(start);
+    while (stack.length) {
+      const node = stack.pop() as string;
+      island.push(node);
+      for (const next of adjacency.get(node) ?? []) {
+        if (seen.has(next)) continue;
+        seen.add(next);
+        stack.push(next);
+      }
+    }
+    islands.push(island);
+  }
+
+  // Every island that is not an ascendancy cluster should be the tree itself.
+  const loose = islands.filter((island) => !island.some((node) => ascendancy.has(node)));
+  assert.equal(loose.length, 1, `${loose.length - 1} fragments are drawn outside the tree`);
+  assert.ok(loose[0].length > 2000, `the main tree is only ${loose[0].length} nodes`);
+});
+
+/**
+ * The sockets on the tree are the 18 basic ones, the six large cluster sockets
+ * and the charm sockets. Small and medium cluster sockets are not on the tree
+ * at all — they come into existence inside a socketed jewel.
+ */
+test("only the jewel sockets that are really on the tree are drawn", () => {
+  const svg = fs.readFileSync(path.join(process.cwd(), "public", "trees", `${versions[0]}.svg`), "utf8");
+  const names = new Set(
+    [...svg.matchAll(/<circle[^>]*data-kind="Jewel" data-name="([^"]*)"/g)].map((match) => match[1]),
+  );
+  assert.ok(names.has("Basic Jewel Socket"));
+  assert.ok(names.has("Large Jewel Socket"));
+  for (const inside of ["Small Jewel Socket", "Medium Jewel Socket"]) {
+    assert.equal(names.has(inside), false, `${inside} only exists inside a cluster jewel`);
+  }
+});

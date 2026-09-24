@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10022 -9383 20054 19005" data-tree-version="3.29" data-source-commit="8bd138b32ea2631455cac5935bfab089f826094f">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-9026 -8878 18119 17733" data-tree-version="3.29" data-source-commit="8bd138b32ea2631455cac5935bfab089f826094f">
 <style>svg{--tree-bg:#131110;--tree-off:#4a3f31;--tree-on:#c8aa6e;--tree-hot:#e8d9a8;background-color:var(--tree-bg);color:var(--tree-off)}.connections{fill:none;stroke:currentColor;stroke-width:18}.nodes circle{stroke:currentColor;fill:currentColor;stroke-width:130;stroke-opacity:0}.nodes circle:hover{color:var(--tree-hot)}.nodes circle.mastery{color:transparent}.connections .mastery{color:transparent}.nodes circle.classstart{fill:none;stroke-width:24;stroke-opacity:1}.nodes circle.start{color:var(--tree-off);opacity:.45}.ascendancy{display:none}</style>
 <g class="connections">
 <line x1="5847" y1="6907" x2="5685" y2="6907" id="c6-8872" class="mastery"/>
@@ -659,7 +659,6 @@
 <path d="M 3715 542 A 162 162 0 0 0 3865 766" id="c6799-63194"/>
 <path d="M -2838 3718 A 162 162 0 0 1 -2689 3618" id="c6884-27301"/>
 <path d="M -2838 3718 A 162 162 0 0 0 -2838 3842" id="c6884-34959"/>
-<path d="M 8936 -180 A 335 335 0 0 1 9142 130" id="c6910-49684"/>
 <line x1="-2689" y1="3780" x2="-2689" y2="3618" id="c6912-27301" class="mastery"/>
 <line x1="4988" y1="1788" x2="4926" y2="1639" id="c6913-65224"/>
 <path d="M 569 -4170 A 662 662 0 0 0 635 -4330" id="c6949-55643"/>
@@ -884,7 +883,6 @@
 <path d="M -6605 -4624 A 162 162 0 0 1 -6517 -4412" id="c9392-32932"/>
 <line x1="6409" y1="5575" x2="6571" y2="5575" id="c9393-41420" class="mastery"/>
 <path d="M -6469 5238 A 162 162 0 0 1 -6307 5400" id="c9402-17527"/>
-<path d="M -4580 -8591 A 335 335 0 0 0 -4836 -8591" id="c9408-48679"/>
 <line x1="7000" y1="-7700" x2="7000" y2="-7538" id="c9414-33897" class="ascendancy asc-Warden"/>
 <line x1="7000" y1="-7700" x2="6850" y2="-7638" id="c9414-20772" class="ascendancy asc-Warden"/>
 <line x1="7000" y1="-7700" x2="6850" y2="-7762" id="c9414-29259" class="ascendancy asc-Warden"/>
@@ -974,7 +972,6 @@
 <line x1="3582" y1="-4330" x2="3582" y2="-3995" id="c10511-12873" class="mastery"/>
 <path d="M 3582 -4330 A 335 335 0 0 1 3710 -3685" id="c10511-52095"/>
 <line x1="3582" y1="-4330" x2="3432" y2="-4057" id="c10511-62490"/>
-<path d="M -4810 8696 A 335 335 0 0 1 -5066 8696" id="c10532-23756"/>
 <line x1="7432" y1="-7756" x2="7335" y2="-7700" id="c10538-57850" class="ascendancy asc-Warlock"/>
 <line x1="7150" y1="-7638" x2="7309" y2="-7572" id="c10539-34229" class="ascendancy asc-Primalist"/>
 <line x1="7150" y1="-7638" x2="7000" y2="-7700" id="c10539-10622" class="ascendancy asc-Primalist"/>
@@ -1209,7 +1206,6 @@
 <path d="M -8464 -2419 A 162 162 0 0 1 -8302 -2581" id="c13164-41251"/>
 <path d="M 5679 -5912 A 162 162 0 0 0 5803 -5912" id="c13168-58032"/>
 <path d="M 5679 -5912 A 162 162 0 0 1 5579 -6061" id="c13168-45810"/>
-<path d="M 5223 -8159 A 335 335 0 0 0 5016 -8468" id="c13170-61288"/>
 <path d="M 6442 3421 A 162 162 0 0 1 6342 3271" id="c13202-33196"/>
 <path d="M 6442 3421 A 162 162 0 0 0 6566 3421" id="c13202-17171"/>
 <line x1="6665" y1="-7700" x2="6507" y2="-7700" id="c13219-55867" class="ascendancy asc-Trickster"/>
@@ -1505,8 +1501,6 @@
 <line x1="650" y1="5870" x2="668" y2="5541" id="c17201-36222"/>
 <line x1="650" y1="5870" x2="968" y2="6378" id="c17201-29185"/>
 <line x1="650" y1="5870" x2="1480" y2="5870" id="c17201-19711"/>
-<path d="M -9134 -116 A 335 335 0 0 0 -8927 193" id="c17219-49080"/>
-<path d="M -9134 -116 A 335 335 0 0 1 -8927 -426" id="c17219-44169"/>
 <path d="M 2423 -6897 A 162 162 0 0 0 2111 -6835" id="c17236-62577"/>
 <path d="M -3952 -1752 A 162 162 0 0 0 -3802 -1652" id="c17251-39631"/>
 <line x1="-3952" y1="-1752" x2="-4436" y2="-1816" id="c17251-26866"/>
@@ -1865,7 +1859,6 @@
 <path d="M 2184 8219 A 335 335 0 0 1 2158 8347" id="c22908-58382"/>
 <line x1="1146" y1="-6566" x2="1146" y2="-6404" id="c22972-56128" class="mastery"/>
 <path d="M 1146 -6566 A 162 162 0 0 1 1208 -6255" id="c22972-63067"/>
-<path d="M 5050 8517 A 335 335 0 0 1 4843 8827" id="c22994-40400"/>
 <line x1="6872" y1="-8009" x2="7000" y2="-7700" id="c23024-58229" class="ascendancy asc-Assassin"/>
 <line x1="-7672" y1="-1435" x2="-7984" y2="-1373" id="c23027-54667"/>
 <line x1="-7672" y1="-1435" x2="-7984" y2="-1497" id="c23027-47427"/>
@@ -1903,7 +1896,6 @@
 <line x1="6872" y1="-6076" x2="6711" y2="-5797" id="c23616-36858"/>
 <path d="M -2703 -7140 A 162 162 0 0 0 -2865 -6978" id="c23659-50029"/>
 <path d="M -2703 -7140 A 162 162 0 0 1 -2553 -7040" id="c23659-33864"/>
-<path d="M -5066 8696 A 335 335 0 0 1 -5273 8386" id="c23756-46519"/>
 <path d="M -6898 532 A 162 162 0 0 0 -6748 632" id="c23760-26564"/>
 <path d="M -6898 532 A 162 162 0 0 1 -6898 408" id="c23760-38538"/>
 <line x1="1064" y1="-7049" x2="1064" y2="-6887" id="c23796-34591" class="mastery"/>
@@ -2267,7 +2259,6 @@
 <path d="M -2506 -8278 A 162 162 0 0 1 -2506 -7979" id="c29629-48971"/>
 <path d="M 7224 -8139 A 493 493 0 0 0 7000 -8193" id="c29630-48904" class="ascendancy asc-Berserker"/>
 <path d="M 7349 -8049 A 493 493 0 0 0 7152 -8169" id="c29662-58650" class="ascendancy asc-Raider"/>
-<path d="M -5043 -8281 A 335 335 0 0 1 -4836 -8591" id="c29712-48679"/>
 <line x1="-812" y1="-6929" x2="-1082" y2="-7490" id="c29781-44184"/>
 <line x1="-4279" y1="7073" x2="-4260" y2="7475" id="c29797-34400"/>
 <line x1="7128" y1="-7391" x2="7290" y2="-7301" id="c29825-58454" class="ascendancy asc-Trickster"/>
@@ -2497,7 +2488,6 @@
 <line x1="-3542" y1="7209" x2="-3691" y2="7147" id="c33718-64128" class="mastery"/>
 <path d="M 1998 6875 A 162 162 0 0 1 1998 6999" id="c33725-59016"/>
 <line x1="-3646" y1="-12" x2="-2031" y2="7" id="c33740-46910"/>
-<path d="M 8936 439 A 335 335 0 0 0 9142 130" id="c33753-49684"/>
 <path d="M 8107 -4688 A 335 335 0 0 1 8133 -4559" id="c33777-40409"/>
 <line x1="8107" y1="-4688" x2="7798" y2="-4721" id="c33777-35334"/>
 <line x1="5782" y1="-4328" x2="5535" y2="-4319" id="c33783-42744"/>
@@ -2804,7 +2794,6 @@
 <line x1="-4993" y1="-4968" x2="-3396" y2="-5762" id="c40366-42760"/>
 <line x1="-4993" y1="-4968" x2="-4417" y2="-4965" id="c40366-58763"/>
 <line x1="5526" y1="5413" x2="5377" y2="5475" id="c40383-61039" class="mastery"/>
-<path d="M 4843 8827 A 335 335 0 0 1 4587 8827" id="c40400-46393"/>
 <path d="M 3542 -7182 A 162 162 0 0 1 3442 -7032" id="c40483-62849"/>
 <path d="M 3542 -7182 A 162 162 0 0 0 3442 -7332" id="c40483-53290"/>
 <line x1="7439" y1="-7924" x2="7309" y2="-7828" id="c40510-44797" class="ascendancy asc-Hierophant"/>
@@ -3234,7 +3223,6 @@
 <path d="M -3602 7785 A 162 162 0 0 0 -3602 7661" id="c61050-64024"/>
 <line x1="6582" y1="-7515" x2="6482" y2="-7548" id="c61072-61437" class="ascendancy asc-Ascendant"/>
 <path d="M -2725 -6028 A 162 162 0 0 1 -2563 -6190" id="c61283-64401"/>
-<path d="M 5016 -8468 A 335 335 0 0 0 4760 -8468" id="c61288-64583"/>
 <line x1="4299" y1="3274" x2="3307" y2="3672" id="c61306-63139"/>
 <path d="M 2662 -3805 A 162 162 0 0 1 2874 -3718" id="c61320-63799"/>
 <line x1="-2837" y1="-1629" x2="-2965" y2="-1939" id="c61525-63965"/>
@@ -3358,7 +3346,6 @@ taken from your Mercenary's Life before you ;; If your Mercenary's Life is lower
 <circle id="n2275" cx="3166" cy="4241" r="62" data-kind="Notable" data-name="Nature's Concoction" data-stats="Flasks adjacent to active Tinctures gain 2 charges when you Hit an
 Enemy with a Melee Weapon, no more than once every second"/>
 <circle id="n2292" cx="146" cy="-4563" r="42" data-kind="Normal" data-name="Mana and Life" data-stats="5% increased maximum Life ;; 8% increased maximum Mana"/>
-<circle id="n2311" cx="-4241" cy="-9133" r="58" data-kind="Jewel" data-name="Small Jewel Socket"/>
 <circle id="n2336" cx="7152" cy="-7231" r="45" class="ascendancy asc-Trickster" data-kind="Ascendancy" data-name="Evasion and Energy Shield, Energy Shield Leech" data-stats="14% increased Evasion Rating ;; 5% increased maximum Energy Shield ;; 40% increased total Recovery per second from Energy Shield Leech"/>
 <circle id="n2348" cx="574" cy="-1303" r="42" data-kind="Normal" data-name="Link Mana Cost Efficiency" data-stats="20% increased Mana Cost Efficiency of Link Skills"/>
 <circle id="n2355" cx="-2001" cy="4079" r="42" data-kind="Normal" data-name="Shield Defences" data-stats="50% increased Defences from Equipped Shield"/>
@@ -3385,7 +3372,6 @@ Enemy with a Melee Weapon, no more than once every second"/>
 <circle id="n3009" cx="448" cy="5214" r="42" data-kind="Normal" data-name="Dual Wield Accuracy" data-stats="12% increased Accuracy Rating while Dual Wielding"/>
 <circle id="n3042" cx="4178" cy="6313" r="50" class="mastery" data-kind="Mastery" data-name="Life Mastery"/>
 <circle id="n3089" cx="-4925" cy="-7400" r="42" data-kind="Normal" data-name="Link Effect" data-stats="Link Skills have 5% increased Buff Effect"/>
-<circle id="n3109" cx="4246" cy="9372" r="58" data-kind="Jewel" data-name="Small Jewel Socket"/>
 <circle id="n3154" cx="6531" cy="-7548" r="45" class="ascendancy asc-Inquisitor" data-kind="Ascendancy" data-name="Instruments of Justice" data-stats="Base Spell Critical Strike Chance of Spells is equal to that of Main Hand Weapon"/>
 <circle id="n3167" cx="-4675" cy="-180" r="42" data-kind="Normal" data-name="Life Regeneration" data-stats="Regenerate 0.5% of Life per second"/>
 <circle id="n3184" cx="6848" cy="-8169" r="45" class="ascendancy asc-Slayer" data-kind="Ascendancy" data-name="Headsman" data-stats="Kill Enemies that have 20% or lower Life when Hit by your Skills ;; Gain 10% increased Attack Speed for 20 seconds when you Kill a Rare or Unique Enemy ;; Gain 10% increased Movement Speed for 20 seconds when you Kill an Enemy"/>
@@ -3562,7 +3548,6 @@ each of the following types, if possible: ;; If Diamond Flask Charges are consum
 <circle id="n6797" cx="7967" cy="7" r="42" data-kind="Normal" data-name="Projectile Damage" data-stats="4% increased Projectile Damage"/>
 <circle id="n6799" cx="3715" cy="542" r="62" data-kind="Notable" data-name="Charisma" data-stats="16% increased Mana Reservation Efficiency of Skills ;; 6% increased effect of Non-Curse Auras from your Skills"/>
 <circle id="n6884" cx="-2838" cy="3718" r="42" data-kind="Normal" data-name="Two Handed Melee Damage and Life Leech Speed" data-stats="12% increased Physical Damage with Two Handed Melee Weapons ;; Attacks with Two Handed Melee Weapons deal 12% increased Damage with Ailments ;; 60% increased total Recovery per second from Life Leech"/>
-<circle id="n6910" cx="8936" cy="-180" r="58" data-kind="Jewel" data-name="Medium Jewel Socket"/>
 <circle id="n6912" cx="-2689" cy="3780" r="50" class="mastery" data-kind="Mastery" data-name="Two Hand Mastery"/>
 <circle id="n6913" cx="4988" cy="1788" r="42" data-kind="Normal" data-name="Bow Damage and Critical Strike Chance" data-stats="15% increased Damage with Bows ;; 20% increased Critical Strike Chance with Bows ;; 15% increased Damage Over Time with Bow Skills"/>
 <circle id="n6949" cx="569" cy="-4170" r="42" data-kind="Normal" data-name="Energy Shield and Recovery" data-stats="6% increased maximum Energy Shield ;; 10% increased Energy Shield Recharge Rate"/>
@@ -3686,7 +3671,6 @@ more than once every 0.3 seconds ;; Lose all Defiance when you reach 10 Defiance
 <circle id="n9392" cx="-6605" cy="-4624" r="42" data-kind="Normal" data-name="Aura Effect" data-stats="6% increased effect of Non-Curse Auras from your Skills"/>
 <circle id="n9393" cx="6409" cy="5575" r="50" class="mastery" data-kind="Mastery" data-name="Flask Mastery"/>
 <circle id="n9402" cx="-6469" cy="5238" r="42" data-kind="Normal" data-name="Block" data-stats="+4% Chance to Block Attack Damage while Dual Wielding or holding a Shield"/>
-<circle id="n9408" cx="-4580" cy="-8591" r="58" data-kind="Jewel" data-name="Medium Jewel Socket"/>
 <circle id="n9414" cx="7000" cy="-7700" r="45" class="start ascendancy asc-Warden" data-kind="Ascendancy" data-name="Warden of the Maji"/>
 <circle id="n9432" cx="-1575" cy="-6492" r="62" data-kind="Notable" data-name="Mental Rapidity" data-stats="10% increased Cast Speed ;; 30% increased Mana Regeneration Rate"/>
 <circle id="n9437" cx="7309" cy="-7572" r="45" class="ascendancy asc-Aul" data-kind="Ascendancy" data-name=" Precursor's Release" data-stats="Action Speed cannot be modified to below Base Value if you have Equipped Boots with no Socketed Gems ;; Cannot be Stunned if you have an Equipped Helmet with no Socketed Gems ;; Elemental Ailments cannot be inflicted on you if you have an Equipped Body Armour with no Socketed Gems ;; Take no Extra Damage from Critical Strikes if you have Equipped Gloves with no Socketed Gems"/>
@@ -3703,7 +3687,6 @@ more than once every 0.3 seconds ;; Lose all Defiance when you reach 10 Defiance
 <circle id="n9769" cx="5245" cy="-5180" r="42" data-kind="Normal" data-name="Spell Suppression and Energy Shield Recharge Rate" data-stats="+5% chance to Suppress Spell Damage ;; 10% increased Energy Shield Recharge Rate"/>
 <circle id="n9786" cx="5989" cy="5798" r="42" data-kind="Normal" data-name="Evasion and Movement Speed" data-stats="12% increased Evasion Rating ;; 3% increased Movement Speed"/>
 <circle id="n9788" cx="2325" cy="-4680" r="62" data-kind="Notable" data-name="Nimbleness" data-stats="8% increased Cast Speed ;; +15% to Critical Strike Multiplier for Spell Damage"/>
-<circle id="n9797" cx="4420" cy="-9012" r="58" data-kind="Jewel" data-name="Small Jewel Socket"/>
 <circle id="n9864" cx="6324" cy="-4160" r="62" data-kind="Notable" data-name="Growth and Decay" data-stats="+12% to Damage over Time Multiplier ;; Regenerate 1% of Life per second"/>
 <circle id="n9877" cx="4710" cy="-1878" r="42" data-kind="Normal" data-name="Life" data-stats="5% increased maximum Life"/>
 <circle id="n9920" cx="7000" cy="-7700" r="45" class="start ascendancy asc-KingInTheMists" data-kind="Ascendancy" data-name="Nameless Bloodline"/>
@@ -3735,7 +3718,6 @@ Speed to you and Allies ;; If you've Consumed a corpse Recently, you and your Mi
 <circle id="n10490" cx="-1105" cy="-1792" r="42" data-kind="Normal" data-name="Intelligence" data-stats="+10 to Intelligence"/>
 <circle id="n10495" cx="6925" cy="-2950" r="50" class="mastery" data-kind="Mastery" data-name="Mana Mastery"/>
 <circle id="n10511" cx="3582" cy="-4330" r="62" data-kind="Notable" data-name="Tolerance" data-stats="+19% to Chaos Resistance ;; 30% chance to Avoid being Poisoned ;; 30% chance to Avoid Bleeding"/>
-<circle id="n10532" cx="-4810" cy="8696" r="58" data-kind="Jewel" data-name="Medium Jewel Socket"/>
 <circle id="n10538" cx="7432" cy="-7756" r="45" class="ascendancy asc-Warlock" data-kind="Ascendancy" data-name="Choir of the Damned" data-stats="Grants Level 20 Penance Mark Skill"/>
 <circle id="n10539" cx="7150" cy="-7638" r="45" class="ascendancy asc-Primalist" data-kind="Ascendancy" data-name="Primal Wisps found" data-stats="10% increased Quantity of Primal Wisps found in the Viridian Wildwood"/>
 <circle id="n10542" cx="-5362" cy="2732" r="62" data-kind="Notable" data-name="Spiked Bulwark" data-stats="28% increased Armour ;; Reflects 50 Physical Damage to Melee Attackers"/>
@@ -3767,7 +3749,6 @@ Cannot Recover Life other than from Leech"/>
 <circle id="n11046" cx="7128" cy="-7391" r="45" class="ascendancy asc-Hierophant" data-kind="Ascendancy" data-name="Mana Regeneration, Mana" data-stats="8% increased maximum Mana ;; 20% increased Mana Regeneration Rate"/>
 <circle id="n11088" cx="-6138" cy="-450" r="42" data-kind="Normal" data-name="Life and Cost Efficiency" data-stats="5% increased maximum Life ;; 5% increased Cost Efficiency"/>
 <circle id="n11128" cx="-154" cy="-4439" r="42" data-kind="Normal" data-name="Avoid Interruption while Casting and Elemental Resistances" data-stats="+3% to all Elemental Resistances ;; 15% chance to Ignore Stuns while Casting"/>
-<circle id="n11150" cx="9782" cy="130" r="58" data-kind="Jewel" data-name="Small Jewel Socket"/>
 <circle id="n11162" cx="7202" cy="-5124" r="42" data-kind="Normal" data-name="Cold Damage Over Time Multiplier" data-stats="+4% to Cold Damage over Time Multiplier"/>
 <circle id="n11190" cx="-7259" cy="-5014" r="42" data-kind="Normal" data-name="Totem Life and Elemental Resistances" data-stats="15% increased Totem Life ;; Totems gain +16% to all Elemental Resistances"/>
 <circle id="n11200" cx="3330" cy="-4809" r="42" data-kind="Normal" data-name="Corpse Life" data-stats="Corpses you Spawn have 5% increased Maximum Life"/>
@@ -3819,7 +3800,6 @@ Enemies in your Chilling Areas have Cold Damage taken increased by Chill Effect
 Cannot deal non-Cold Damage"/>
 <circle id="n12143" cx="5301" cy="-5927" r="62" data-kind="Notable" data-name="Influence" data-stats="14% increased effect of Non-Curse Auras from your Skills"/>
 <circle id="n12146" cx="7439" cy="-7476" r="45" class="ascendancy asc-Raider" data-kind="Ascendancy" data-name="Evasion, Spell Suppression" data-stats="+5% chance to Suppress Spell Damage ;; 15% increased Evasion Rating"/>
-<circle id="n12161" cx="5183" cy="9371" r="58" data-kind="Jewel" data-name="Small Jewel Socket"/>
 <circle id="n12169" cx="-3104" cy="7115" r="50" class="mastery" data-kind="Mastery" data-name="Physical Mastery"/>
 <circle id="n12189" cx="2387" cy="-4368" r="42" data-kind="Normal" data-name="Cast Speed and Spell Critical Strike Chance" data-stats="3% increased Cast Speed ;; 10% increased Spell Critical Strike Chance"/>
 <circle id="n12215" cx="5041" cy="6969" r="42" data-kind="Normal" data-name="Aggravate Bleeding On Critical Strike Chance" data-stats="25% chance to Aggravate Bleeding on targets you Critically Strike with Attacks"/>
@@ -3842,7 +3822,6 @@ Cannot deal non-Cold Damage"/>
 <circle id="n12536" cx="-5555" cy="-2291" r="42" data-kind="Normal" data-name="Elemental Damage" data-stats="10% increased Elemental Damage"/>
 <circle id="n12542" cx="7115" cy="-7585" r="45" class="ascendancy asc-Oshabi" data-kind="Ascendancy" data-name="Rage" data-stats="Gain 2 Rage on Attack Hit"/>
 <circle id="n12597" cx="7232" cy="-8155" r="45" class="ascendancy asc-Ascendant" data-kind="Ascendancy" data-name="Occultist" data-stats="You can apply an additional Curse ;; 10% increased Effect of your Curses ;; Regenerate 1.5% of Energy Shield per second ;; Cannot Be Stunned while you have Energy Shield"/>
-<circle id="n12613" cx="-5681" cy="-8281" r="58" data-kind="Jewel" data-name="Small Jewel Socket"/>
 <circle id="n12664" cx="-5623" cy="6615" r="42" data-kind="Normal" data-name="Faster Bleeding" data-stats="Bleeding you inflict deals Damage 5% faster"/>
 <circle id="n12702" cx="-1093" cy="691" r="62" data-kind="Notable" data-name="Path of the Warrior" data-stats="+50 to Armour ;; +20 to Strength ;; 16% increased Physical Damage"/>
 <circle id="n12720" cx="8163" cy="3195" r="42" data-kind="Normal" data-name="Sword Damage and Block" data-stats="+2% Chance to Block Attack Damage while Dual Wielding or holding a Shield ;; Sword Attacks deal 12% increased Damage with Hits and Ailments"/>
@@ -3868,7 +3847,6 @@ Cannot deal non-Cold Damage"/>
 Effects that interact with Mana Burn interact with Weeping Wounds instead"/>
 <circle id="n13164" cx="-8464" cy="-2419" r="62" data-kind="Notable" data-name="Divine Judgement" data-stats="50% increased Elemental Damage"/>
 <circle id="n13168" cx="5679" cy="-5912" r="42" data-kind="Normal" data-name="Poison Damage and Cast Speed" data-stats="3% increased Cast Speed ;; 15% increased Damage with Poison"/>
-<circle id="n13170" cx="5223" cy="-8159" r="58" data-kind="Jewel" data-name="Medium Jewel Socket"/>
 <circle id="n13191" cx="-608" cy="-1303" r="42" data-kind="Normal" data-name="Skill Duration" data-stats="10% increased Skill Effect Duration"/>
 <circle id="n13202" cx="6442" cy="3421" r="42" data-kind="Normal" data-name="Cold Damage and Cold Ailment Effect" data-stats="12% increased Cold Damage ;; 10% increased Effect of Cold Ailments"/>
 <circle id="n13219" cx="6665" cy="-7700" r="45" class="ascendancy asc-Trickster" data-kind="Ascendancy" data-name="Evasion and Energy Shield, Damage" data-stats="10% increased Damage ;; 14% increased Evasion Rating ;; 5% increased maximum Energy Shield"/>
@@ -3933,7 +3911,6 @@ each Impale on Enemy"/>
 <circle id="n14870" cx="7487" cy="-7623" r="45" class="ascendancy asc-Hierophant" data-kind="Ascendancy" data-name="Mana Regeneration, Totem Placement Speed" data-stats="20% increased Mana Regeneration Rate ;; 20% increased Totem Placement speed"/>
 <circle id="n14930" cx="-5461" cy="6072" r="42" data-kind="Normal" data-name="Strength" data-stats="+10 to Strength"/>
 <circle id="n14936" cx="-1352" cy="-6929" r="42" data-kind="Normal" data-name="Life" data-stats="6% increased maximum Life"/>
-<circle id="n14993" cx="-9266" cy="-968" r="58" data-kind="Jewel" data-name="Small Jewel Socket"/>
 <circle id="n14996" cx="7309" cy="-7572" r="45" class="ascendancy asc-Chieftain" data-kind="Ascendancy" data-name="Life Regeneration, Fire Damage" data-stats="10% increased Fire Damage ;; Regenerate 0.5% of Life per second"/>
 <circle id="n15021" cx="1699" cy="6999" r="42" data-kind="Normal" data-name="Shield Block and Elemental Resistances" data-stats="+3% Chance to Block Attack Damage while holding a Shield ;; +4% Elemental Resistances while holding a Shield"/>
 <circle id="n15027" cx="3342" cy="5540" r="62" data-kind="Notable" data-name="Beef" data-stats="+30 to Strength"/>
@@ -3996,7 +3973,6 @@ each Impale on Enemy"/>
 <circle id="n16167" cx="597" cy="1612" r="42" data-kind="Normal" data-name="Dexterity" data-stats="+10 to Dexterity"/>
 <circle id="n16212" cx="6872" cy="-8009" r="45" class="ascendancy asc-Saboteur" data-kind="Ascendancy" data-name="Area of Effect, Trap Throwing Speed" data-stats="8% increased Area of Effect ;; 5% increased Trap Throwing Speed"/>
 <circle id="n16213" cx="314" cy="8424" r="42" data-kind="Normal" data-name="Attack Speed per Frenzy Charge" data-stats="2% increased Attack Speed per Frenzy Charge"/>
-<circle id="n16218" cx="-5176" cy="-9133" r="58" data-kind="Jewel" data-name="Small Jewel Socket"/>
 <circle id="n16236" cx="5459" cy="4721" r="62" data-kind="Notable" data-name="Toxic Strikes" data-stats="+15% to Damage over Time Multiplier for Poison ;; 15% chance to Poison on Hit"/>
 <circle id="n16243" cx="3685" cy="-8421" r="62" data-kind="Notable" data-name="Fusillade" data-stats="15% increased Attack Speed with Wands ;; 30% increased Accuracy Rating with Wands"/>
 <circle id="n16245" cx="-1660" cy="5549" r="42" data-kind="Normal" data-name="Retaliation Skill Usable Duration" data-stats="Retaliation Skills become Usable for 20% longer"/>
@@ -4030,7 +4006,6 @@ each Impale on Enemy"/>
 <circle id="n17127" cx="-3613" cy="-4066" r="50" class="mastery" data-kind="Mastery" data-name="Protection Mastery"/>
 <circle id="n17171" cx="6566" cy="3421" r="62" data-kind="Notable" data-name="Flash Freeze" data-stats="25% increased Cold Damage ;; 15% chance to Freeze ;; 30% increased Effect of Cold Ailments"/>
 <circle id="n17201" cx="650" cy="5870" r="42" data-kind="Normal" data-name="Dexterity" data-stats="+10 to Dexterity"/>
-<circle id="n17219" cx="-9134" cy="-116" r="58" data-kind="Jewel" data-name="Medium Jewel Socket"/>
 <circle id="n17236" cx="2423" cy="-6897" r="42" data-kind="Normal" data-name="Energy Shield and Energy Shield Recharge Rate" data-stats="+15 to maximum Energy Shield ;; 10% increased Energy Shield Recharge Rate"/>
 <circle id="n17251" cx="-3952" cy="-1752" r="42" data-kind="Normal" data-name="Armour and Energy Shield" data-stats="10% increased Armour ;; 5% increased maximum Energy Shield"/>
 <circle id="n17297" cx="7000" cy="-7700" r="45" class="start ascendancy asc-Trialmaster" data-kind="Ascendancy" data-name="Chaos Bloodline"/>
@@ -4091,7 +4066,6 @@ Your Bleeding does not deal extra Damage while the Enemy is moving and cannot be
 <circle id="n18378" cx="7000" cy="-7700" r="45" class="start ascendancy asc-Occultist" data-kind="Ascendancy" data-name="Occultist"/>
 <circle id="n18379" cx="-7258" cy="-5676" r="42" data-kind="Normal" data-name="Mace Critical Strike Chance and Multiplier" data-stats="16% increased Critical Strike Chance with Maces or Sceptres ;; +16% to Critical Strike Multiplier with Maces or Sceptres"/>
 <circle id="n18402" cx="1235" cy="1878" r="42" data-kind="Normal" data-name="Life and Flasks" data-stats="4% increased maximum Life ;; 10% increased Life Recovery from Flasks"/>
-<circle id="n18436" cx="9276" cy="-724" r="58" data-kind="Jewel" data-name="Small Jewel Socket"/>
 <circle id="n18519" cx="6850" cy="-7638" r="45" class="ascendancy asc-Oshabi" data-kind="Ascendancy" data-name="The Wild Bear" data-stats="+20 to Maximum Rage ;; Lose all Rage on reaching Maximum Rage and gain Wild Savagery
 for 1 second per 10 Rage lost this way"/>
 <circle id="n18574" cx="6691" cy="-7572" r="45" class="ascendancy asc-Necromancer" data-kind="Ascendancy" data-name="Minion Damage, Mana" data-stats="8% increased maximum Mana ;; Minions deal 10% increased Damage"/>
@@ -4265,7 +4239,6 @@ Ailments never count as being from Critical Strikes"/>
 <circle id="n22703" cx="-2799" cy="4940" r="42" data-kind="Normal" data-name="Strength" data-stats="+10 to Strength"/>
 <circle id="n22706" cx="-3611" cy="4943" r="62" data-kind="Notable" data-name="Savage Intensity" data-stats="30% increased Cost Efficiency of Attacks ;; Inherent loss of Rage is 20% slower"/>
 <circle id="n22728" cx="-6313" cy="-6644" r="42" data-kind="Normal" data-name="Staff Elemental Damage and Penetration" data-stats="10% increased Elemental Damage with Staves ;; Damage with Weapons Penetrates 2% Elemental Resistances"/>
-<circle id="n22748" cx="9276" cy="984" r="58" data-kind="Jewel" data-name="Small Jewel Socket"/>
 <circle id="n22845" cx="5092" cy="210" r="42" data-kind="Normal" data-name="Tincture Effect" data-stats="Tinctures applied to you have 8% increased Effect"/>
 <circle id="n22852" cx="6507" cy="-7700" r="45" class="ascendancy asc-Deadeye" data-kind="Ascendancy" data-name="Projectile Damage, Attack Speed" data-stats="5% increased Attack Speed ;; 10% increased Projectile Damage"/>
 <circle id="n22893" cx="435" cy="1261" r="42" data-kind="Normal" data-name="Skill Duration" data-stats="10% increased Skill Effect Duration"/>
@@ -4273,7 +4246,6 @@ Ailments never count as being from Critical Strikes"/>
 <circle id="n22959" cx="-1274" cy="-49" r="50" class="mastery" data-kind="Mastery" data-name="Curse Mastery"/>
 <circle id="n22970" cx="-835" cy="-1999" r="50" class="mastery" data-kind="Mastery" data-name="Minion Defence Mastery"/>
 <circle id="n22972" cx="1146" cy="-6566" r="62" data-kind="Notable" data-name="Wandslinger" data-stats="30% increased Damage while wielding a Wand ;; 10% increased Attack Speed with Wands"/>
-<circle id="n22994" cx="5050" cy="8517" r="58" data-kind="Jewel" data-name="Medium Jewel Socket"/>
 <circle id="n23024" cx="6872" cy="-8009" r="45" class="ascendancy asc-Assassin" data-kind="Ascendancy" data-name="Critical Strike Chance, Poison Chance" data-stats="15% chance to Poison on Hit ;; 15% increased Critical Strike Chance"/>
 <circle id="n23027" cx="-7672" cy="-1435" r="42" data-kind="Normal" data-name="Strength" data-stats="+10 to Strength"/>
 <circle id="n23036" cx="-6525" cy="6200" r="42" data-kind="Normal" data-name="Warcry Cooldown Recovery and Area of Effect" data-stats="15% increased Warcry Cooldown Recovery Rate ;; Warcry Skills have 15% increased Area of Effect"/>
@@ -4306,7 +4278,6 @@ Non-Critical Strikes cannot inflict Ailments"/>
 <circle id="n23616" cx="6872" cy="-6076" r="42" data-kind="Normal" data-name="Physical and Chaos Damage" data-stats="10% increased Chaos Damage ;; 10% increased Physical Damage"/>
 <circle id="n23659" cx="-2703" cy="-7140" r="42" data-kind="Normal" data-name="Energy Shield" data-stats="6% increased maximum Energy Shield"/>
 <circle id="n23690" cx="-2428" cy="-5245" r="62" data-kind="Notable" data-name="Essence Infusion" data-stats="15% faster start of Energy Shield Recharge ;; 30% increased Energy Shield Recharge Rate"/>
-<circle id="n23756" cx="-5066" cy="8696" r="58" data-kind="Jewel" data-name="Medium Jewel Socket"/>
 <circle id="n23760" cx="-6898" cy="532" r="42" data-kind="Normal" data-name="Physical Damage and Overwhelm" data-stats="Hits have 10% chance to ignore Enemy Physical Damage Reduction ;; 10% increased Physical Damage"/>
 <circle id="n23796" cx="1064" cy="-7049" r="50" class="mastery" data-kind="Mastery" data-name="Curse Mastery"/>
 <circle id="n23834" cx="-1382" cy="6392" r="42" data-kind="Normal" data-name="Warcry Buff Effect" data-stats="10% increased Warcry Buff Effect"/>
@@ -4318,7 +4289,6 @@ Non-Critical Strikes cannot inflict Ailments"/>
 40% less Energy Shield Recharge Rate"/>
 <circle id="n23951" cx="167" cy="8295" r="42" data-kind="Normal" data-name="Movement Speed per Frenzy Charge" data-stats="2% increased Movement Speed per Frenzy Charge"/>
 <circle id="n23972" cx="7469" cy="-7548" r="45" class="ascendancy asc-Juggernaut" data-kind="Ascendancy" data-name="Armour, Endurance Charge Duration" data-stats="15% increased Armour ;; 15% increased Endurance Charge Duration"/>
-<circle id="n23984" cx="-4471" cy="9238" r="58" data-kind="Jewel" data-name="Small Jewel Socket"/>
 <circle id="n24050" cx="6143" cy="-2869" r="62" data-kind="Notable" data-name="Coldhearted Calculation" data-stats="12% increased Damage ;; 20% increased Mana Regeneration Rate ;; +20 to Intelligence"/>
 <circle id="n24067" cx="5395" cy="-5404" r="62" data-kind="Notable" data-name="Instinct" data-stats="+12% chance to Suppress Spell Damage ;; Recover 50 Energy Shield when you Suppress Spell Damage"/>
 <circle id="n24083" cx="-967" cy="7475" r="42" data-kind="Normal" data-name="Strength" data-stats="+10 to Strength"/>
@@ -4366,7 +4336,6 @@ Maximum Damage Reduction for any Damage Type is 50%"/>
 <circle id="n24872" cx="1352" cy="-7167" r="42" data-kind="Normal" data-name="Golem Life and Buff Effect" data-stats="20% increased Effect of Buffs granted by your Golems ;; Golems have 15% increased Maximum Life"/>
 <circle id="n24914" cx="-2784" cy="7475" r="42" data-kind="Normal" data-name="Strength" data-stats="+10 to Strength"/>
 <circle id="n24924" cx="6710" cy="-7301" r="45" class="ascendancy asc-Warlock" data-kind="Ascendancy" data-name="Wild Wisps found" data-stats="10% increased Quantity of Wild Wisps found in the Viridian Wildwood"/>
-<circle id="n24970" cx="-9206" cy="763" r="58" data-kind="Jewel" data-name="Small Jewel Socket"/>
 <circle id="n24974" cx="3016" cy="4017" r="42" data-kind="Normal" data-name="Flask Duration" data-stats="10% increased Flask Effect Duration"/>
 <circle id="n24984" cx="7000" cy="-7700" r="45" class="start ascendancy asc-Champion" data-kind="Ascendancy" data-name="Champion"/>
 <circle id="n25011" cx="-4783" cy="5426" r="50" class="mastery" data-kind="Mastery" data-name="Life Mastery"/>
@@ -4580,7 +4549,6 @@ Take 50% less Damage over Time for 5 seconds"/>
 <circle id="n29629" cx="-2506" cy="-8278" r="42" data-kind="Normal" data-name="Chaos Damage" data-stats="16% increased Chaos Damage"/>
 <circle id="n29630" cx="7224" cy="-8139" r="45" class="ascendancy asc-Berserker" data-kind="Ascendancy" data-name="Gore Dancer" data-stats="30% of Life Leech is Instant"/>
 <circle id="n29662" cx="7349" cy="-8049" r="45" class="ascendancy asc-Raider" data-kind="Ascendancy" data-name="Experienced Herbalist" data-stats="You can have an additional Tincture active"/>
-<circle id="n29712" cx="-5043" cy="-8281" r="58" data-kind="Jewel" data-name="Medium Jewel Socket"/>
 <circle id="n29781" cx="-812" cy="-6929" r="42" data-kind="Normal" data-name="Mana" data-stats="8% increased maximum Mana"/>
 <circle id="n29797" cx="-4279" cy="7073" r="42" data-kind="Normal" data-name="Melee Damage" data-stats="12% increased Melee Damage"/>
 <circle id="n29825" cx="7128" cy="-7391" r="45" class="ascendancy asc-Trickster" data-kind="Ascendancy" data-name="Escape Artist" data-stats="+4 to Evasion Rating per 1 Maximum Energy Shield on Equipped Helmet ;; +1 to maximum Energy Shield per 8 Evasion Rating on Equipped Body Armour"/>
@@ -4771,7 +4739,6 @@ also Recover Energy Shield for you and Allies ;; Effects of Consecrated Ground y
 <circle id="n33718" cx="-3542" cy="7209" r="62" data-kind="Notable" data-name="Champion of the Cause" data-stats="12% increased Area of Effect of Aura Skills ;; 8% increased Reservation Efficiency of Skills ;; 6% increased effect of Non-Curse Auras from your Skills"/>
 <circle id="n33725" cx="1998" cy="6875" r="62" data-kind="Notable" data-name="Swagger" data-stats="+8% Chance to Block Attack Damage while Dual Wielding ;; 25% chance to gain a Frenzy Charge when you Block"/>
 <circle id="n33740" cx="-3646" cy="-12" r="42" data-kind="Normal" data-name="Strength" data-stats="+10 to Strength"/>
-<circle id="n33753" cx="8936" cy="439" r="58" data-kind="Jewel" data-name="Medium Jewel Socket"/>
 <circle id="n33755" cx="-1352" cy="-6605" r="42" data-kind="Normal" data-name="Life" data-stats="6% increased maximum Life"/>
 <circle id="n33777" cx="8107" cy="-4688" r="62" data-kind="Notable" data-name="Devastating Devices" data-stats="50% increased Critical Strike Chance with Mines ;; +25% to Critical Strike Multiplier with Mines ;; 10% chance to gain a Power Charge when your Mine is Detonated targeting an Enemy"/>
 <circle id="n33779" cx="-2004" cy="-5824" r="42" data-kind="Normal" data-name="Totem Critical Strike Chance" data-stats="20% increased Critical Strike Chance with Totem Skills"/>
@@ -4945,7 +4912,6 @@ Speed to you and Allies ;; You and nearby Allies deal 30% increased Damage ;; Yo
 <circle id="n36877" cx="2208" cy="-177" r="42" data-kind="Normal" data-name="Trap Damage" data-stats="12% increased Trap Damage"/>
 <circle id="n36881" cx="-159" cy="900" r="42" data-kind="Normal" data-name="Cold Resistance" data-stats="+18% to Cold Resistance"/>
 <circle id="n36915" cx="-4293" cy="-4236" r="62" data-kind="Notable" data-name="Sacrifice" data-stats="Minions have 20% increased maximum Life ;; Regenerate 1% of Life per second ;; Minions Regenerate 1% of Life per second"/>
-<circle id="n36931" cx="-9772" cy="-116" r="58" data-kind="Jewel" data-name="Small Jewel Socket"/>
 <circle id="n36945" cx="-3861" cy="6122" r="42" data-kind="Normal" data-name="Attack Ignite Chance" data-stats="Attacks have 15% chance to Ignite"/>
 <circle id="n36949" cx="-6883" cy="-1725" r="62" data-kind="Notable" data-name="Devotion" data-stats="10% increased maximum Life ;; 25% increased Effect of Consecrated Ground you create"/>
 <circle id="n36958" cx="7128" cy="-8009" r="45" class="ascendancy asc-Raider" data-kind="Ascendancy" data-name="Seasoned Hunter" data-stats="Tincture Effects also apply to Ranged Weapons"/>
@@ -5108,7 +5074,6 @@ Cannot deal non-Lightning Damage"/>
 <circle id="n40362" cx="6776" cy="-1585" r="42" data-kind="Normal" data-name="Life" data-stats="6% increased maximum Life"/>
 <circle id="n40366" cx="-4993" cy="-4968" r="42" data-kind="Normal" data-name="Intelligence" data-stats="+10 to Intelligence"/>
 <circle id="n40383" cx="5526" cy="5413" r="50" class="mastery" data-kind="Mastery" data-name="Leech Mastery"/>
-<circle id="n40400" cx="4843" cy="8827" r="58" data-kind="Jewel" data-name="Medium Jewel Socket"/>
 <circle id="n40409" cx="8133" cy="-4559" r="42" data-kind="Normal" data-name="Mine Detonation Speed" data-stats="Mines have 20% increased Detonation Speed"/>
 <circle id="n40439" cx="-6235" cy="-3583" r="50" class="mastery" data-kind="Mastery" data-name="Brand Mastery"/>
 <circle id="n40483" cx="3542" cy="-7182" r="42" data-kind="Normal" data-name="Chill Effect" data-stats="20% increased Effect of Chill"/>
@@ -5174,7 +5139,6 @@ Cannot be Stunned"/>
 <circle id="n41819" cx="4502" cy="-188" r="42" data-kind="Normal" data-name="Life Leech Speed" data-stats="60% increased total Recovery per second from Life Leech"/>
 <circle id="n41866" cx="6402" cy="2612" r="42" data-kind="Normal" data-name="Dexterity" data-stats="+10 to Dexterity"/>
 <circle id="n41870" cx="3318" cy="-7032" r="62" data-kind="Notable" data-name="Winter's Embrace" data-stats="60% increased Freeze Duration on Enemies ;; 30% increased Damage if you've Shattered an Enemy Recently"/>
-<circle id="n41876" cx="5356" cy="-9012" r="58" data-kind="Jewel" data-name="Small Jewel Socket"/>
 <circle id="n41891" cx="7439" cy="-7476" r="45" class="ascendancy asc-Trickster" data-kind="Ascendancy" data-name="Spellbreaker" data-stats="Prevent +15% of Suppressed Spell Damage while on Full Energy Shield ;; 50% chance for Energy Shield Recharge to start when you Suppress Spell Damage"/>
 <circle id="n41967" cx="814" cy="1878" r="42" data-kind="Normal" data-name="Mana" data-stats="8% increased maximum Mana"/>
 <circle id="n41970" cx="-6747" cy="-5354" r="80" data-kind="Keystone" data-name="Ancestral Bond" data-stats="You can't deal Damage with Skills yourself
@@ -5275,7 +5239,6 @@ up to a maximum of 50%"/>
 <circle id="n44102" cx="4216" cy="-6562" r="62" data-kind="Notable" data-name="Efficient Explosives" data-stats="30% increased Mana Reservation Efficiency of Skills that throw Mines ;; Mines have a 15% chance to be Detonated an Additional Time"/>
 <circle id="n44103" cx="1726" cy="951" r="62" data-kind="Notable" data-name="Reflexes" data-stats="+10% chance to Suppress Spell Damage ;; +100 to Evasion Rating ;; 30% increased Evasion Rating"/>
 <circle id="n44134" cx="7844" cy="-2564" r="42" data-kind="Normal" data-name="Dagger Critical Strike Chance and Multiplier" data-stats="18% increased Critical Strike Chance with Daggers ;; +14% to Critical Strike Multiplier with Daggers"/>
-<circle id="n44169" cx="-8927" cy="-426" r="58" data-kind="Jewel" data-name="Medium Jewel Socket"/>
 <circle id="n44179" cx="6504" cy="3271" r="50" class="mastery" data-kind="Mastery" data-name="Cold Mastery"/>
 <circle id="n44183" cx="-2140" cy="-6526" r="42" data-kind="Normal" data-name="Lightning Damage and Cast Speed" data-stats="8% increased Lightning Damage ;; 3% increased Cast Speed"/>
 <circle id="n44184" cx="-1082" cy="-7490" r="42" data-kind="Normal" data-name="Intelligence" data-stats="+10 to Intelligence"/>
@@ -5375,13 +5338,11 @@ Recently, up to 40%"/>
 <circle id="n46291" cx="3042" cy="7617" r="42" data-kind="Normal" data-name="Totem Attack Speed" data-stats="Attacks used by Totems have 6% increased Attack Speed"/>
 <circle id="n46340" cx="-2957" cy="-5002" r="42" data-kind="Normal" data-name="Intelligence" data-stats="+10 to Intelligence"/>
 <circle id="n46344" cx="2384" cy="3524" r="42" data-kind="Normal" data-name="Bow Damage and Evasion" data-stats="12% increased Damage with Bows ;; 15% increased Evasion Rating ;; 12% increased Damage Over Time with Bow Skills"/>
-<circle id="n46393" cx="4587" cy="8827" r="58" data-kind="Jewel" data-name="Medium Jewel Socket"/>
 <circle id="n46408" cx="6143" cy="-1604" r="62" data-kind="Notable" data-name="Fangs of the Viper" data-stats="20% increased Chaos Damage ;; 5% increased Movement Speed ;; +20 to Dexterity ;; 20% increased Physical Damage"/>
 <circle id="n46469" cx="331" cy="-8122" r="42" data-kind="Normal" data-name="Lightning Damage and Shock Chance" data-stats="10% increased Lightning Damage ;; 10% chance to Shock"/>
 <circle id="n46471" cx="-7254" cy="-1897" r="62" data-kind="Notable" data-name="Powerful Bond" data-stats="20% increased Buff Effect of your Links for which 50% of Link Duration has Expired ;; Curses are inflicted on you instead of Linked targets"/>
 <circle id="n46479" cx="7000" cy="-8035" r="45" class="ascendancy asc-Luminary" data-kind="Ascendancy" data-name="Noble Blood" data-stats="You can hire a Mercenary permanently"/>
 <circle id="n46495" cx="3767" cy="5789" r="50" class="mastery" data-kind="Mastery" data-name="Reservation Mastery"/>
-<circle id="n46519" cx="-5273" cy="8386" r="58" data-kind="Jewel" data-name="Medium Jewel Socket"/>
 <circle id="n46578" cx="-1030" cy="1881" r="42" data-kind="Normal" data-name="Strength" data-stats="+10 to Strength"/>
 <circle id="n46585" cx="-7045" cy="3674" r="42" data-kind="Normal" data-name="Banner Area of Effect" data-stats="Banner Skills have 12% increased Area of Effect"/>
 <circle id="n46636" cx="-6667" cy="-735" r="42" data-kind="Normal" data-name="Armour and Energy Shield" data-stats="10% increased Armour ;; 5% increased maximum Energy Shield"/>
@@ -5478,7 +5439,6 @@ a Rare or Unique Enemy and you have no Mark ;; Mark Skills Cost no Mana ;; 10% i
 <circle id="n48606" cx="6665" cy="-7700" r="45" class="ascendancy asc-Warden" data-kind="Ascendancy" data-name="Vivid Wisps found" data-stats="10% increased Quantity of Vivid Wisps found in the Viridian Wildwood"/>
 <circle id="n48614" cx="6834" cy="2293" r="62" data-kind="Notable" data-name="Fervour" data-stats="+1 to Maximum Frenzy Charges"/>
 <circle id="n48660" cx="6693" cy="3983" r="50" class="mastery" data-kind="Mastery" data-name="Elemental Mastery"/>
-<circle id="n48679" cx="-4836" cy="-8591" r="58" data-kind="Jewel" data-name="Medium Jewel Socket"/>
 <circle id="n48698" cx="5102" cy="-470" r="62" data-kind="Notable" data-name="Void Barrier" data-stats="18% increased Evasion Rating ;; 12% increased maximum Energy Shield ;; +10% chance to Suppress Spell Damage while on Full Energy Shield"/>
 <circle id="n48711" cx="6665" cy="-7700" r="45" class="ascendancy asc-Breachlord" data-kind="Ascendancy" data-name="Tul of the Blizzard" data-stats="30% increased Freeze Duration on Enemies ;; +2 to Level of all Cold Skill Gems if at least 4 Foulborn Unique Items are Equipped ;; Your Hits ignore Enemy Monster Cold Resistances if all Equipped Rings are Cryonic Rings"/>
 <circle id="n48713" cx="-5579" cy="-6057" r="42" data-kind="Normal" data-name="Minion Critical Strike Chance" data-stats="Minions have 20% increased Critical Strike Chance"/>
@@ -5502,7 +5462,6 @@ a Rare or Unique Enemy and you have no Mark ;; Mark Skills Cost no Mana ;; 10% i
 <circle id="n48982" cx="-2462" cy="6256" r="50" class="mastery" data-kind="Mastery" data-name="Impale Mastery"/>
 <circle id="n48999" cx="7000" cy="-7207" r="45" class="ascendancy asc-Trickster" data-kind="Ascendancy" data-name="Soul Drinker" data-stats="2% of Damage Leeched as Energy Shield ;; Energy Shield Leech effects are not removed when Energy Shield is Filled"/>
 <circle id="n49047" cx="1895" cy="-4633" r="42" data-kind="Normal" data-name="Minion Life and Chaos Resistance" data-stats="Minions have 8% increased maximum Life ;; Minions have +13% to Chaos Resistance"/>
-<circle id="n49080" cx="-8927" cy="193" r="58" data-kind="Jewel" data-name="Medium Jewel Socket"/>
 <circle id="n49109" cx="-630" cy="6550" r="42" data-kind="Normal" data-name="Armour and Evasion" data-stats="12% increased Evasion Rating and Armour ;; +4% to all Elemental Resistances"/>
 <circle id="n49147" cx="-515" cy="7052" r="42" data-kind="Normal" data-name="Armour and Guard Skill Cooldown Recovery" data-stats="12% increased Armour ;; Guard Skills have 20% increased Cooldown Recovery Rate"/>
 <circle id="n49153" cx="7335" cy="-7700" r="45" class="ascendancy asc-Juggernaut" data-kind="Ascendancy" data-name="Armour, Endurance Charge Duration" data-stats="15% increased Armour ;; 15% increased Endurance Charge Duration"/>
@@ -5540,7 +5499,6 @@ Aura Skills have 1% more Aura Effect per 2% of maximum Mana they Reserve
 <circle id="n49651" cx="2530" cy="-6463" r="42" data-kind="Normal" data-name="Intelligence" data-stats="+10 to Intelligence"/>
 <circle id="n49652" cx="-5065" cy="3658" r="42" data-kind="Normal" data-name="Ignite and Bleed Duration" data-stats="25% increased Ignite Duration on Enemies ;; 25% increased Bleeding Duration"/>
 <circle id="n49677" cx="2403" cy="7086" r="50" class="mastery" data-kind="Mastery" data-name="Impale Mastery"/>
-<circle id="n49684" cx="9142" cy="130" r="58" data-kind="Jewel" data-name="Medium Jewel Socket"/>
 <circle id="n49698" cx="-5264" cy="-1203" r="42" data-kind="Normal" data-name="Staff Block" data-stats="+4% Chance to Block Attack Damage while wielding a Staff"/>
 <circle id="n49772" cx="-5681" cy="4924" r="62" data-kind="Notable" data-name="Utmost Might" data-stats="+40 to Strength ;; 8% increased Strength"/>
 <circle id="n49779" cx="3248" cy="-7984" r="42" data-kind="Normal" data-name="Wand Damage" data-stats="Wand Attacks deal 16% increased Damage with Hits and Ailments"/>
@@ -5598,7 +5556,6 @@ also grant +4 to Strength"/>
 200 Mana spent Recently, up to 50% ;; 10% chance to gain Arcane Surge when you Kill an Enemy"/>
 <circle id="n51146" cx="3504" cy="-7984" r="42" data-kind="Normal" data-name="Wand Attack Speed and Accuracy" data-stats="4% increased Attack Speed with Wands ;; 8% increased Accuracy Rating with Wands"/>
 <circle id="n51191" cx="5176" cy="-7033" r="42" data-kind="Normal" data-name="Curse Duration" data-stats="15% increased Curse Duration"/>
-<circle id="n51198" cx="-5406" cy="9238" r="58" data-kind="Jewel" data-name="Small Jewel Socket"/>
 <circle id="n51212" cx="5351" cy="-1269" r="62" data-kind="Notable" data-name="Entropy" data-stats="23% increased Damage over Time ;; 10% increased Skill Effect Duration"/>
 <circle id="n51213" cx="687" cy="-7139" r="42" data-kind="Normal" data-name="Reservation Efficiency of Heralds" data-stats="10% increased Mana Reservation Efficiency of Herald Skills"/>
 <circle id="n51219" cx="3040" cy="-7337" r="42" data-kind="Normal" data-name="Energy Shield Leech" data-stats="0.3% of Spell Damage Leeched as Energy Shield"/>
@@ -5971,7 +5928,6 @@ Skills Reserve Life instead of Mana"/>
 <circle id="n59494" cx="-3225" cy="5102" r="42" data-kind="Normal" data-name="Accuracy and Critical Strike Chance" data-stats="12% increased Critical Strike Chance ;; 12% increased Accuracy Rating"/>
 <circle id="n59501" cx="3340" cy="6424" r="50" class="mastery" data-kind="Mastery" data-name="Blind Mastery"/>
 <circle id="n59556" cx="6284" cy="-3777" r="62" data-kind="Notable" data-name="Expeditious Munitions" data-stats="50% increased Trap Trigger Area of Effect ;; 12% increased Trap Throwing Speed"/>
-<circle id="n59585" cx="5862" cy="-8159" r="58" data-kind="Jewel" data-name="Small Jewel Socket"/>
 <circle id="n59605" cx="8325" cy="-3946" r="62" data-kind="Notable" data-name="Unstable Munitions" data-stats="30% increased Trap Damage ;; 12% increased Area of Effect ;; 50% increased Trap Trigger Area of Effect"/>
 <circle id="n59606" cx="5914" cy="7" r="42" data-kind="Normal" data-name="Dexterity" data-stats="+10 to Dexterity"/>
 <circle id="n59650" cx="419" cy="-3769" r="42" data-kind="Normal" data-name="Energy Shield and Mana Regeneration" data-stats="+16 to maximum Energy Shield ;; 25% increased Mana Regeneration Rate"/>
@@ -6050,8 +6006,6 @@ Skills Reserve Life instead of Mana"/>
 <circle id="n61262" cx="-1920" cy="7475" r="42" data-kind="Normal" data-name="Strength" data-stats="+10 to Strength"/>
 <circle id="n61264" cx="305" cy="-7993" r="42" data-kind="Normal" data-name="Lightning Damage and Shock Chance" data-stats="10% increased Lightning Damage ;; 10% chance to Shock"/>
 <circle id="n61283" cx="-2725" cy="-6028" r="42" data-kind="Normal" data-name="Mana on Kill against Cursed Enemies" data-stats="Recover 2% of Mana when you Kill a Cursed Enemy"/>
-<circle id="n61288" cx="5016" cy="-8468" r="58" data-kind="Jewel" data-name="Medium Jewel Socket"/>
-<circle id="n61305" cx="5690" cy="8517" r="58" data-kind="Jewel" data-name="Small Jewel Socket"/>
 <circle id="n61306" cx="4299" cy="3274" r="42" data-kind="Normal" data-name="Dexterity" data-stats="+10 to Dexterity"/>
 <circle id="n61308" cx="-4936" cy="-3149" r="62" data-kind="Notable" data-name="Amplify" data-stats="10% increased Area of Effect ;; 20% increased Area Damage"/>
 <circle id="n61320" cx="2662" cy="-3805" r="42" data-kind="Normal" data-name="Life and Energy Shield" data-stats="5% increased maximum Energy Shield ;; 3% increased maximum Life"/>
@@ -6074,7 +6028,6 @@ Damage over Time is -20% while you are Stationary"/>
 <circle id="n61627" cx="7000" cy="-8035" r="45" class="ascendancy asc-Deadeye" data-kind="Ascendancy" data-name="Ricochet" data-stats="Skills Chain +1 times ;; Projectiles have 30% chance to be able to Chain when colliding with terrain"/>
 <circle id="n61636" cx="-2486" cy="6997" r="42" data-kind="Normal" data-name="Melee Critical Strike Chance" data-stats="25% increased Melee Critical Strike Chance"/>
 <circle id="n61653" cx="6229" cy="-5044" r="42" data-kind="Normal" data-name="Life and Energy Shield" data-stats="5% increased maximum Energy Shield ;; 5% increased maximum Life"/>
-<circle id="n61666" cx="-5911" cy="8386" r="58" data-kind="Jewel" data-name="Small Jewel Socket"/>
 <circle id="n61689" cx="7798" cy="-4224" r="62" data-kind="Notable" data-name="Explosive Elements" data-stats="Mine Damage Penetrates 10% Elemental Resistances"/>
 <circle id="n61761" cx="6665" cy="-7700" r="45" class="ascendancy asc-Raider" data-kind="Ascendancy" data-name="Evasion, Elemental Ailment Duration" data-stats="15% increased Evasion Rating ;; 10% increased Duration of Elemental Ailments on Enemies"/>
 <circle id="n61785" cx="-2563" cy="-6028" r="50" class="mastery" data-kind="Mastery" data-name="Curse Mastery"/>
@@ -6226,7 +6179,6 @@ Cannot deal non-Fire Damage"/>
 <circle id="n64426" cx="-5414" cy="-647" r="42" data-kind="Normal" data-name="Elemental Resistances with a Shield" data-stats="+5% Elemental Resistances while holding a Shield"/>
 <circle id="n64501" cx="3814" cy="-2490" r="42" data-kind="Normal" data-name="Evasion and Energy Shield" data-stats="10% increased Evasion Rating ;; 5% increased maximum Energy Shield"/>
 <circle id="n64509" cx="4485" cy="-793" r="42" data-kind="Normal" data-name="Dagger Ailment Damage" data-stats="Dagger Attacks deal 16% increased Damage with Ailments"/>
-<circle id="n64583" cx="4760" cy="-8468" r="58" data-kind="Jewel" data-name="Medium Jewel Socket"/>
 <circle id="n64587" cx="-4721" cy="5576" r="42" data-kind="Normal" data-name="Life" data-stats="6% increased maximum Life"/>
 <circle id="n64612" cx="3108" cy="-5900" r="42" data-kind="Normal" data-name="Wand Lightning Damage" data-stats="Gain 5% of Wand Physical Damage as Extra Lightning Damage"/>
 <circle id="n64695" cx="-3985" cy="6122" r="42" data-kind="Normal" data-name="Attack Ignite Chance" data-stats="Attacks have 15% chance to Ignite"/>
