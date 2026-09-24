@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { PoeExportError, readPoeExport } from "@/lib/games/poe1/poe-api";
-import { applyImport, playerForAccount, type ImportUser } from "@/lib/import";
+import { applyImport, playerForAccount, rememberAccount, type ImportUser } from "@/lib/import";
 import { getUser } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -64,6 +64,11 @@ export async function POST(request: Request) {
       );
     }
   }
+
+  // An export named under ?player= is how a player's first account reaches the
+  // archive: after this it is stored, and the flag that carried it is never
+  // needed again.
+  rememberAccount(user.id, exported.account);
 
   const { imported, skipped, written, touched } = applyImport(user, exported, {
     include: () => true,

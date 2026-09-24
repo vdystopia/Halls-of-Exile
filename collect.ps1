@@ -47,6 +47,11 @@
 .PARAMETER Player
     Only this player, by archive username. Default: every player with an account.
 
+.PARAMETER Account
+    The Path of Exile account to read, for a player who has none recorded yet.
+    Needs -Player, and is only ever given once: the archive stores it with that
+    player and works it out for itself from then on.
+
 .PARAMETER Full
     Refetch every character instead of only the ones that changed. Slow, and
     only needed when a past run was interrupted or the stored copy looks wrong.
@@ -57,6 +62,7 @@
 [CmdletBinding()]
 param(
     [string]$Player,
+    [string]$Account,
     [switch]$Full,
     [int]$Port
 )
@@ -102,11 +108,30 @@ try {
     exit 1
 }
 
+if ($Account -and -not $Player) {
+    Write-Bad '-Account needs -Player: it says which player that account belongs to.'
+    exit 1
+}
+
 $targets = @($players | Where-Object { $_.poeAccount })
 if ($Player) {
-    $targets = @($targets | Where-Object { $_.username -eq $Player })
+    $named = @($players | Where-Object { $_.username -eq $Player })
+    if (-not $named) {
+        Write-Bad "No player `"$Player`" in the archive."
+        exit 1
+    }
+    if ($Account) {
+        # An account already recorded is the archive's answer, not this flag's.
+        # Silently reading a different one would file it under the wrong player.
+        if ($named[0].poeAccount -and $named[0].poeAccount -ne $Account) {
+            Write-Bad "$Player already reads $($named[0].poeAccount). Change it under `"Manage player`" if that is wrong."
+            exit 1
+        }
+        $named[0].poeAccount = $Account
+    }
+    $targets = @($named | Where-Object { $_.poeAccount })
     if (-not $targets) {
-        Write-Bad "No player `"$Player`" with an account set. Set one under `"Manage player`"."
+        Write-Bad "No account for `"$Player`". Pass -Account `"Name#1234`" once and the archive keeps it."
         exit 1
     }
 }

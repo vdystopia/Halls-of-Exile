@@ -289,3 +289,42 @@ test("an archived character is never pre-ticked, whatever else is true of it", a
   assert.equal(row?.finalised, true);
   assert.equal(row?.suggested, null, "a matched row must carry no league suggestion to tick on");
 });
+
+/**
+ * How a player's first account reaches the archive without a form. The
+ * collector is handed one on the command line once; the import records it, and
+ * `backfillAccounts` keeps it from then on. The flag is never needed twice.
+ */
+test("the first import records the account it came from", async () => {
+  const { rememberAccount } = await import("../src/lib/import");
+  const { db, user } = await setup("remember-tester", null);
+
+  rememberAccount(user.id, "  Someone#0739  ");
+
+  const row = db.prepare(`SELECT poe_account FROM users WHERE id = ?`).get(user.id) as { poe_account: string };
+  assert.equal(row.poe_account, "Someone#0739", "and it is trimmed");
+});
+
+test("an account already recorded is not replaced by an import", async () => {
+  const { rememberAccount } = await import("../src/lib/import");
+  const { db, user } = await setup("remember-set-tester", "Theirs#1111");
+
+  rememberAccount(user.id, "Someone else#2222");
+
+  const row = db.prepare(`SELECT poe_account FROM users WHERE id = ?`).get(user.id) as { poe_account: string };
+  assert.equal(row.poe_account, "Theirs#1111");
+});
+
+/** Posting one player's export under another's name must not move the account. */
+test("an account another player holds is never taken", async () => {
+  const { rememberAccount } = await import("../src/lib/import");
+  const { db } = await setup("holder-tester", "Held#3333");
+  const { user: other } = await setup("taker-tester", null);
+
+  rememberAccount(other.id, "Held#3333");
+
+  const row = db.prepare(`SELECT poe_account FROM users WHERE id = ?`).get(other.id) as {
+    poe_account: string | null;
+  };
+  assert.equal(row.poe_account, null);
+});

@@ -165,6 +165,28 @@ export function playerForAccount(account: string): ImportUser | null {
   return row ?? null;
 }
 
+/**
+ * Record the account an export came from, if the player has none yet.
+ *
+ * The counterpart to `backfillAccounts`, which does the same thing on boot from
+ * payloads already stored: this catches the first import, before there is any
+ * payload to read it out of. So handing an account to `collect.ps1` once is
+ * enough — the archive keeps it, and the flag is never needed again.
+ *
+ * It only ever fills a blank, and never takes an account another player holds:
+ * posting one player's export under another's name must not quietly move it.
+ */
+export function rememberAccount(userId: number, account: string): void {
+  const name = account.trim();
+  if (!name) return;
+  const user = db.prepare(`SELECT poe_account FROM users WHERE id = ?`).get(userId) as
+    | { poe_account: string | null }
+    | undefined;
+  if (!user || user.poe_account) return;
+  if (db.prepare(`SELECT 1 FROM users WHERE poe_account = ? COLLATE NOCASE AND id <> ?`).get(name, userId)) return;
+  db.prepare(`UPDATE users SET poe_account = ? WHERE id = ?`).run(name, userId);
+}
+
 export function planFor(userId: number, exported: PoeExport, token: string): ImportPlan {
   const rows: ImportRow[] = exported.characters.map((character) => {
     const found = matchesFor(userId, character.name);

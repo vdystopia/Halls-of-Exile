@@ -239,6 +239,13 @@ the result back. An archived character with no gear yet gets its gear, gems, tre
 passives filled in; its league, memories, `/played` time and main skill are left alone.
 `-Player dystopia` does one player, `-Full` refetches everything instead of only what changed.
 
+A player who has imported nothing yet has no account to work out. Give it once, on the command
+line, and the archive keeps it:
+
+```powershell
+.\collect.ps1 -Player valkyrie -Account "Name#1234"
+```
+
 **It never rewrites a character that already has a build, and never creates one.** Both need a
 person, for different reasons:
 
