@@ -255,12 +255,20 @@ and its payload is stored in `characters.source_payload` for the same reason.
   **says so** rather than drawing a wrong tree quietly. A build from the game's own endpoints
   carries no version at all and is drawn on the newest, which is exact: the API reports what a
   character has allocated today.
-- **Cluster jewel passives are not drawn, and the count says so.** Their node ids are invented
-  by Path of Building when the jewel is socketed and exist nowhere in the game's export, so
-  there is no position to draw them at. The tree reports how many of a character's passives it
-  could not place instead of silently showing fewer than the panel claims. Class start nodes
-  *are* drawn, for the same reason in reverse: every build allocates one, and leaving it out
-  made every character report one phantom missing passive.
+- **Cluster jewel passives are not drawn yet, and the count says so.** The empty tree cannot
+  hold them: a cluster's passives, and the medium and small sockets inside it, only exist once
+  a jewel is socketed. The export positions those nested sockets exactly where an expanded
+  cluster sits, beyond the large socket, which is why drawing them on the empty tree left
+  fragments off its corners — so a socket with an `expansionJewel.parent` is left out. The
+  footer reports how many allocated passives it could not place, and for an export that number
+  is exactly `passives.hashes_ex.length`, measured across five characters. **The layout is
+  known for an export, though, and the earlier note here saying otherwise was wrong**: the
+  game's endpoint returns `passives.jewel_data[socket].subgraph`, the expanded cluster as groups
+  and nodes in the same schema and coordinate space as the main tree, with `hashes_ex` naming
+  which of them are allocated. The mapper reads neither yet. Only a Path of Building import
+  lacks a layout — its cluster ids are synthesised, and placing them means reimplementing its
+  cluster graph. Class start nodes *are* drawn, for the opposite reason: every build allocates
+  one, and leaving it out made every character report one phantom missing passive.
 - **A stored build is a cache of the parser, so parser fixes need `PARSER_VERSION`.**
   A character's items are parsed once, at import, and written to `characters.data` as JSON;
   the archive went on rendering base percentiles as mods for days after the parser stopped
