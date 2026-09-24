@@ -98,7 +98,53 @@ function migrate(db: Database.Database) {
     db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
   }
   widenLeagueUniqueness(db);
+  backfillAccounts(db);
   reparseStaleBuilds(db);
+}
+
+/**
+ * Work out a player's Path of Exile account from what the archive already
+ * holds, rather than asking for it again.
+ *
+ * Every character imported from an account export stores the payload it came
+ * from, and that payload names the account. So a player who has imported
+ * anything has already told the archive which account they play on — typing it
+ * into a form is re-entering a fact the database can see. This fills the blank
+ * on the next boot, which also covers the player who only ever used the upload
+ * page, since that route never asked for an account at all.
+ *
+ * It only ever fills a blank: an account set by hand is never second-guessed,
+ * and an account another player already claims is left alone rather than
+ * duplicated. Where a player's characters name more than one account, the one
+ * that appears most often wins.
+ */
+function backfillAccounts(db: Database.Database) {
+  const found = db
+    .prepare(
+      `SELECT c.user_id AS userId, json_extract(c.source_payload, '$.account') AS account, count(*) AS seen
+         FROM characters c
+         JOIN users u ON u.id = c.user_id
+        WHERE c.source_payload IS NOT NULL
+          AND (u.poe_account IS NULL OR u.poe_account = '')
+          AND account IS NOT NULL AND account <> ''
+        GROUP BY c.user_id, account
+        ORDER BY c.user_id, seen DESC`,
+    )
+    .all() as { userId: number; account: string; seen: number }[];
+  if (found.length === 0) return;
+
+  const taken = db.prepare(`SELECT 1 FROM users WHERE poe_account = ? COLLATE NOCASE AND id <> ?`);
+  const set = db.prepare(`UPDATE users SET poe_account = ? WHERE id = ?`);
+  const claimed = new Set<number>();
+  const run = db.transaction(() => {
+    for (const row of found) {
+      if (claimed.has(row.userId)) continue;
+      if (taken.get(row.account, row.userId)) continue;
+      set.run(row.account, row.userId);
+      claimed.add(row.userId);
+    }
+  });
+  run();
 }
 
 /**

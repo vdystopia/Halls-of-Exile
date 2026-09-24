@@ -280,3 +280,74 @@ test("the import columns are added to a populated archive", async () => {
   // rather than being re-read on every boot.
   assert.equal(row.api_version, POE_API_VERSION);
 });
+
+/**
+ * The account a player plays on is already in the archive: every character
+ * imported from an export carries the payload it came from, and that payload
+ * names it. Asking someone to type it into a form is asking them to re-enter a
+ * fact the database can see — and the upload page never asked for one at all,
+ * so a player who only used that route had no account set and was skipped by
+ * the collector forever.
+ */
+test("a player's account is worked out from what they have already imported", async () => {
+  const { db, ensureSchema } = await import("../src/lib/db");
+
+  const user = db
+    .prepare(`INSERT INTO users (username, first_name) VALUES ('backfill-tester', 'Test')`)
+    .run().lastInsertRowid as number;
+  const league = db.prepare(`SELECT id FROM leagues LIMIT 1`).get() as { id: number };
+  const payload = (account: string) => JSON.stringify({ account, realm: "pc", character: { name: "x" } });
+  for (const [index, account] of ["Someone#1234", "Someone#1234", "Stale#0000"].entries()) {
+    db.prepare(
+      `INSERT INTO characters (user_id, league_id, slug, name, class_name, data, parser_version,
+                               source_payload, api_version)
+       VALUES (?, ?, ?, ?, 'Witch', '{"source":"poe-api"}', 0, ?, 1)`,
+    ).run(user, league.id, `backfilled-${index}`, `Backfilled${index}`, payload(account));
+  }
+
+  ensureSchema(db);
+
+  const row = db.prepare(`SELECT poe_account FROM users WHERE id = ?`).get(user) as { poe_account: string };
+  assert.equal(row.poe_account, "Someone#1234", "the account most of their characters came from");
+});
+
+/** An account typed in by hand is never second-guessed by the backfill. */
+test("an account already set is left exactly as it was", async () => {
+  const { db, ensureSchema } = await import("../src/lib/db");
+
+  const user = db
+    .prepare(`INSERT INTO users (username, first_name, poe_account) VALUES ('byhand-tester', 'Test', 'Chosen#1111')`)
+    .run().lastInsertRowid as number;
+  const league = db.prepare(`SELECT id FROM leagues LIMIT 1`).get() as { id: number };
+  db.prepare(
+    `INSERT INTO characters (user_id, league_id, slug, name, class_name, data, parser_version,
+                             source_payload, api_version)
+     VALUES (?, ?, 'byhand', 'ByHand', 'Witch', '{"source":"poe-api"}', 0, ?, 1)`,
+  ).run(user, league.id, JSON.stringify({ account: "Different#2222" }));
+
+  ensureSchema(db);
+
+  const row = db.prepare(`SELECT poe_account FROM users WHERE id = ?`).get(user) as { poe_account: string };
+  assert.equal(row.poe_account, "Chosen#1111");
+});
+
+/** Two players cannot end up claiming one account, which would break matching. */
+test("an account another player already holds is not duplicated", async () => {
+  const { db, ensureSchema } = await import("../src/lib/db");
+
+  db.prepare(`INSERT INTO users (username, first_name, poe_account) VALUES ('owner-tester', 'T', 'Shared#3333')`).run();
+  const other = db
+    .prepare(`INSERT INTO users (username, first_name) VALUES ('other-tester', 'Test')`)
+    .run().lastInsertRowid as number;
+  const league = db.prepare(`SELECT id FROM leagues LIMIT 1`).get() as { id: number };
+  db.prepare(
+    `INSERT INTO characters (user_id, league_id, slug, name, class_name, data, parser_version,
+                             source_payload, api_version)
+     VALUES (?, ?, 'shared', 'Shared', 'Witch', '{"source":"poe-api"}', 0, ?, 1)`,
+  ).run(other, league.id, JSON.stringify({ account: "Shared#3333" }));
+
+  ensureSchema(db);
+
+  const row = db.prepare(`SELECT poe_account FROM users WHERE id = ?`).get(other) as { poe_account: string | null };
+  assert.equal(row.poe_account, null);
+});

@@ -20,8 +20,11 @@
     and this script has nobody to ask. Those go through the upload page at
     /players/<name>/import, where a league can be picked.
 
-    Set a player's account under "Manage player" on their page first. Without
-    one, that player is skipped.
+    A player's account is worked out from the characters they have already
+    imported, so it normally sets itself. A player with nothing imported yet has
+    nothing to work it out from: set theirs once under "Manage player" on their
+    page, and the archive keeps it from then on. Without one, that player is
+    skipped.
 
     Because it only ever fills, a second run over the same account writes
     nothing. That is the point: it is safe to schedule, and safe to run when you
@@ -108,7 +111,9 @@ if ($Player) {
     }
 }
 if (-not $targets) {
-    Write-Bad 'No player has a Path of Exile account set. Set one under "Manage player" on their page.'
+    Write-Bad 'No player has a Path of Exile account. It is normally worked out from what they have'
+    Write-Bad 'already imported; a player with nothing imported yet needs theirs set once under'
+    Write-Bad '"Manage player" on their page.'
     exit 1
 }
 

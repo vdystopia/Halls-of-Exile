@@ -256,11 +256,19 @@ and its payload is stored in `characters.source_payload` for the same reason.
   finished character should be replaced. So `applyImport` is given a `leagueFor` that always
   returns null and an `overwrite` that always returns false, and the response names what it
   skipped for each reason. Both need the upload page.
-- **A player's Path of Exile account lives on the player row**, in `users.poe_account`, set
-  under "Manage player". It is there so the collector script holds no configuration: it asks
-  `/api/players` which accounts to read, and every export names the account it came from, so
-  `playerForAccount` matches the two without anyone passing a flag. Two players cannot claim one
-  account. Both endpoints are unauthenticated, like every other write here.
+- **A player's Path of Exile account lives on the player row**, in `users.poe_account`. It is
+  there so the collector script holds no configuration: it asks `/api/players` which accounts to
+  read, and every export names the account it came from, so `playerForAccount` matches the two
+  without anyone passing a flag. Two players cannot claim one account. Both endpoints are
+  unauthenticated, like every other write here.
+  **The archive works the account out for itself wherever it can.** Every imported character
+  stores the payload it came from and that payload names the account, so `backfillAccounts` in
+  `migrate()` fills a blank one on the next boot from what is already in the database — asking
+  someone to type it into a form is asking them to re-enter a fact the archive can see, and it
+  is the second time they would have done it. It only ever fills a blank: an account set by hand
+  is never second-guessed, and one another player already holds is left alone rather than
+  duplicated. The field under "Manage player" is for the case the archive cannot infer — a
+  player with nothing imported yet, which is the only way in for their first collection.
 - **The league never comes from the export.** Every character migrates to a permanent league
   when its own ends, so the league the API reports says nothing about where it was played. The
   collector guesses from the last login time and grades its own guess — and the owner's record

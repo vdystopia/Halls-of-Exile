@@ -225,8 +225,10 @@ replayed over everything already imported without reading the account again.
 
 ### Refreshing every character on its own
 
-Once a player's Path of Exile account is set under **Manage player** on their page, one command
-on the server does the whole loop:
+A player's Path of Exile account is worked out from what they have already imported — every
+character carries the payload it came from and that payload names the account — so it is only
+typed in under **Manage player** for a player who has imported nothing yet. After that, one
+command on the server does the whole loop:
 
 ```powershell
 .\collect.ps1
