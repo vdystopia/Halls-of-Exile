@@ -47,6 +47,12 @@ export type ImportRow = {
   action: "update" | "create" | "ambiguous";
   /** Where the archive already holds this character. */
   target?: { game: string; league: string; leagueTitle: string; slug: string };
+  /**
+   * The archived character already has a build. Overwriting it replaces what
+   * was archived with what the account holds today, which is not the same
+   * thing — so it never happens without being asked for by name.
+   */
+  finalised?: boolean;
   /** How many archived characters share the name, when more than one does. */
   matches?: number;
   /** The exporter's guess at the origin league, and how sure it was of it. */
@@ -65,6 +71,8 @@ export type ImportPlan = {
 export type ImportResult = {
   imported: number;
   created: number;
+  /** Characters that already held a build and were deliberately left alone. */
+  skipped: string[];
   /** The names actually written, so a caller can name the ones that were not. */
   written: string[];
   /** League keys touched, as `<game>/<slug>`, for cache revalidation. */
@@ -80,6 +88,8 @@ type MatchRow = {
   class_name: string;
   ascendancy: string | null;
   main_skill: string | null;
+  /** 1 once a build has come from somewhere — a share code or an export. */
+  imported: number;
 };
 
 export type ImportUser = { id: number; username: string };
@@ -87,7 +97,8 @@ export type ImportUser = { id: number; username: string };
 function matchesFor(userId: number, name: string): MatchRow[] {
   return db
     .prepare(
-      `SELECT c.id, c.slug, c.name, c.class_name, c.ascendancy, c.main_skill, l.game, l.slug AS league
+      `SELECT c.id, c.slug, c.name, c.class_name, c.ascendancy, c.main_skill, l.game, l.slug AS league,
+              (c.pob_code IS NOT NULL OR c.source_payload IS NOT NULL) AS imported
          FROM characters c JOIN leagues l ON l.id = c.league_id
         WHERE c.user_id = ? AND c.name = ? COLLATE NOCASE
         ORDER BY l.sort_order`,
@@ -174,11 +185,17 @@ export function planFor(userId: number, exported: PoeExport, token: string): Imp
             slug: single.slug,
           }
         : undefined,
+      finalised: single ? single.imported === 1 : undefined,
       matches: found.length > 1 ? found.length : undefined,
+      // A league is only ever chosen for a character being created, so the
+      // guess is only offered for one. Offering it on a matched row put a tick
+      // in the box of a character that was already archived.
+      //
       // Only offered where the collector called it certain, which means the
       // character is still in a league that has not ended. Anything weaker is
       // a prior, not a fact, and is left for the owner to answer.
-      suggested: character.originConfidence === "certain" ? character.originPatch : null,
+      suggested:
+        found.length === 0 && character.originConfidence === "certain" ? character.originPatch : null,
       confidence: character.originConfidence,
     };
   });
@@ -211,17 +228,28 @@ function uniqueSlug(userId: number, leagueId: number, base: string): string {
 /**
  * Apply an export to a player's characters, in one transaction.
  *
- * `include` decides which of the export's characters are touched at all, and
- * `leagueFor` answers the one question the export cannot: which league a
- * character the archive has never seen belongs in. Returning null skips it.
- * The unattended caller passes a `leagueFor` that always returns null, so a
- * scheduled run can only ever fill in characters that already exist — it never
- * guesses a league, and it never has to be watched.
+ * An archived character is a record of what a character *was*. The account is a
+ * record of what it *is*, and for anything but the current league those are not
+ * the same thing: gear gets stripped for the next build, gems get pulled, trees
+ * get respecced, and a character that was finished two years ago now reads as
+ * an empty shell. So once a character holds a build, nothing writes over it
+ * again unless it is asked for by name — `overwrite` is per character, and the
+ * unattended caller has none.
+ *
+ * That leaves three outcomes. A matched character with nothing in it is filled.
+ * A matched character that already holds a build is skipped and named. A
+ * character the archive has never seen needs a league, which is the other thing
+ * an export cannot answer, so `leagueFor` decides — returning null skips it.
  */
 export function applyImport(
   user: ImportUser,
   exported: PoeExport,
-  options: { include: (name: string) => boolean; leagueFor: (name: string) => string | null },
+  options: {
+    include: (name: string) => boolean;
+    leagueFor: (name: string) => string | null;
+    /** Replace a character that already holds a build. Off unless asked. */
+    overwrite?: (name: string) => boolean;
+  },
 ): ImportResult {
   const update = db.prepare(
     `UPDATE characters
@@ -238,6 +266,7 @@ export function applyImport(
 
   let imported = 0;
   let created = 0;
+  const skipped: string[] = [];
   const written: string[] = [];
   const touched = new Set<string>();
   // A record with nothing to say writes "Unknown" rather than leaving a blank,
@@ -254,6 +283,12 @@ export function applyImport(
 
       if (found.length === 1) {
         const existing = found[0];
+        // The rule above: a character that already holds a build is left exactly
+        // as it was archived. Only being named overrides that.
+        if (existing.imported === 1 && !options.overwrite?.(character.name)) {
+          skipped.push(character.name);
+          continue;
+        }
         // Class, ascendancy and level come from the game itself and replace what
         // was written down. The main skill does not: the record names the build
         // — "golemancer corrupting fever exsanguinate" — where the export can
@@ -300,5 +335,5 @@ export function applyImport(
   });
   run();
 
-  return { imported, created, written, touched };
+  return { imported, created, skipped, written, touched };
 }

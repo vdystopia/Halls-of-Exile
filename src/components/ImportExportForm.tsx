@@ -38,7 +38,8 @@ export function ImportExportForm({ username, leagues }: { username: string; leag
   const plan = state.plan;
 
   const counts = {
-    update: plan?.rows.filter((row) => row.action === "update").length ?? 0,
+    fill: plan?.rows.filter((row) => row.action === "update" && !row.finalised).length ?? 0,
+    archived: plan?.rows.filter((row) => row.finalised).length ?? 0,
     create: plan?.rows.filter((row) => row.action === "create").length ?? 0,
     ambiguous: plan?.rows.filter((row) => row.action === "ambiguous").length ?? 0,
   };
@@ -91,7 +92,7 @@ export function ImportExportForm({ username, leagues }: { username: string; leag
           <div className="panel-header">
             <h2 className="panel-title">{plan.account}</h2>
             <span className="text-xs text-muted">
-              {counts.update} matched · {counts.create} not in the archive
+              {counts.fill} to fill in · {counts.archived} already archived · {counts.create} not in the archive
               {counts.ambiguous ? ` · ${counts.ambiguous} ambiguous` : ""}
             </span>
           </div>
@@ -101,9 +102,12 @@ export function ImportExportForm({ username, leagues }: { username: string; leag
                 <input
                   type="checkbox"
                   name={`include:${row.name}`}
-                  // Ticked where there is something to do without answering a
-                  // question: a match, or a league the export was sure of.
-                  defaultChecked={row.action === "update" || Boolean(row.suggested)}
+                  // Ticked only where nothing is at stake: an archived character
+                  // with no build yet, or a league the export was sure of. A
+                  // character that already holds a build is never ticked for
+                  // you, whatever else is true of it — ticking it is the order
+                  // to replace what was archived, and it has to be given.
+                  defaultChecked={!row.finalised && (row.action === "update" || Boolean(row.suggested))}
                   disabled={row.action === "ambiguous"}
                   aria-label={`Import ${row.name}`}
                   className="accent-gold"
@@ -114,9 +118,16 @@ export function ImportExportForm({ username, leagues }: { username: string; leag
                 </span>
 
                 {row.action === "update" && row.target ? (
-                  <span className="min-w-56 text-xs text-muted">
-                    fills in <span className="text-parchment/80">{row.target.leagueTitle}</span>
-                  </span>
+                  row.finalised ? (
+                    <span className="min-w-56 text-xs text-muted">
+                      already archived in <span className="text-parchment/80">{row.target.leagueTitle}</span>
+                      <span className="text-muted/70"> — tick to replace it</span>
+                    </span>
+                  ) : (
+                    <span className="min-w-56 text-xs text-muted">
+                      fills in <span className="text-parchment/80">{row.target.leagueTitle}</span>
+                    </span>
+                  )
                 ) : null}
 
                 {row.action === "ambiguous" ? (
@@ -149,10 +160,12 @@ export function ImportExportForm({ username, leagues }: { username: string; leag
             ))}
           </ul>
           <p className="border-t border-line px-4 py-3 text-xs text-muted">
-            A matched character keeps its league, notes, playtime and main skill; its class, ascendancy, level,
-            gear, gems and tree are replaced with what the game reports. A character the archive has never seen
-            is created only in a league picked here — the export cannot say which league a character was made
-            in, only which one it sits in now.
+            A character that already holds a build is left exactly as it was archived unless you tick it: what
+            the account holds today is not what it held when it was finished, and for an old character the
+            difference is however much gear has been pulled off it since. An empty one is filled in, keeping its
+            league, memories, playtime and main skill. A character the archive has never seen is created only in
+            a league picked here — the export cannot say which league a character was made in, only which one it
+            sits in now.
           </p>
         </section>
       ) : null}

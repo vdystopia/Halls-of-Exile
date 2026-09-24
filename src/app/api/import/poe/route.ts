@@ -7,13 +7,21 @@ import { getUser } from "@/lib/queries";
 export const dynamic = "force-dynamic";
 
 /**
- * Unattended ingest: `collect.ps1` posts an export here and the matched
- * characters get their gear, gems and passives refreshed.
+ * Unattended ingest: `collect.ps1` posts an export here and any archived
+ * character that is still empty gets its gear, gems and passives filled in.
  *
- * It only ever *updates*. A character the archive has never seen is reported in
- * `unmatched` and left alone, because the league it belongs in is the one thing
- * no export can say and nobody is here to answer — see `src/lib/import.ts`. Run
- * it as often as you like; a run that changes nothing writes nothing.
+ * It only ever *fills*. Two things it will not do, both because there is nobody
+ * here to ask:
+ *
+ *   - It will not touch a character that already holds a build. An archived
+ *     character is a record of what it was; the account says what it is, and
+ *     for an old character those differ by however much gear has been stripped
+ *     since. Overwriting one has to be asked for by name, on the upload page.
+ *   - It will not create a character, because the league it belongs in is the
+ *     other thing no export can say.
+ *
+ * So a second run over the same account writes nothing at all, which is what
+ * makes it safe to schedule.
  *
  * The player is found from the account the export names, which is recorded on
  * the player under “Manage player”. `?player=<username>` overrides that, for an
@@ -57,24 +65,26 @@ export async function POST(request: Request) {
     }
   }
 
-  const { imported, written, touched } = applyImport(user, exported, {
+  const { imported, skipped, written, touched } = applyImport(user, exported, {
     include: () => true,
-    // Never invent a league without someone to ask.
+    // Never invent a league, and never rewrite a character that is already
+    // archived. Both need someone to ask.
     leagueFor: () => null,
+    overwrite: () => false,
   });
 
   for (const key of touched) revalidatePath(`/players/${user.username}/${key}`);
   revalidatePath("/");
   revalidatePath(`/players/${user.username}`);
 
-  // Whatever was in the export and did not land is worth naming: it is either a
-  // character the archive has never seen, or one whose name is shared by two
-  // rows and cannot be matched without a rename. Either way it needs the upload
-  // page, where a league can be chosen.
-  const landed = new Set(written);
+  // Everything the export held falls into one of three buckets, and the two
+  // that were not written are worth naming. "Skipped" is the archive doing its
+  // job; "unmatched" is a character that needs a league chosen on the upload
+  // page, or a name two archived rows share.
+  const accounted = new Set([...written, ...skipped]);
   const unmatched = exported.characters
     .map((character) => character.name)
-    .filter((name) => !landed.has(name));
+    .filter((name) => !accounted.has(name));
 
   return NextResponse.json({
     status: "ok",
@@ -82,7 +92,8 @@ export async function POST(request: Request) {
     account: exported.account,
     generatedAt: exported.generatedAt,
     characters: exported.characters.length,
-    updated: imported,
+    filled: imported,
+    alreadyArchived: skipped.length,
     unmatched: unmatched.length,
     unmatchedNames: unmatched,
   });

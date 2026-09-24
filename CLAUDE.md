@@ -16,10 +16,11 @@ npm run seed:demo    # demo players; -- --reset wipes users/characters first
 npm run seed:atlas   # the owner's own record, 99 characters, into ./data; -- --reset re-imports
 ```
 
-`.\collect.ps1` on the owner's PC refreshes every archived character's gear from the game:
-it reads each player's account out of the running archive, runs the collector in
-`tools/poe-char-export/` against it, and posts the result to `/api/import/poe`. It only ever
-updates characters that already exist — see the rule below — so it is safe to schedule.
+`.\collect.ps1` on the owner's PC fills in the gear of archived characters that do not have
+any yet: it reads each player's account out of the running archive, runs the collector in
+`tools/poe-char-export/` against it, and posts the result to `/api/import/poe`. It never
+rewrites a character that already holds a build and never creates one — see the first rule
+below — so a second run writes nothing, which is what makes it safe to schedule.
 
 Deploy is `.\update.ps1` on the owner's PC, never a bare `docker compose up -d --build`:
 it backs up, pulls, rebuilds, health-checks, rolls back on failure, and holds a lock so two
@@ -61,6 +62,20 @@ and its payload is stored in `characters.source_payload` for the same reason.
 
 ## Rules that must hold
 
+- **An archived character is finished. Nothing automatic may ever change one.** This is the
+  point of the whole project, and it outranks every convenience below it. A character page
+  records what a character *was*; the live account records what it *is*, and for anything but
+  the current league those differ by however much gear has been stripped off it since — the
+  build was dismantled for the next one, the gems were pulled, the tree was respecced. An
+  automated refresh would replace a finished record with an empty shell, and the only copy of
+  the original is the one it just destroyed. So `applyImport` fills a character that holds no
+  build and refuses one that does; `overwrite` is per character and the unattended caller has
+  none; the upload page leaves an archived row unticked and labelled, so replacing one is a
+  deliberate act by name. New characters arrive periodically and are added; old ones are never
+  touched again without being asked for. `tests/import.test.ts` pins this down.
+  The one thing that does rewrite a stored build is `reparseStaleBuilds`, and only from the
+  source already captured on the row — it re-renders facts the archive already holds through
+  fixed code, and fetches nothing. If even that is unwanted, it is the thing to change.
 - **The league catalogue is code-owned.** Rows with `is_custom = 0` are re-synced from
   `LEAGUE_SEED` on every boot, so editing a built-in league in the database is pointless.
   User-added leagues (`is_custom = 1`) are never touched by the sync. A row dropped from the
@@ -104,7 +119,11 @@ and its payload is stored in `characters.source_payload` for the same reason.
   `npm run seed:atlas`. 99 characters across two players, most predating any Path of Building
   export, so they carry name, level, class, ascendancy, build, playtime and notes and nothing
   else. Missing values read "Unknown" rather than blank. A re-run updates in place by player,
-  league and name; `--reset` deletes only rows that file would create, so a character added by
+  league and name — **except one that has since been given a real build, which it skips
+  untouched**: the build this file writes has no items in it, so the re-run path would otherwise
+  destroy the gear of every imported character and leave an empty shell, and "just run
+  seed:atlas again" is the first thing anyone reaches for. `tests/atlas.test.ts` fails if that
+  guard goes. `--reset` deletes only rows that file would create, so a character added by
   hand is never caught in it. **The deployed archive is on a Docker volume, not in `./data`, so
   running the importer on the host only ever fills the development database.** Against the real
   archive it runs inside the container — `docker compose exec halls node scripts/seed-atlas.mjs`
@@ -231,12 +250,12 @@ and its payload is stored in `characters.source_payload` for the same reason.
   decide which one may re-derive the row; the other is only marked current so it stops being
   re-read every boot. Without that, a `PARSER_VERSION` bump would silently replace a build that
   came from the game with one derived from a stale share code.
-- **An unattended import updates and never creates.** `collect.ps1` and `/api/import/poe` run
-  with nobody watching, and the league a character belongs to is the one thing no export can
-  answer, so `applyImport` is given a `leagueFor` that always returns null: a character the
-  archive has never seen is named in the response and left alone. Creating one needs the upload
-  page, where a league is chosen by hand. That is also what makes a scheduled run idempotent —
-  running it twice is the same as running it once, which `tests/import.test.ts` pins down.
+- **An unattended import fills, and neither creates nor overwrites.** `collect.ps1` and
+  `/api/import/poe` run with nobody watching, and the two questions an export cannot answer both
+  need a person: which league a character the archive has never seen belongs in, and whether a
+  finished character should be replaced. So `applyImport` is given a `leagueFor` that always
+  returns null and an `overwrite` that always returns false, and the response names what it
+  skipped for each reason. Both need the upload page.
 - **A player's Path of Exile account lives on the player row**, in `users.poe_account`, set
   under "Manage player". It is there so the collector script holds no configuration: it asks
   `/api/players` which accounts to read, and every export names the account it came from, so

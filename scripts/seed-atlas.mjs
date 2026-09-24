@@ -16,7 +16,11 @@
  * a page renders the summary without gear, gems or a passive tree.
  *
  * Anything the record does not have reads "Unknown" rather than being left
- * blank. A re-run updates rows in place, matched on player, league and name.
+ * blank. A re-run updates rows in place, matched on player, league and name —
+ * except a character that has since been given a real build, from a Path of
+ * Building code or an account export, which is skipped untouched. The record is
+ * only ever the starting point: once a character has its gear it is finished,
+ * and this file writing an empty build over it would destroy the only copy.
  *
  * Written in plain JavaScript on purpose: the container has node and
  * better-sqlite3 but no TypeScript, and this has to run where the archive is.
@@ -76,7 +80,16 @@ db.pragma("foreign_keys = ON");
 const findUser = db.prepare(`SELECT id FROM users WHERE username = ? COLLATE NOCASE`);
 const addUser = db.prepare(`INSERT INTO users (username, first_name, tagline) VALUES (?, ?, ?)`);
 const findLeague = db.prepare(`SELECT id FROM leagues WHERE game = ? AND slug = ?`);
-const findExisting = db.prepare(`SELECT id FROM characters WHERE user_id = ? AND league_id = ? AND name = ?`);
+// A character that has been imported from anywhere holds a build this file
+// must not overwrite. Older archives predate the column, and have none.
+const columns = db.prepare(`PRAGMA table_info(characters)`).all().map((column) => column.name);
+const buildSources = ["pob_code", ...(columns.includes("source_payload") ? ["source_payload"] : [])]
+  .map((column) => `${column} IS NOT NULL`)
+  .join(" OR ");
+const findExisting = db.prepare(
+  `SELECT id, (${buildSources}) AS imported FROM characters
+    WHERE user_id = ? AND league_id = ? AND name = ?`,
+);
 const takenSlugs = db.prepare(`SELECT slug FROM characters WHERE user_id = ? AND league_id = ?`);
 const insert = db.prepare(`
   INSERT INTO characters
@@ -101,6 +114,7 @@ const drop = db.prepare(`
 
 let added = 0;
 let updated = 0;
+let skipped = 0;
 let removed = 0;
 
 const run = db.transaction(() => {
@@ -128,6 +142,10 @@ const run = db.transaction(() => {
 
     const existing = findExisting.get(user.id, league.id, entry.name);
     if (existing) {
+      if (existing.imported) {
+        skipped += 1;
+        continue;
+      }
       update.run(entry.className, entry.ascendancy, entry.level, entry.mainSkill, notes,
         entry.playedMinutes, data, existing.id);
       updated += 1;
@@ -145,4 +163,7 @@ run();
 
 if (reset) process.stdout.write(`removed ${removed} previously imported characters\n`);
 process.stdout.write(`imported ${added} characters, updated ${updated}\n`);
+if (skipped) {
+  process.stdout.write(`left ${skipped} alone: they already have a build this file must not replace\n`);
+}
 process.stdout.write(`archive: ${source}\n`);

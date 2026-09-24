@@ -233,19 +233,24 @@ on the server does the whole loop:
 ```
 
 It asks the running archive which accounts to read, runs the collector against each, and posts
-the result back. Matched characters get their gear, gems, tree jewels and passives replaced with
-what the game currently reports; their league, memories, `/played` time and main skill are left
-alone. `-Player dystopia` does one player, `-Full` refetches everything instead of only what
-changed.
+the result back. An archived character with no gear yet gets its gear, gems, tree jewels and
+passives filled in; its league, memories, `/played` time and main skill are left alone.
+`-Player dystopia` does one player, `-Full` refetches everything instead of only what changed.
 
-**It never creates a character.** A name the archive has never seen is printed at the end and
-skipped, because the league it belongs to is the one thing no export can answer and the script
-has nobody to ask. Those go through the upload page.
+**It never rewrites a character that already has a build, and never creates one.** Both need a
+person, for different reasons:
 
-That makes it safe to repeat, so it can go in Task Scheduler. Collection is incremental — after
-the first run it costs two requests, plus two per character that levelled, changed league or was
-played in the last twelve hours — and the collector paces itself against the rate-limit headers,
-so a quiet run is mostly waiting on purpose.
+- An archived character is a record of what it *was*. The account says what it *is*, and an old
+  character has long since had its gear pulled for the next build — refreshing it would replace
+  a finished record with an empty shell. Replacing one is done by name on the upload page, where
+  the box is unticked and labelled.
+- The league a character belongs to is the one thing no export can answer, so a name the archive
+  has never seen is printed at the end and skipped.
+
+So a second run writes nothing at all, which is what makes it safe to schedule. Collection is
+incremental — after the first run it costs two requests, plus two per character that levelled,
+changed league or was played in the last twelve hours — and the collector paces itself against
+the rate-limit headers, so a quiet run is mostly waiting on purpose.
 
 `collect/` holds one export per account between runs, which is what makes them incremental. It is
 not committed.

@@ -428,9 +428,13 @@ export async function importPoeExportAction(_prev: ImportState, formData: FormDa
     return { error: error instanceof Error ? error.message : "Could not read that export." };
   }
 
+  // Ticking a row that already holds a build is the manual order to replace it:
+  // the box is unticked by default and labelled, so it cannot happen by
+  // accident, which is the only way an archived character is ever rewritten.
   const { imported, created, touched } = applyImport(user, exported, {
     include: (name) => Boolean(formData.get(`include:${name}`)),
     leagueFor: (name) => text(formData, `league:${name}`) || null,
+    overwrite: (name) => Boolean(formData.get(`include:${name}`)),
   });
 
   revalidatePath("/");

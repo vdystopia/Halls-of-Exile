@@ -85,3 +85,52 @@ test("a record with neither class nor ascendancy still reads as something", () =
   assert.equal(classLine("Marauder", "Unknown"), "Marauder");
   assert.equal(classLine("Witch", "Occultist"), "Occultist · Witch");
 });
+
+/**
+ * The record is the starting point, never the last word. A character that has
+ * since been given a real build — from a share code or an account export — must
+ * survive a re-run of the importer untouched: the build this file would write
+ * has no items in it, so overwriting one would destroy the only copy of the
+ * gear and leave an empty shell behind. It is the same rule the unattended
+ * import follows, and it is easy to trip because the fix for something else is
+ * so often "just run seed:atlas again".
+ */
+test("re-running the importer leaves a character that has gear alone", async () => {
+  const { execFileSync } = await import("node:child_process");
+  const os = await import("node:os");
+
+  const archive = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "halls-atlas-")), "archive.db");
+  const run = () =>
+    execFileSync(process.execPath, [path.join(process.cwd(), "scripts", "seed-atlas.mjs")], {
+      env: { ...process.env, ARCHIVE_DB: archive },
+      encoding: "utf8",
+    });
+
+  // A migrated, empty archive is what the site leaves behind on first boot.
+  const { db } = await import("../src/lib/db");
+  process.env.ARCHIVE_DB = archive;
+  db.prepare("SELECT 1").get();
+
+  run();
+
+  // Stand in for a character that has since been imported with its gear.
+  const target = db
+    .prepare(`SELECT id FROM characters WHERE name = 'thelocalvoid' COLLATE NOCASE`)
+    .get() as { id: number } | undefined;
+  assert.ok(target, "the record should have created this character");
+  const build = JSON.stringify({ source: "poe-api", items: [{ id: 1, name: "Fate Wrap" }] });
+  db.prepare(`UPDATE characters SET data = ?, source_payload = '{}', api_version = 1 WHERE id = ?`).run(
+    build,
+    target.id,
+  );
+
+  const output = run();
+
+  const after = db.prepare(`SELECT data, source_payload FROM characters WHERE id = ?`).get(target.id) as {
+    data: string;
+    source_payload: string | null;
+  };
+  assert.equal(after.data, build, "the importer overwrote a character that had gear");
+  assert.ok(after.source_payload, "and it dropped the payload that build came from");
+  assert.match(output, /left \d+ alone/, "it should say what it left alone");
+});

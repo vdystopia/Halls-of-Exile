@@ -43,6 +43,81 @@ test("an export finds its player by the account it names", async () => {
  * character belongs to is the one thing no export can say, so an unattended
  * import fills in what already exists and reports the rest.
  */
+/**
+ * The rule the whole archive turns on. A character page records what a
+ * character *was*; the account says what it *is*, and for anything but the
+ * current league those differ by however much gear has been stripped off it
+ * since. An unattended run that overwrote an archived character would quietly
+ * replace a finished build with an empty shell, and the only copy of the
+ * original is the one it just destroyed.
+ */
+test("a character that already holds a build is never overwritten unasked", async () => {
+  const { applyImport } = await import("../src/lib/import");
+  const { db, user } = await setup("finalised-tester", null);
+  const exported = await fixture();
+
+  const league = db.prepare(`SELECT id FROM leagues WHERE game = 'poe1' LIMIT 1`).get() as { id: number };
+  const archived = JSON.stringify({ source: "poe-api", items: [{ id: 1, name: "The one it was finished with" }] });
+  db.prepare(
+    `INSERT INTO characters (user_id, league_id, slug, name, class_name, data, parser_version,
+                             source_payload, api_version)
+     VALUES (?, ?, 'thelocalvoid', 'TheLocalVoid', 'Witch', ?, 0, '{"account":"x"}', 1)`,
+  ).run(user.id, league.id, archived);
+
+  const result = applyImport(user, exported, { include: () => true, leagueFor: () => null });
+
+  assert.equal(result.imported, 0);
+  assert.deepEqual(result.written, []);
+  assert.deepEqual(result.skipped, ["TheLocalVoid"]);
+  const row = db.prepare(`SELECT data FROM characters WHERE user_id = ?`).get(user.id) as { data: string };
+  assert.equal(row.data, archived, "the archived build was overwritten");
+});
+
+/** A share code counts as a build too: it is not the export's to replace. */
+test("a character imported from a build code is left alone as well", async () => {
+  const { applyImport, planFor } = await import("../src/lib/import");
+  const { db, user } = await setup("pobcode-tester", null);
+  const exported = await fixture();
+
+  const league = db.prepare(`SELECT id FROM leagues WHERE game = 'poe1' LIMIT 1`).get() as { id: number };
+  db.prepare(
+    `INSERT INTO characters (user_id, league_id, slug, name, class_name, pob_code, data, parser_version)
+     VALUES (?, ?, 'thelocalvoid', 'TheLocalVoid', 'Witch', 'a-share-code', '{"source":"pob"}', 3)`,
+  ).run(user.id, league.id);
+
+  assert.deepEqual(applyImport(user, exported, { include: () => true, leagueFor: () => null }).skipped, [
+    "TheLocalVoid",
+  ]);
+  const row = planFor(user.id, exported, "token").rows.find((entry) => entry.name === "TheLocalVoid");
+  assert.equal(row?.finalised, true, "the page must show it as archived, and leave its box unticked");
+});
+
+/** Naming it is the manual order, and the only thing that overrides the rule. */
+test("naming a character is what replaces it", async () => {
+  const { applyImport } = await import("../src/lib/import");
+  const { db, user } = await setup("overwrite-tester", null);
+  const exported = await fixture();
+
+  const league = db.prepare(`SELECT id FROM leagues WHERE game = 'poe1' LIMIT 1`).get() as { id: number };
+  db.prepare(
+    `INSERT INTO characters (user_id, league_id, slug, name, class_name, data, parser_version,
+                             source_payload, api_version)
+     VALUES (?, ?, 'thelocalvoid', 'TheLocalVoid', 'Witch', '{"source":"poe-api","items":[]}', 0, '{}', 1)`,
+  ).run(user.id, league.id);
+
+  const result = applyImport(user, exported, {
+    include: () => true,
+    leagueFor: () => null,
+    overwrite: (name) => name === "TheLocalVoid",
+  });
+
+  assert.deepEqual(result.written, ["TheLocalVoid"]);
+  assert.deepEqual(result.skipped, []);
+  const row = db.prepare(`SELECT data FROM characters WHERE user_id = ?`).get(user.id) as { data: string };
+  const build = JSON.parse(row.data) as { items: unknown[] };
+  assert.ok(build.items.length > 10, "the named character was not replaced");
+});
+
 test("an unattended import creates nothing and names what it skipped", async () => {
   const { applyImport } = await import("../src/lib/import");
   const { db, user } = await setup("unattended-tester", null);
@@ -113,7 +188,11 @@ test("an import fills in gear without touching the record's own fields", async (
   assert.ok(build.slots["Body Armour"]);
 });
 
-/** Running it twice must be the same as running it once. */
+/**
+ * Running it twice must be the same as running it once — and now for a stronger
+ * reason than before: the first run fills a character, which finalises it, so
+ * the second has nothing it is allowed to touch.
+ */
 test("a second run changes nothing", async () => {
   const { applyImport } = await import("../src/lib/import");
   const { db, user } = await setup("idempotent-tester", null);
@@ -128,9 +207,13 @@ test("a second run changes nothing", async () => {
   const snapshot = () =>
     db.prepare(`SELECT name, class_name, level, data, source_payload FROM characters WHERE user_id = ?`).all(user.id);
 
-  applyImport(user, exported, { include: () => true, leagueFor: () => null });
+  const one = applyImport(user, exported, { include: () => true, leagueFor: () => null });
+  assert.deepEqual(one.written, ["TheLocalVoid"]);
   const first = JSON.stringify(snapshot());
-  applyImport(user, exported, { include: () => true, leagueFor: () => null });
+
+  const two = applyImport(user, exported, { include: () => true, leagueFor: () => null });
+  assert.deepEqual(two.written, [], "the second run must write nothing at all");
+  assert.deepEqual(two.skipped, ["TheLocalVoid"]);
   assert.equal(JSON.stringify(snapshot()), first);
 });
 
@@ -176,4 +259,33 @@ test("an ambiguous name is left alone rather than guessed at", async () => {
   const row = planFor(user.id, exported, "token").rows.find((entry) => entry.name === "TheLocalVoid");
   assert.equal(row?.action, "ambiguous");
   assert.equal(row?.matches, 2);
+});
+
+/**
+ * The hole the screenshot found. A guess at the origin league was offered on
+ * every row, including archived ones, and the box was ticked whenever there was
+ * a guess — so a character that was already finished sat pre-ticked, one click
+ * from being replaced. A league is only ever chosen for a character being
+ * created, so the guess belongs only on one.
+ */
+test("an archived character is never pre-ticked, whatever else is true of it", async () => {
+  const { planFor } = await import("../src/lib/import");
+  const { db, user } = await setup("suggestion-tester", null);
+  const exported = await fixture();
+
+  // BEVSTCHEESE is still in the league it was made in, so the collector calls
+  // its origin certain — and it is also already archived.
+  const certain = exported.characters.find((entry) => entry.originConfidence === "certain");
+  assert.ok(certain, "the fixture should hold a character the collector was certain about");
+
+  const league = db.prepare(`SELECT id FROM leagues WHERE game = 'poe1' LIMIT 1`).get() as { id: number };
+  db.prepare(
+    `INSERT INTO characters (user_id, league_id, slug, name, class_name, data, parser_version,
+                             source_payload, api_version)
+     VALUES (?, ?, 'archived', ?, 'Witch', '{"source":"poe-api","items":[]}', 0, '{}', 1)`,
+  ).run(user.id, league.id, certain.name);
+
+  const row = planFor(user.id, exported, "token").rows.find((entry) => entry.name === certain.name);
+  assert.equal(row?.finalised, true);
+  assert.equal(row?.suggested, null, "a matched row must carry no league suggestion to tick on");
 });

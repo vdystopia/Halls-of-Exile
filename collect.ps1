@@ -5,17 +5,27 @@
 .DESCRIPTION
     Reads each player's Path of Exile account out of the running archive, pulls
     that account off the game's own character endpoints, and posts the result
-    back. Matched characters get their gear, socketed gems, tree jewels and
-    passives replaced with what the game reports; their league, memories,
-    /played time and main skill are left alone.
+    back. An archived character that is still empty gets its gear, socketed
+    gems, tree jewels and passives filled in; its league, memories, /played time
+    and main skill are left alone.
+
+    It never touches a character that already holds a build. An archived
+    character is a record of what it was, and an old one has since had its gear
+    stripped for the next build - overwriting it would replace the record with
+    an empty shell. Replacing one is a deliberate act, done by name on the
+    upload page.
 
     A character the archive has never seen is named in the output and NOT
-    created: the league it belongs to is the one thing no export can say, and
-    this script has nobody to ask. Those go through the upload page at
+    created either: the league it belongs to is the one thing no export can say,
+    and this script has nobody to ask. Those go through the upload page at
     /players/<name>/import, where a league can be picked.
 
     Set a player's account under "Manage player" on their page first. Without
     one, that player is skipped.
+
+    Because it only ever fills, a second run over the same account writes
+    nothing. That is the point: it is safe to schedule, and safe to run when you
+    are not sure whether you already did.
 
     Collection is incremental. The first run for an account costs about two
     requests per character; later runs cost two, plus two for each character
@@ -148,7 +158,7 @@ foreach ($target in $targets) {
         continue
     }
 
-    Write-Note "$($response.updated) of $($response.characters) characters updated"
+    Write-Note "$($response.filled) filled in, $($response.alreadyArchived) already archived and left alone"
     if ($response.unmatched -gt 0) {
         Write-Note "$($response.unmatched) not in the archive: $($response.unmatchedNames -join ', ')"
         Write-Note "Add those at $Base/players/$username/import, where a league can be chosen."
