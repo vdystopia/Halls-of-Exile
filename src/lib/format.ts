@@ -62,13 +62,20 @@ export function leagueTitle(league: {
   return [league.patch || "###", league.name, trailing || null].filter(Boolean).join(" ");
 }
 
+/**
+ * What to call a character: its ascendancy, or its class where it has no
+ * ascendancy.
+ *
+ * Only ever one of the two. An ascendancy already names its class — every
+ * Elementalist is a Witch — so printing both says the same thing twice, and the
+ * class is the half that carries no information. A character with no ascendancy
+ * is simply called by its class, with nothing said about the absence: under
+ * level 68 there is nothing missing to remark on.
+ */
 export function classLine(className: string | null, ascendancy: string | null): string {
   // An imported record can know the class but not the ascendancy, or neither.
   const known = (value: string | null) => (value && value !== "Unknown" ? value : null);
-  const cls = known(className);
-  const asc = known(ascendancy);
-  if (asc && cls && asc !== cls) return `${asc} · ${cls}`;
-  return asc || cls || "class unknown";
+  return known(ascendancy) || known(className) || "class unknown";
 }
 
 /**

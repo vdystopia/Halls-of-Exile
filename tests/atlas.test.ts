@@ -83,7 +83,18 @@ test("the importer is plain JavaScript and ships in the image", () => {
 test("a record with neither class nor ascendancy still reads as something", () => {
   assert.equal(classLine("Unknown", "Unknown"), "class unknown");
   assert.equal(classLine("Marauder", "Unknown"), "Marauder");
-  assert.equal(classLine("Witch", "Occultist"), "Occultist · Witch");
+});
+
+/**
+ * One name, never two. An ascendancy already names its class — every Occultist
+ * is a Witch — so printing both says the same thing twice and spends the widest
+ * line on the page doing it. The class is only reached for when there is no
+ * ascendancy to use instead, and its absence is never remarked on: a character
+ * under level 68 has not lost anything.
+ */
+test("a character is called by its ascendancy, or its class where it has none", () => {
+  assert.equal(classLine("Witch", "Occultist"), "Occultist");
+  assert.equal(classLine("Witch", null), "Witch");
 });
 
 /**

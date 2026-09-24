@@ -1,4 +1,5 @@
 import type { GameId } from "./games/types";
+import type { LeagueModifierId } from "./league-modifiers";
 
 export type User = {
   id: number;
@@ -183,6 +184,12 @@ export type Character = {
    * build rather than a skill and so cannot resolve to a gem or its art.
    */
   skillGem: string | null;
+  /**
+   * How the league was played — Hardcore, SSF, Ruthless, Trade — as canonical
+   * ids. A league is one catalogue row but runs as several parallel variants,
+   * and which one a character played is a fact about the character.
+   */
+  leagueModifiers: LeagueModifierId[];
   notes: string | null;
   /** In-game /played time in minutes, entered by hand — no export carries it. */
   playedMinutes: number | null;

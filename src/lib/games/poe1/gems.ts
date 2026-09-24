@@ -1,5 +1,6 @@
 import artIndex from "./gem-art-index.json";
 import colors from "./gem-colors.json";
+import skills from "./skill-names.json";
 import type { Gem } from "../../types";
 
 /**
@@ -41,7 +42,15 @@ export function orderGems<T extends { support: boolean }>(gems: T[]): T[] {
   return [...gems.filter((gem) => !gem.support), ...gems.filter((gem) => gem.support)];
 }
 
-const ART = artIndex as Record<string, string>;
+const ART = artIndex.art as Record<string, string>;
+/**
+ * Gem art is a layered sheet, the way flask art is: the socket setting and the
+ * gem itself side by side in one strip, meant to be stacked into one icon. Most
+ * are. Every support's is a plain square, and so are two actives', so which is
+ * which is measured when the index is built rather than assumed from the path.
+ */
+const SINGLE_FRAME = new Set(artIndex.singleFrame as string[]);
+const SKILLS = skills as string[];
 
 // Matching is case-insensitive because the owner's own record writes a skill
 // the way it was spoken ("righteous fire"), not the way the game capitalises it.
@@ -69,19 +78,47 @@ for (const [key, value] of Object.entries(ART)) {
  * picture and RePoE does not list it, so it falls back to the base gem — the
  * same route gem-colors.json takes through the base's metadata id.
  */
-export function gemArt(skill?: string | null): { src: string; name: string } | null {
+export function gemArt(skill?: string | null): GemArt | null {
   const name = skill?.trim();
   if (!name) return null;
 
   const direct = ART[name] ?? ART_BY_LOWER[name.toLowerCase()];
-  if (direct) return { src: `/items/${direct}.png`, name };
+  if (direct) return found(direct, name);
 
   // "Frostblink of Wintry Blast" -> "Frostblink". Only one " of " is stripped,
   // and only when what precedes it is itself a gem.
   const transfigured = name.match(/^(.+?) of .+$/);
   if (transfigured) {
     const base = ART_BY_LOWER[transfigured[1].toLowerCase()];
-    if (base) return { src: `/items/${base}.png`, name };
+    if (base) return found(base, name);
   }
   return null;
+}
+
+/** The picture, and how many frames are stacked to draw it. */
+export type GemArt = { src: string; name: string; frames: number };
+
+function found(artPath: string, name: string): GemArt {
+  return { src: `/items/${artPath}.png`, name, frames: SINGLE_FRAME.has(artPath) ? 1 : 3 };
+}
+
+/**
+ * Every active skill gem in the game, for the form that asks which one a
+ * character was built around.
+ *
+ * Active skills only: supports are left out because no character was built
+ * around Increased Area of Effect, and putting 250 of them in the list would
+ * bury the 339 answers that are real.
+ *
+ * Resolved on the server and handed to the form as a prop, the arrangement
+ * `ItemTooltip` uses for its sections. 5 KB is a fraction of the indexes beside
+ * it, but the rule is the same one and there is no reason to spend it on every
+ * page that happens to mount a form.
+ *
+ * The list is a suggestion and not a constraint. A transfigured gem is not in
+ * it — RePoE does not carry them — so "Frostblink of Wintry Blast" has to be
+ * typed in full, and `gemArt` resolves it through its base gem anyway.
+ */
+export function skillNames(): string[] {
+  return SKILLS;
 }

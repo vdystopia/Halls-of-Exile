@@ -5,6 +5,7 @@ import { importPoeExportAction, previewPoeExportAction, type ImportState } from 
 import type { ImportRow } from "@/lib/import";
 import type { League } from "@/lib/types";
 import { FormError } from "./FormError";
+import { SkillOptions, SkillSelect } from "./SkillSelect";
 import { SubmitButton } from "./SubmitButton";
 
 const INITIAL: ImportState = {};
@@ -30,7 +31,16 @@ function rowKey(row: ImportRow) {
  * saving so much as a necessity — React resets the form when an action
  * returns, so by the time the second button is pressed the file input is empty.
  */
-export function ImportExportForm({ username, leagues }: { username: string; leagues: League[] }) {
+export function ImportExportForm({
+  username,
+  leagues,
+  skills,
+}: {
+  username: string;
+  leagues: League[];
+  /** Every active skill gem, read on the server. See `SkillSelect`. */
+  skills: string[];
+}) {
   const [preview, previewAction] = useActionState(previewPoeExportAction, INITIAL);
   const [result, importAction] = useActionState(importPoeExportAction, INITIAL);
   // Whichever ran last is what the page is showing.
@@ -46,6 +56,7 @@ export function ImportExportForm({ username, leagues }: { username: string; leag
 
   return (
     <form className="space-y-4">
+      <SkillOptions options={skills} />
       <input type="hidden" name="username" value={username} />
 
       <div className="panel space-y-3 p-4">
@@ -156,6 +167,31 @@ export function ImportExportForm({ username, leagues }: { username: string; leag
                     </span>
                   </label>
                 ) : null}
+
+                {/* The skill this character is remembered by. Offered on every
+                    row that can be imported, because it is the field that
+                    decides which gem is drawn beside the name and the export
+                    can only guess at it.
+
+                    It grows with the row: a transfigured gem's name runs to
+                    "Static Strike of Gathering Lightning", and a field showing
+                    half of it is a field nobody can check. */}
+                {row.action === "ambiguous" ? null : (
+                  <span className="flex min-w-56 flex-1 items-center gap-2">
+                    <SkillSelect
+                      name={`skill:${row.name}`}
+                      defaultValue={row.skill}
+                      aria-label={`Main skill for ${row.name}`}
+                      placeholder="Main skill"
+                      className={`input w-full px-2 py-1 text-xs ${row.skillGuessed ? "text-parchment/70 italic" : ""}`}
+                    />
+                    {row.skillGuessed ? (
+                      <span className="shrink-0 text-xs text-muted" title="The exporter's guess — check it">
+                        guessed
+                      </span>
+                    ) : null}
+                  </span>
+                )}
               </li>
             ))}
           </ul>

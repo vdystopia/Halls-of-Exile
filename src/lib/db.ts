@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS characters (
   level        INTEGER,
   main_skill   TEXT,
   skill_gem    TEXT,
+  league_modifiers TEXT,
   notes        TEXT,
   played_minutes INTEGER,
   is_favorite  INTEGER NOT NULL DEFAULT 0,
@@ -94,6 +95,7 @@ function migrate(db: Database.Database) {
     ["characters", "api_version", "INTEGER NOT NULL DEFAULT 0"],
     ["users", "poe_account", "TEXT"],
     ["characters", "skill_gem", "TEXT"],
+    ["characters", "league_modifiers", "TEXT"],
   ];
   for (const [table, column, definition] of additions) {
     const columns = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];

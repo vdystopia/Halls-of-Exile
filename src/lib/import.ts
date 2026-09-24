@@ -58,6 +58,15 @@ export type ImportRow = {
   /** The exporter's guess at the origin league, and how sure it was of it. */
   suggested?: string | null;
   confidence?: string | null;
+  /**
+   * What the skill field starts out holding: the skill already archived where
+   * there is one, and the exporter's guess where there is not. The guess is the
+   * active gem with the most supports linked to it, which is right often enough
+   * to be worth offering and wrong often enough that it is only ever a default.
+   */
+  skill?: string | null;
+  /** True where the field is showing a guess rather than something recorded. */
+  skillGuessed?: boolean;
 };
 
 export type ImportPlan = {
@@ -88,6 +97,7 @@ type MatchRow = {
   class_name: string;
   ascendancy: string | null;
   main_skill: string | null;
+  skill_gem: string | null;
   /** 1 once a build has come from somewhere — a share code or an export. */
   imported: number;
 };
@@ -97,7 +107,7 @@ export type ImportUser = { id: number; username: string };
 function matchesFor(userId: number, name: string): MatchRow[] {
   return db
     .prepare(
-      `SELECT c.id, c.slug, c.name, c.class_name, c.ascendancy, c.main_skill, l.game, l.slug AS league,
+      `SELECT c.id, c.slug, c.name, c.class_name, c.ascendancy, c.main_skill, c.skill_gem, l.game, l.slug AS league,
               (c.pob_code IS NOT NULL OR c.source_payload IS NOT NULL) AS imported
          FROM characters c JOIN leagues l ON l.id = c.league_id
         WHERE c.user_id = ? AND c.name = ? COLLATE NOCASE
@@ -219,6 +229,11 @@ export function planFor(userId: number, exported: PoeExport, token: string): Imp
       suggested:
         found.length === 0 && character.originConfidence === "certain" ? character.originPatch : null,
       confidence: character.originConfidence,
+      // What is already recorded wins over the guess, so opening the page and
+      // importing without touching anything cannot quietly replace an answer
+      // someone gave with one the exporter reached for.
+      skill: single?.skill_gem ?? character.mainSkill,
+      skillGuessed: !single?.skill_gem && Boolean(character.mainSkill),
     };
   });
   return { account: exported.account, generatedAt: exported.generatedAt, rows, token };
@@ -271,19 +286,29 @@ export function applyImport(
     leagueFor: (name: string) => string | null;
     /** Replace a character that already holds a build. Off unless asked. */
     overwrite?: (name: string) => boolean;
+    /**
+     * The skill a person chose for this character on the upload page, which is
+     * the answer this archive prefers over any derived one — that field is the
+     * primary source, and `skill_gem` is what draws the gem beside the name.
+     *
+     * Absent for the unattended caller, which has nobody to ask, so an
+     * automated import keeps the old behaviour: fill a blank from the
+     * exporter's guess and never touch one that is already answered.
+     */
+    skillFor?: (name: string) => string | null;
   },
 ): ImportResult {
   const update = db.prepare(
     `UPDATE characters
-        SET class_name = ?, ascendancy = ?, level = ?, main_skill = ?,
+        SET class_name = ?, ascendancy = ?, level = ?, main_skill = ?, skill_gem = ?,
             data = ?, source_payload = ?, api_version = ?
       WHERE id = ?`,
   );
   const insert = db.prepare(
     `INSERT INTO characters
-       (user_id, league_id, slug, name, class_name, ascendancy, level, main_skill, notes,
+       (user_id, league_id, slug, name, class_name, ascendancy, level, main_skill, skill_gem, notes,
         played_minutes, is_favorite, pob_code, pob_url, data, parser_version, source_payload, api_version)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, 0, NULL, NULL, ?, 0, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, 0, NULL, NULL, ?, 0, ?, ?)`,
   );
 
   let imported = 0;
@@ -315,11 +340,23 @@ export function applyImport(
         // was written down. The main skill does not: the record names the build
         // — "golemancer corrupting fever exsanguinate" — where the export can
         // only name the gem with the most supports linked to it.
+        //
+        // That gem is exactly what `skill_gem` is for, though, so an export is
+        // the natural way to fill one in: it names a real gem, spelled the way
+        // the game spells it. It only ever fills a blank — an answer typed in by
+        // hand is not a heuristic's to second-guess, the rule `rememberAccount`
+        // already follows.
+        // A skill chosen on the upload page is the one answer allowed to
+        // replace what is already recorded: a person looked at the row and
+        // said so. Without one this falls back to the old order — what is
+        // there, then the guess — so an unattended import still only fills.
+        const chosen = options.skillFor?.(character.name) ?? null;
         update.run(
           character.baseClass ?? known(existing.class_name) ?? "Unknown",
           character.ascendancy ?? known(existing.ascendancy),
           character.level,
           known(existing.main_skill) ?? build.mainSkill ?? null,
+          chosen ?? known(existing.skill_gem) ?? build.mainSkill ?? null,
           data,
           payload,
           POE_API_VERSION,
@@ -345,6 +382,7 @@ export function applyImport(
         character.ascendancy,
         character.level,
         build.mainSkill ?? null,
+        options.skillFor?.(character.name) ?? build.mainSkill ?? null,
         data,
         payload,
         POE_API_VERSION,

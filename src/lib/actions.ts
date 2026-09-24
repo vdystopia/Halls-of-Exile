@@ -13,6 +13,7 @@ import {
   type ImportPlan,
 } from "./import";
 import { parsePlayed } from "./format";
+import { formatLeagueModifiers } from "./league-modifiers";
 import { getLeague, getUser } from "./queries";
 import type { BuildData } from "./types";
 
@@ -126,6 +127,11 @@ export async function addCharacterAction(_prev: ActionState, formData: FormData)
   const ascendancy = text(formData, "ascendancy") || data.ascendClassName || null;
   const level = integer(formData, "level") ?? data.level ?? null;
   const mainSkill = text(formData, "mainSkill") || data.mainSkill || null;
+  // The exact gem, for the picture beside the name. A parsed build names one and
+  // spells it the way the game does; the field beside it takes the owner's own
+  // words for the build, which are prose and resolve to no gem at all.
+  const skillGem = text(formData, "skillGem") || (data.source === "manual" ? null : data.mainSkill) || null;
+  const leagueModifiers = formatLeagueModifiers(formData.getAll("leagueModifiers").map(String));
   const notes = text(formData, "notes") || null;
   const playedMinutes = parsePlayed(text(formData, "played"));
   const favorite = formData.get("favorite") ? 1 : 0;
@@ -142,9 +148,9 @@ export async function addCharacterAction(_prev: ActionState, formData: FormData)
 
   db.prepare(
     `INSERT INTO characters
-       (user_id, league_id, slug, name, class_name, ascendancy, level, main_skill, notes, played_minutes,
-        is_favorite, pob_code, pob_url, data, parser_version)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (user_id, league_id, slug, name, class_name, ascendancy, level, main_skill, skill_gem,
+        league_modifiers, notes, played_minutes, is_favorite, pob_code, pob_url, data, parser_version)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).run(
     user.id,
     league.id,
@@ -154,6 +160,8 @@ export async function addCharacterAction(_prev: ActionState, formData: FormData)
     ascendancy,
     level,
     mainSkill,
+    skillGem,
+    leagueModifiers,
     notes,
     playedMinutes,
     favorite,
@@ -200,6 +208,14 @@ export async function updateCharacterAction(_prev: ActionState, formData: FormDa
   const name = text(formData, "name");
   const level = integer(formData, "level");
   const notes = text(formData, "notes");
+  // Typed in by hand, so it is the last word: emptying the field clears the gem
+  // rather than restoring whatever was there before. A build pasted in at the
+  // same time fills it only when the field is left blank.
+  const skillGem = text(formData, "skillGem") || data?.mainSkill || null;
+  // Checkboxes, so the form states the whole set every time it is submitted and
+  // unticking the last one clears the column. There is nothing to merge with:
+  // an absent box means "not this", not "unknown".
+  const leagueModifiers = formatLeagueModifiers(formData.getAll("leagueModifiers").map(String));
   const playedMinutes = parsePlayed(text(formData, "played"));
   const favorite = formData.get("favorite") ? 1 : 0;
 
@@ -208,6 +224,8 @@ export async function updateCharacterAction(_prev: ActionState, formData: FormDa
        name        = COALESCE(NULLIF(?, ''), name),
        level       = COALESCE(?, level),
        main_skill  = COALESCE(NULLIF(?, ''), main_skill),
+       skill_gem   = ?,
+       league_modifiers = ?,
        class_name  = COALESCE(NULLIF(?, ''), class_name),
        ascendancy  = COALESCE(NULLIF(?, ''), ascendancy),
        notes          = ?,
@@ -222,6 +240,8 @@ export async function updateCharacterAction(_prev: ActionState, formData: FormDa
     name,
     data?.level ?? level,
     data?.mainSkill ?? "",
+    skillGem,
+    leagueModifiers,
     data?.className ?? "",
     data?.ascendClassName ?? "",
     notes || null,
@@ -435,6 +455,13 @@ export async function importPoeExportAction(_prev: ImportState, formData: FormDa
     include: (name) => Boolean(formData.get(`include:${name}`)),
     leagueFor: (name) => text(formData, `league:${name}`) || null,
     overwrite: (name) => Boolean(formData.get(`include:${name}`)),
+    // The field is on the page whether it was typed into or not, so what comes
+    // back is whatever the row was showing — the archived skill, the exporter's
+    // guess, or a correction. Emptying it deliberately is the one way to send
+    // nothing, and that falls back to the old order rather than clearing the
+    // column: this page adds characters, and nothing here should be able to
+    // strip a fact off one by being left blank.
+    skillFor: (name) => text(formData, `skill:${name}`) || null,
   });
 
   revalidatePath("/");

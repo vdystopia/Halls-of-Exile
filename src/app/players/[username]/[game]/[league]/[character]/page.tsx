@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AscendancyIcon } from "@/components/AscendancyIcon";
+import { AscendancyPortrait } from "@/components/AscendancyPortrait";
 import { CharacterAdmin } from "@/components/CharacterAdmin";
 import { CopyButton } from "@/components/CopyButton";
 import { GearGrid } from "@/components/GearGrid";
@@ -9,8 +9,9 @@ import { SkillGroups } from "@/components/SkillGroups";
 import { SkillIcon } from "@/components/SkillIcon";
 import { AllStatsTable, AttributeStrip, ResistanceBar, StatColumn } from "@/components/StatPanels";
 import { classLine, formatPlayed, leagueTitle, leagueWindow } from "@/lib/format";
+import { leagueModifierLabel, leagueModifierTitle } from "@/lib/league-modifiers";
 import { getCharacter, getLeague, getUser } from "@/lib/queries";
-import { gemArt } from "@/lib/games/poe1/gems";
+import { gemArt, skillNames } from "@/lib/games/poe1/gems";
 import { DEFENCE_PANELS, humanizeStatKey, OFFENCE_PANELS } from "@/lib/games/poe1/stats";
 
 export const dynamic = "force-dynamic";
@@ -59,37 +60,53 @@ export default async function CharacterPage({ params }: Props) {
       <header className="panel p-6">
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div className="flex items-start gap-4">
-            <div className="flex shrink-0 items-center gap-2 pt-1">
-              <AscendancyIcon ascendancy={character.ascendancy} />
-              <SkillIcon src={skillArt?.src} name={character.skillGem ?? skillArt?.name} />
-            </div>
+            {/* The class portrait, not the tree's emblem: see AscendancyPortrait.
+                Width is set and the height follows the art's own 530x245, so
+                nothing is cropped and no character is stretched. */}
+            <AscendancyPortrait ascendancy={character.ascendancy} className="aspect-[530/245] w-60" />
             <div>
-            <div className="flex flex-wrap items-baseline gap-3">
-              <h1 className="display text-3xl">{character.name}</h1>
-              {character.isFavorite ? <span className="text-lg text-gold">★</span> : null}
-            </div>
-            <p className="mt-2 text-parchment/80">
-              {`Level ${character.level ?? "Unknown"} · `}
-              {classLine(character.className, character.ascendancy)}
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {character.skillGem ? (
-                <span className="tag border-rarity-gem/60 text-rarity-gem">{character.skillGem}</span>
-              ) : null}
-              {character.mainSkill && character.mainSkill !== character.skillGem ? (
-                <span className="tag text-parchment/70 italic">{character.mainSkill}</span>
-              ) : null}
-              <span className="tag">
-                {leagueTitle(league)}
-              </span>
-              {played ? <span className="tag">/played {played}</span> : null}
-              {build.bandit ? <span className="tag">bandit: {build.bandit}</span> : null}
-              {build.pobVersion ? <span className="tag">PoB target {build.pobVersion}</span> : null}
-              {tree?.treeVersion ? <span className="tag">tree {tree.treeVersion}</span> : null}
+              <div className="flex flex-wrap items-baseline gap-3">
+                <h1 className="display text-3xl">{character.name}</h1>
+                {character.isFavorite ? <span className="text-lg text-gold">★</span> : null}
+              </div>
+              {/* The ascendancy alone — it already names the class. A character
+                  without one is called by its class, and the absence is not
+                  remarked on. */}
+              <p className="mt-1 text-parchment/80">
+                {`Level ${character.level ?? "Unknown"} · `}
+                {classLine(character.className, character.ascendancy)}
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {character.skillGem ? (
+                  <span className="tag border-rarity-gem/60 text-rarity-gem">{character.skillGem}</span>
+                ) : null}
+                {character.mainSkill && character.mainSkill !== character.skillGem ? (
+                  <span className="tag text-parchment/70 italic">{character.mainSkill}</span>
+                ) : null}
+                <SkillIcon
+                  src={skillArt?.src}
+                  name={character.skillGem ?? skillArt?.name}
+                  frames={skillArt?.frames}
+                  size={28}
+                />
+                {played ? <span className="tag">/played {played}</span> : null}
+                {build.bandit ? <span className="tag">bandit: {build.bandit}</span> : null}
               </div>
             </div>
           </div>
           <div className="flex flex-col items-end gap-2 text-right">
+            <span className="tag">{leagueTitle(league)}</span>
+            {/* Which variant of that league it was played in. One league is
+                several parallel leagues, and only the character knows which. */}
+            {character.leagueModifiers.length ? (
+              <div className="flex flex-wrap justify-end gap-2">
+                {character.leagueModifiers.map((modifier) => (
+                  <span key={modifier} className="tag" title={leagueModifierTitle(modifier)}>
+                    {leagueModifierLabel(modifier)}
+                  </span>
+                ))}
+              </div>
+            ) : null}
             <p className="text-xs text-muted">
               {leagueWindow(league.startDate, league.endDate, Boolean(league.endDateEstimated))}
             </p>
@@ -257,6 +274,9 @@ export default async function CharacterPage({ params }: Props) {
         slug={character.slug}
         name={character.name}
         level={character.level}
+        skillGem={character.skillGem}
+        leagueModifiers={character.leagueModifiers}
+        skills={skillNames()}
         notes={character.notes}
         played={played}
         isFavorite={character.isFavorite === 1}

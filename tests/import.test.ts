@@ -328,3 +328,83 @@ test("an account another player holds is never taken", async () => {
   };
   assert.equal(row.poe_account, null);
 });
+
+/**
+ * The upload page's skill field is the primary source for what a character was
+ * built around. It is the one answer allowed to replace a `skill_gem` that is
+ * already recorded, because a person looked at the row and said so — everything
+ * else about an archived character is still left alone.
+ */
+test("a skill chosen on the upload page wins over the exporter's guess", async () => {
+  const { applyImport } = await import("../src/lib/import");
+  const { db, user } = await setup("skill-tester", null);
+  const exported = await fixture();
+
+  const league = db.prepare(`SELECT id FROM leagues WHERE game = 'poe1' LIMIT 1`).get() as { id: number };
+  db.prepare(
+    `INSERT INTO characters (user_id, league_id, slug, name, class_name, ascendancy, level, main_skill,
+                             skill_gem, notes, played_minutes, data, parser_version)
+     VALUES (?, ?, 'thelocalvoid', 'TheLocalVoid', 'Unknown', 'Unknown', 70,
+             'detonate dead ignite', 'Detonate Dead', NULL, NULL, '{}', 0)`,
+  ).run(user.id, league.id);
+
+  applyImport(user, exported, {
+    include: () => true,
+    leagueFor: () => null,
+    skillFor: () => "Volatile Dead",
+  });
+
+  const row = db
+    .prepare(`SELECT main_skill, skill_gem FROM characters WHERE user_id = ? AND name = 'TheLocalVoid'`)
+    .get(user.id) as { main_skill: string; skill_gem: string };
+  assert.equal(row.skill_gem, "Volatile Dead");
+  // The prose is still the record's own and is not the form's to rewrite.
+  assert.equal(row.main_skill, "detonate dead ignite");
+});
+
+/**
+ * The unattended caller passes no `skillFor`, because it has nobody to ask.
+ * Without one the old order holds: fill a blank, never touch an answer.
+ */
+test("an unattended import leaves a recorded skill alone", async () => {
+  const { applyImport } = await import("../src/lib/import");
+  const { db, user } = await setup("unattended-skill-tester", null);
+  const exported = await fixture();
+
+  const league = db.prepare(`SELECT id FROM leagues WHERE game = 'poe1' LIMIT 1`).get() as { id: number };
+  db.prepare(
+    `INSERT INTO characters (user_id, league_id, slug, name, class_name, ascendancy, level, main_skill,
+                             skill_gem, notes, played_minutes, data, parser_version)
+     VALUES (?, ?, 'thelocalvoid', 'TheLocalVoid', 'Unknown', 'Unknown', 70, NULL,
+             'Detonate Dead', NULL, NULL, '{}', 0)`,
+  ).run(user.id, league.id);
+
+  applyImport(user, exported, { include: () => true, leagueFor: () => null });
+
+  const row = db
+    .prepare(`SELECT skill_gem FROM characters WHERE user_id = ? AND name = 'TheLocalVoid'`)
+    .get(user.id) as { skill_gem: string };
+  assert.equal(row.skill_gem, "Detonate Dead");
+});
+
+/** A blank field is not an instruction to forget what the archive already knows. */
+test("an empty skill field does not clear a recorded skill", async () => {
+  const { applyImport } = await import("../src/lib/import");
+  const { db, user } = await setup("blank-skill-tester", null);
+  const exported = await fixture();
+
+  const league = db.prepare(`SELECT id FROM leagues WHERE game = 'poe1' LIMIT 1`).get() as { id: number };
+  db.prepare(
+    `INSERT INTO characters (user_id, league_id, slug, name, class_name, ascendancy, level, main_skill,
+                             skill_gem, notes, played_minutes, data, parser_version)
+     VALUES (?, ?, 'thelocalvoid', 'TheLocalVoid', 'Unknown', 'Unknown', 70, NULL,
+             'Detonate Dead', NULL, NULL, '{}', 0)`,
+  ).run(user.id, league.id);
+
+  applyImport(user, exported, { include: () => true, leagueFor: () => null, skillFor: () => null });
+
+  const row = db
+    .prepare(`SELECT skill_gem FROM characters WHERE user_id = ? AND name = 'TheLocalVoid'`)
+    .get(user.id) as { skill_gem: string };
+  assert.equal(row.skill_gem, "Detonate Dead");
+});

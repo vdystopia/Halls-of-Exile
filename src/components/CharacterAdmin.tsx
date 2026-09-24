@@ -2,7 +2,9 @@
 
 import { useActionState } from "react";
 import { deleteCharacterAction, updateCharacterAction, type ActionState } from "@/lib/actions";
+import { LEAGUE_MODIFIERS, type LeagueModifierId } from "@/lib/league-modifiers";
 import { FormError, FormSuccess } from "./FormError";
+import { SkillOptions, SkillSelect } from "./SkillSelect";
 import { SubmitButton } from "./SubmitButton";
 
 const INITIAL: ActionState = {};
@@ -14,6 +16,9 @@ export function CharacterAdmin({
   slug,
   name,
   level,
+  skillGem,
+  leagueModifiers,
+  skills,
   notes,
   played,
   isFavorite,
@@ -24,6 +29,10 @@ export function CharacterAdmin({
   slug: string;
   name: string;
   level: number | null;
+  skillGem: string | null;
+  leagueModifiers: LeagueModifierId[];
+  /** Every active skill gem, read on the server. See `SkillSelect`. */
+  skills: string[];
   notes: string | null;
   played: string | null;
   isFavorite: boolean;
@@ -39,6 +48,7 @@ export function CharacterAdmin({
       </summary>
       <div className="space-y-6 p-4">
         <form action={formAction} className="space-y-4">
+          <SkillOptions options={skills} />
           <input type="hidden" name="username" value={username} />
           <input type="hidden" name="game" value={game} />
           <input type="hidden" name="league" value={league} />
@@ -64,6 +74,47 @@ export function CharacterAdmin({
                 defaultValue={level ?? ""}
               />
             </div>
+          </div>
+          <div>
+            <label className="label" htmlFor="edit-skill">
+              Skill gem
+            </label>
+            <SkillSelect
+              id="edit-skill"
+              name="skillGem"
+              defaultValue={skillGem}
+              placeholder="Start typing a skill…"
+            />
+            <p className="mt-1 text-xs text-muted">
+              The skill the character was built around, picked from the list — that is what draws the gem
+              beside its name. A transfigured gem is not in the list and can be typed in full; a name the game
+              does not have draws nothing. Emptying this clears it.
+            </p>
+          </div>
+          <div>
+            <span className="label">How the league was played</span>
+            <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
+              {LEAGUE_MODIFIERS.map((modifier) => (
+                <label
+                  key={modifier.id}
+                  className="flex items-center gap-2 text-sm text-muted"
+                  title={modifier.title}
+                >
+                  <input
+                    type="checkbox"
+                    name="leagueModifiers"
+                    value={modifier.id}
+                    defaultChecked={leagueModifiers.includes(modifier.id)}
+                    className="accent-[#c8aa6e]"
+                  />
+                  {modifier.label}
+                </label>
+              ))}
+            </div>
+            <p className="mt-1 text-xs text-muted">
+              One league runs as several at once — the same league, played under different rules. No export can
+              say which, so this is the only place it is recorded.
+            </p>
           </div>
           <div>
             <label className="label" htmlFor="edit-played">

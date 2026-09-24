@@ -217,12 +217,63 @@ and its payload is stored in `characters.source_payload` for the same reason.
   the display name, because the two differ where a class was renamed (id `Raider`, name
   `Warden`) and which one an export carries depends on its Path of Building version. A
   character with no ascendancy renders no emblem rather than a placeholder.
+- **The emblem and the class portrait are two pictures for two jobs.** The emblem above is
+  composed with its lower half empty so the passive tree's lines can run through it, which is
+  right on the tree and right at list size and mostly dead space at header size. So the
+  character page header draws the wide class portrait instead, and `CharacterCard` keeps the
+  emblem. Grinding Gear Games publish no index of the portraits, so `npm run ascendancy:art`
+  resolves `File:<Ascendancy> ascendancy class.png` through the Path of Exile Wiki's MediaWiki
+  API — never by guessing a URL — converts each to WebP and writes
+  `src/lib/games/poe1/ascendancy-portraits.json` beside them. Which ascendancies to ask for
+  comes from `ascendancy-icons.json`, so a new one is picked up by `npm run ascendancy:index`
+  and this follows. **Unlike item art these are committed**, because a missing item picture is
+  a silhouette in a grid of eighty and a missing portrait is a hole in the first thing on the
+  page; the whole set is 432 KB and a test fails if any ascendancy lacks one. Raider and Warden
+  share one file, the way they share one emblem.
+- **A character is called by its ascendancy, or its class where it has none.** `classLine`
+  returns one name, never two: an ascendancy already names its class, so "Occultist · Witch"
+  says the same thing twice and spends the widest line on the page doing it. A character with
+  no ascendancy is called by its class and nothing is said about the absence — under level 68
+  there is nothing missing to remark on.
+- **How a league was played is a fact about the character, not the league.** Every league opens
+  as several parallel leagues — Settlers, Hardcore Settlers, SSF Settlers — so the catalogue
+  holds one row and `characters.league_modifiers` holds which of them a character played in, as
+  a set, because Hardcore and SSF combine. `src/lib/league-modifiers.ts` owns the vocabulary and
+  the canonical order, shared across both games because these are labels and no rule branches on
+  them. **Nothing infers them.** The collector does record `league_flags` and grades them the
+  way it grades the origin league, but the flags describe the league a character sits in *now*:
+  migration rewrites exactly the fact in question, and a Hardcore character that died reports
+  `hardcore: false`. Only a `certain` grade would be safe, and that covers only characters still
+  in their original league. They are set by hand or not at all.
 - **A gem's colour comes from an index, and no gem leads its group.** Path of Building's
   export does not carry a gem's attribute, so `src/lib/games/poe1/gem-colors.json` (from RePoE via
   `npm run gems:index`) maps metadata id and name to r/g/b/w; supports are indexed with and
   without the trailing "Support", and a transfigured gem resolves through its base gem's id.
   A socket group has no primary skill — four golems are four equal actives — so `orderGems`
   puts every active above every support and nothing is promoted to a title.
+- **Gem art is a layered sheet, the way flask art is.** A gem's picture is a 143x48 strip
+  holding the socket setting and the gem itself, meant to be stacked into one icon; drawn flat
+  it reads as two smudges at the edges of the tile. `SkillIcon` composites it the way
+  `GearSlot` composites a flask. The frame count is **measured** when `npm run gems:art` builds
+  the index — a 24-byte range request per image for the PNG header — and not inferred from the
+  path, because every support's art and two actives' (Quickstep, Hex Spreading) are plain
+  squares, and stacking one of those draws it at triple zoom. `gem-art-index.json` is therefore
+  `{ art, singleFrame }` rather than a flat map.
+- **The skill field is the primary source for what a character was built around.** The add,
+  edit and upload pages all offer `SkillSelect`: a native `<input list>` against one
+  `<datalist>` of the 339 active skill gems, generated into
+  `src/lib/games/poe1/skill-names.json` by `npm run gems:index` beside the colours, from the
+  same snapshot. Supports are excluded — nobody built a character around Increased Area of
+  Effect — and the list suggests without constraining, because RePoE does not publish
+  transfigured gems and "Frostblink of Wintry Blast" has to be typeable. The list is read on
+  the server and handed over as a prop, and `tests/client-bundle.test.ts` fails if `gems.ts` or
+  the list reaches the browser. On the upload page every row carries the field, pre-filled with
+  the archived skill where there is one and the exporter's guess where there is not, labelled
+  `guessed` — the guess is the active gem with the most supports linked to it and is often
+  wrong (it offers `Portal`). A skill chosen there is the one answer allowed to replace a
+  recorded `skill_gem`. **The unattended caller passes no `skillFor`**, so `/api/import/poe`
+  keeps the old order: fill a blank, never touch an answer. An empty field is not a request to
+  clear one.
 - **There are two sources for a build, and they know different things.** A Path of Building
   export is an engine's opinion: it computes life, resistances and damage, and writes none of
   the game's own numbers into an item. An export from the game's character endpoints is the

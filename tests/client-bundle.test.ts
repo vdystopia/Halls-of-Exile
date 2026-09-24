@@ -73,3 +73,26 @@ test("the gem colour index never reaches the browser", () => {
   const offenders = [...clientGraph()].filter((file) => /gem-colors\.json$/.test(file));
   assert.deepEqual(offenders.map((file) => path.relative(process.cwd(), file)), []);
 });
+
+/**
+ * The skill list is smaller than the two above — 5 KB against 223 and 58 — but
+ * it is the same rule and there is no reason to spend it on every page that
+ * mounts a form. `SkillSelect` takes the options as a prop; the pages read them
+ * on the server, the way `ItemTooltip` takes finished sections.
+ */
+test("the skill name list never reaches the browser", () => {
+  const offenders = [...clientGraph()].filter((file) => /skill-names\.json$/.test(file));
+  assert.deepEqual(offenders.map((file) => path.relative(process.cwd(), file)), []);
+});
+
+/**
+ * The gem art index is 102 KB and `gemArt` reads it to resolve the picture
+ * beside a character's name. It is resolved in a server component and handed
+ * over as a finished path, so the index itself must stay out of the bundle —
+ * and `gems.ts` now also exports `skillNames`, which a form is the obvious
+ * thing to want to import directly.
+ */
+test("the gem module never reaches the browser", () => {
+  const offenders = [...clientGraph()].filter((file) => /poe1[\/]gems\.ts$/.test(file));
+  assert.deepEqual(offenders.map((file) => path.relative(process.cwd(), file)), []);
+});

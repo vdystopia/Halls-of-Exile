@@ -5,7 +5,7 @@ import type { Character } from "./types";
 export function getCharacterCountByClass(characters: Character[]): { label: string; count: number }[] {
   const counts = new Map<string, number>();
   for (const character of characters) {
-    const label = classLine(character.className, character.ascendancy).split(" · ")[0];
+    const label = classLine(character.className, character.ascendancy);
     counts.set(label, (counts.get(label) ?? 0) + 1);
   }
   return [...counts.entries()]

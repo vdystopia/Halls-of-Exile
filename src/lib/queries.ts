@@ -1,5 +1,6 @@
 import { db } from "./db";
 import { emptyBuild } from "./games/poe1/pob";
+import { parseLeagueModifiers } from "./league-modifiers";
 import type { BuildData, Character, League, LeagueWithProgress, User } from "./types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -53,6 +54,7 @@ function mapCharacter(row: Row): Character {
     level: row.level,
     mainSkill: row.main_skill,
     skillGem: row.skill_gem ?? null,
+    leagueModifiers: parseLeagueModifiers(row.league_modifiers),
     notes: row.notes,
     playedMinutes: row.played_minutes ?? null,
     isFavorite: row.is_favorite,

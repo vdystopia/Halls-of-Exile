@@ -104,7 +104,7 @@ async function main() {
   const paths = [
     ...new Set([
       ...entries.map((entry) => entry.art),
-      ...Object.values(gemArt as Record<string, string>),
+      ...Object.values(gemArt.art as Record<string, string>),
     ]),
   ];
   process.stdout.write(

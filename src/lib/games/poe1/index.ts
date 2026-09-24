@@ -1,5 +1,5 @@
 import type { GameModule } from "../types";
-import { ascendancyIcon } from "./ascendancy";
+import { ascendancyIcon, ascendancyPortrait } from "./ascendancy";
 import { gemColor } from "./gems";
 import { findItemArt } from "./item-art";
 import { FLASK_SLOTS, PAPER_DOLL, SOCKET_COLOR_CLASS } from "./items";
@@ -23,4 +23,5 @@ export const poe1: GameModule = {
   findItemArt,
   gemColor,
   ascendancyIcon,
+  ascendancyPortrait,
 };

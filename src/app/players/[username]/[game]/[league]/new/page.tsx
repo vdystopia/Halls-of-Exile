@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddCharacterForm } from "@/components/AddCharacterForm";
 import { leagueTitle, leagueWindow } from "@/lib/format";
+import { skillNames } from "@/lib/games/poe1/gems";
 import { getLeague, getUser } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +29,14 @@ export default async function NewCharacterPage({ params }: Props) {
           {user.username} · {leagueTitle(league)} · {leagueWindow(league.startDate, league.endDate, Boolean(league.endDateEstimated))}
         </p>
       </div>
-      <AddCharacterForm username={user.username} game={league.game} league={league.slug} />
+      {/* Read here rather than in the form: the list is generated from RePoE
+          and stays on the server, the rule the art and colour indexes follow. */}
+      <AddCharacterForm
+        username={user.username}
+        game={league.game}
+        league={league.slug}
+        skills={skillNames()}
+      />
     </div>
   );
 }

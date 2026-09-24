@@ -10,7 +10,11 @@ import { findItemArt } from "../src/lib/games/poe1/item-art";
  * as bad test data — that happened once with "Zealot Gauntlets".
  */
 test("every base item in the demo seed is a real one", () => {
-  const source = fs.readFileSync("scripts/seed-demo.ts", "utf8");
+  // Line endings are normalised first rather than matched around. The owner's
+  // checkout is Windows and git hands it CRLF, which made a `\n` in the pattern
+  // fail to match anything at all and the test report "has the seed format
+  // changed?" on a machine where nothing had.
+  const source = fs.readFileSync("scripts/seed-demo.ts", "utf8").replace(/\r\n/g, "\n");
   const bases = new Set<string>();
   for (const match of source.matchAll(/Rarity: (RARE|UNIQUE|MAGIC)\n([^\n]+)\n([^\n]+)/g)) {
     bases.add((match[1] === "MAGIC" ? match[2] : match[3]).trim());

@@ -91,14 +91,25 @@ const findExisting = db.prepare(
     WHERE user_id = ? AND league_id = ? AND name = ?`,
 );
 const takenSlugs = db.prepare(`SELECT slug FROM characters WHERE user_id = ? AND league_id = ?`);
+// `skillGem` is the exact name of the skill, where the record happens to name
+// one; `mainSkill` beside it is the record's own prose and names a build. Most
+// entries have only the prose, and an archive older than the column has nowhere
+// to put either, so both the column and the field are optional here.
+const hasSkillGem = columns.includes("skill_gem");
+const gemColumn = hasSkillGem ? "skill_gem, " : "";
+const gemValue = hasSkillGem ? "?, " : "";
 const insert = db.prepare(`
   INSERT INTO characters
-    (user_id, league_id, slug, name, class_name, ascendancy, level, main_skill, notes,
+    (user_id, league_id, slug, name, class_name, ascendancy, level, main_skill, ${gemColumn}notes,
      played_minutes, is_favorite, pob_code, pob_url, data, parser_version)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, NULL, NULL, ?, 0)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ${gemValue}?, ?, 0, NULL, NULL, ?, 0)
 `);
+// A re-run rewrites what the record holds, but the record does not hold a gem
+// for most characters — and one typed into the admin form must survive, the way
+// gear does. So this fills a blank and never clears one.
 const update = db.prepare(`
-  UPDATE characters SET class_name = ?, ascendancy = ?, level = ?, main_skill = ?, notes = ?,
+  UPDATE characters SET class_name = ?, ascendancy = ?, level = ?, main_skill = ?,
+                        ${hasSkillGem ? "skill_gem = COALESCE(?, skill_gem)," : ""} notes = ?,
                         played_minutes = ?, data = ?
   WHERE id = ?
 `);
@@ -146,7 +157,8 @@ const run = db.transaction(() => {
         skipped += 1;
         continue;
       }
-      update.run(entry.className, entry.ascendancy, entry.level, entry.mainSkill, notes,
+      update.run(entry.className, entry.ascendancy, entry.level, entry.mainSkill,
+        ...(hasSkillGem ? [entry.skillGem ?? null] : []), notes,
         entry.playedMinutes, data, existing.id);
       updated += 1;
       continue;
@@ -155,7 +167,8 @@ const run = db.transaction(() => {
     let slug = slugify(entry.name);
     for (let suffix = 2; taken.includes(slug); suffix += 1) slug = `${slugify(entry.name)}-${suffix}`;
     insert.run(user.id, league.id, slug, entry.name, entry.className, entry.ascendancy, entry.level,
-      entry.mainSkill, notes, entry.playedMinutes, data);
+      entry.mainSkill, ...(hasSkillGem ? [entry.skillGem ?? null] : []), notes,
+      entry.playedMinutes, data);
     added += 1;
   }
 });

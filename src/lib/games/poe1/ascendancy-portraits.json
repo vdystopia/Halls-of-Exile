@@ -1,0 +1,28 @@
+{
+  "width": 530,
+  "height": 245,
+  "portraits": {
+    "Ascendant": "ascendant",
+    "Assassin": "assassin",
+    "Berserker": "berserker",
+    "Champion": "champion",
+    "Chieftain": "chieftain",
+    "Deadeye": "deadeye",
+    "Elementalist": "elementalist",
+    "Gladiator": "gladiator",
+    "Guardian": "guardian",
+    "Hierophant": "hierophant",
+    "Inquisitor": "inquisitor",
+    "Juggernaut": "juggernaut",
+    "Luminary": "luminary",
+    "Necromancer": "necromancer",
+    "Occultist": "occultist",
+    "Pathfinder": "pathfinder",
+    "Raider": "warden",
+    "Reliquarian": "reliquarian",
+    "Saboteur": "saboteur",
+    "Slayer": "slayer",
+    "Trickster": "trickster",
+    "Warden": "warden"
+  }
+}

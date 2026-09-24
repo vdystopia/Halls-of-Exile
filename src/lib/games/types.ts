@@ -1,6 +1,6 @@
 import type { BuildData, Gem, ParsedItem } from "../types";
 import type { ItemArt } from "./poe1/item-art";
-import type { AscendancyIcon } from "./poe1/ascendancy";
+import type { AscendancyIcon, AscendancyPortrait } from "./poe1/ascendancy";
 import type { GemColor } from "./poe1/gems";
 import type { DollCell } from "./poe1/items";
 import type { StatPanel } from "./poe1/stats";
@@ -56,5 +56,8 @@ export type GameModule = {
   buildTooltip: (item: ParsedItem) => TooltipSection[];
   findItemArt: (item: { name: string; base: string; rarity?: string }) => ItemArt | null;
   gemColor: (gem: Pick<Gem, "name" | "gemId">) => GemColor | null;
+  /** The round emblem off the passive tree, for a character in a list. */
   ascendancyIcon: (ascendancy?: string | null) => AscendancyIcon | null;
+  /** The wide class portrait, for the character page header. */
+  ascendancyPortrait: (ascendancy?: string | null) => AscendancyPortrait | null;
 };

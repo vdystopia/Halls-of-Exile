@@ -2,8 +2,10 @@
 
 import { useActionState, useState } from "react";
 import { addCharacterAction, type ActionState } from "@/lib/actions";
+import { LEAGUE_MODIFIERS } from "@/lib/league-modifiers";
 import { ASCENDANCIES, CLASSES } from "@/lib/leagues";
 import { FormError } from "./FormError";
+import { SkillOptions, SkillSelect } from "./SkillSelect";
 import { SubmitButton } from "./SubmitButton";
 
 const INITIAL: ActionState = {};
@@ -12,10 +14,13 @@ export function AddCharacterForm({
   username,
   game,
   league,
+  skills,
 }: {
   username: string;
   game: string;
   league: string;
+  /** Every active skill gem, read on the server. See `SkillSelect`. */
+  skills: string[];
 }) {
   const [state, formAction] = useActionState(addCharacterAction, INITIAL);
   const [mode, setMode] = useState<"pob" | "manual">("pob");
@@ -23,6 +28,7 @@ export function AddCharacterForm({
 
   return (
     <form action={formAction} className="space-y-6">
+      <SkillOptions options={skills} />
       <input type="hidden" name="username" value={username} />
       <input type="hidden" name="game" value={game} />
       <input type="hidden" name="league" value={league} />
@@ -97,6 +103,7 @@ export function AddCharacterForm({
               Main skill
             </label>
             <input id="mainSkill" name="mainSkill" className="input" />
+            <p className="mt-1 text-xs text-muted">The build, in your own words.</p>
           </div>
           <div>
             <label className="label" htmlFor="level">
@@ -144,6 +151,39 @@ export function AddCharacterForm({
           <input id="played" name="played" className="input" />
           <p className="mt-1 text-xs text-muted">
             From <span className="font-mono">/played</span> in game. &ldquo;5d 3h&rdquo; or &ldquo;12h30m&rdquo;.
+          </p>
+        </div>
+        {/* Outside the two modes, because it applies to both. An import names
+            the gem its own heuristic picked; this is where that gets corrected,
+            and for a character entered by hand it is the only source there is. */}
+        <div>
+          <label className="label" htmlFor="skillGem">
+            Skill gem <span className="text-muted/60">(optional)</span>
+          </label>
+          <SkillSelect id="skillGem" name="skillGem" placeholder="Start typing a skill…" />
+          <p className="mt-1 text-xs text-muted">
+            The gem itself, picked from the list. It draws the picture beside the character&rsquo;s name. A
+            transfigured gem is not in the list and can be typed in full.
+          </p>
+        </div>
+        <div>
+          <span className="label">How the league was played</span>
+          <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
+            {LEAGUE_MODIFIERS.map((modifier) => (
+              <label key={modifier.id} className="flex items-center gap-2 text-sm text-muted" title={modifier.title}>
+                <input
+                  type="checkbox"
+                  name="leagueModifiers"
+                  value={modifier.id}
+                  className="accent-[#c8aa6e]"
+                />
+                {modifier.label}
+              </label>
+            ))}
+          </div>
+          <p className="mt-1 text-xs text-muted">
+            One league runs as several at once. Nothing can work this out from an export, so it is only ever
+            recorded here.
           </p>
         </div>
         <div className="sm:col-span-2">

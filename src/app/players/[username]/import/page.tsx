@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ImportExportForm } from "@/components/ImportExportForm";
+import { skillNames } from "@/lib/games/poe1/gems";
 import { getUser, listAllLeagues } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -45,7 +46,7 @@ export default async function ImportPage({ params }: Props) {
         </p>
       </header>
 
-      <ImportExportForm username={user.username} leagues={leagues} />
+      <ImportExportForm username={user.username} leagues={leagues} skills={skillNames()} />
     </div>
   );
 }

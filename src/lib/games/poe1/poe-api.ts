@@ -55,6 +55,13 @@ export type PoeExportCharacter = {
   /** The league the exporter guessed the character was made in, and how sure it is. */
   originPatch: string | null;
   originConfidence: string | null;
+  /**
+   * The exporter's guess at the skill: the active gem with the most supports
+   * linked to it. A guess, and frequently the wrong one — a Vaal variant, or a
+   * curse in a six-link — so it is offered as a form default and never written
+   * without someone having seen it.
+   */
+  mainSkill: string | null;
   raw: Json;
 };
 
@@ -98,6 +105,7 @@ export function readPoeExport(text: string): PoeExport {
       lastLogin: str(character?.last_login),
       originPatch: str(character?.origin_league?.version),
       originConfidence: str(character?.origin_league?.confidence),
+      mainSkill: str(character?.main_skill?.skill),
       raw: character,
     })),
   };
@@ -579,6 +587,7 @@ export function rebuildFromStoredExport(stored: StoredPoeExport): BuildData {
       lastLogin: str(character.last_login),
       originPatch: str(character.origin_league?.version),
       originConfidence: str(character.origin_league?.confidence),
+      mainSkill: str(character.main_skill?.skill),
       raw: character,
     },
     {
