@@ -95,6 +95,15 @@ type Placed = {
   ascendancy?: string;
   /** An ascendancy's own start node: drawn smaller, and never allocatable. */
   start?: boolean;
+  /**
+   * The centre of the orbit this node sits on, after any relocation. Carried
+   * because an arc between two nodes of the same orbit has to be measured about
+   * *this* point to know which way round the ring is the short way — measuring
+   * about the SVG origin instead gets it right half the time, by luck, and
+   * sends the other half the long way round as a stray loop across the tree.
+   */
+  cx: number;
+  cy: number;
 };
 
 /** Visible radius per kind, in tree units. A keystone reads as the big one. */
@@ -126,14 +135,19 @@ function kindOf(node: Node): Placed["kind"] {
  * measured from twelve o'clock. Everything else in the file is derived from
  * these two numbers.
  */
-function place(node: Node, tree: Tree): { x: number; y: number } | null {
+function place(node: Node, tree: Tree): { x: number; y: number; cx: number; cy: number } | null {
   const group = node.group === undefined ? undefined : tree.groups[String(node.group)];
   if (!group) return null;
   const orbit = node.orbit ?? 0;
   const radius = tree.constants.orbitRadii[orbit] ?? 0;
   const perOrbit = tree.constants.skillsPerOrbit[orbit] ?? 1;
   const angle = (2 * Math.PI * (node.orbitIndex ?? 0)) / perOrbit - Math.PI / 2;
-  return { x: group.x + radius * Math.cos(angle), y: group.y + radius * Math.sin(angle) };
+  return {
+    x: group.x + radius * Math.cos(angle),
+    y: group.y + radius * Math.sin(angle),
+    cx: group.x,
+    cy: group.y,
+  };
 }
 
 /** XML-safe, for names and stat text that go into attributes. */
@@ -231,6 +245,8 @@ function build(tree: Tree, version: string, sha: string): string {
       x: round(at.x + (shift?.dx ?? 0)),
       y: round(at.y + (shift?.dy ?? 0)),
       kind: kindOf(node),
+      cx: at.cx + (shift?.dx ?? 0),
+      cy: at.cy + (shift?.dy ?? 0),
       name: node.name ?? "",
       // Joined with a separator the page splits on: an attribute cannot hold a
       // newline reliably and a stat can contain almost any punctuation.
@@ -313,13 +329,19 @@ function build(tree: Tree, version: string, sha: string): string {
     const id = `c${edge.a.id}-${edge.b.id}`;
     const ascendancy = edge.a.ascendancy ? ` class="ascendancy asc-${escape(edge.a.ascendancy)}"` : "";
     if (edge.sameOrbit) {
-      // Sweep direction decides which way round the ring the arc travels; the
-      // wrong one draws the long way round and the tree grows a halo.
-      const sweep =
-        (Math.atan2(edge.b.y, edge.b.x) - Math.atan2(edge.a.y, edge.a.x) + 2 * Math.PI) % (2 * Math.PI) <
-        Math.PI
-          ? 1
-          : 0;
+      // Which side of the chord the arc bulges. With the large-arc flag off
+      // both sweeps give an arc of the same length, so the wrong one is not
+      // longer — it curves the opposite way, bowing inward across the group
+      // instead of following the ring outward. Half of them did, because the
+      // angles were being measured about the SVG origin: an arbitrary point
+      // thousands of units away whose angles say nothing about this ring. They
+      // are measured about the orbit's own centre, which is its group.
+      const from = Math.atan2(edge.a.y - edge.a.cy, edge.a.x - edge.a.cx);
+      const to = Math.atan2(edge.b.y - edge.b.cy, edge.b.x - edge.b.cx);
+      // SVG's y runs downward, so a rising angle is clockwise on screen and
+      // sweep 1 is the direction of a rising angle. Under half a turn is the
+      // short way round.
+      const sweep = (to - from + 2 * Math.PI) % (2 * Math.PI) < Math.PI ? 1 : 0;
       lines.push(
         `<path d="M ${edge.a.x} ${edge.a.y} A ${round(edge.radius)} ${round(edge.radius)} 0 0 ${sweep} ${edge.b.x} ${edge.b.y}" id="${id}"${ascendancy}/>`,
       );
