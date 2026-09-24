@@ -314,7 +314,11 @@ function build(tree: Tree, version: string, sha: string): string {
       `.connections{fill:none;stroke:currentColor;stroke-width:18}` +
       `.nodes circle{stroke:currentColor;fill:currentColor;stroke-width:130;stroke-opacity:0}` +
       `.nodes circle:hover{color:var(--tree-hot)}` +
+      // Both the mastery and its links stay invisible until it is allocated,
+      // at which point the page's `#n…` and `#c…` rules win on specificity and
+      // bring the pair back together.
       `.nodes circle.mastery{color:transparent}` +
+      `.connections .mastery{color:transparent}` +
       // A class start is where the character began: drawn as a ring rather than
       // a disc so it reads as an origin, and it does light up, because every
       // build allocates exactly one and leaving it dark makes the count wrong.
@@ -327,7 +331,17 @@ function build(tree: Tree, version: string, sha: string): string {
   lines.push(`<g class="connections">`);
   for (const edge of edges.values()) {
     const id = `c${edge.a.id}-${edge.b.id}`;
-    const ascendancy = edge.a.ascendancy ? ` class="ascendancy asc-${escape(edge.a.ascendancy)}"` : "";
+    // A connection is only as visible as the quieter of its two ends. An
+    // unallocated mastery is drawn transparent, so its links have to be too —
+    // left visible they are 368 lines running to a point with nothing on it,
+    // which is what "errant lines" turns out to mean nearly everywhere.
+    const classes = [
+      edge.a.ascendancy ? `ascendancy asc-${escape(edge.a.ascendancy)}` : "",
+      edge.a.kind === "Mastery" || edge.b.kind === "Mastery" ? "mastery" : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+    const ascendancy = classes ? ` class="${classes}"` : "";
     if (edge.sameOrbit) {
       // Which side of the chord the arc bulges. With the large-arc flag off
       // both sweeps give an arc of the same length, so the wrong one is not

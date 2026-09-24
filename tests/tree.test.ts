@@ -178,3 +178,45 @@ test("every arc curves the same way round its own ring", () => {
   );
   assert.ok(apart > TOLERANCE, `a flipped sweep moves the centre only ${apart.toFixed(1)} units`);
 });
+
+/**
+ * A connection is only as visible as the quieter of its two ends.
+ *
+ * An unallocated mastery is drawn transparent, and a hidden ascendancy is
+ * display:none, so a link to either has to be hidden the same way. Left
+ * visible, those are lines running to a point with nothing on it — 368 of them
+ * in the first version of this file, which is what reading the tree as "errant
+ * lines almost everywhere" turns out to be.
+ *
+ * The rules are written by class and the page lights by id, so specificity
+ * brings a link back the moment both its ends are allocated.
+ */
+test("no connection outlives the node at either end of it", () => {
+  const svg = fs.readFileSync(path.join(process.cwd(), "public", "trees", `${versions[0]}.svg`), "utf8");
+
+  const classesOf = (markup: string) => /class="([^"]*)"/.exec(markup)?.[1] ?? "";
+  const hiddenNodes = new Map<string, "mastery" | "ascendancy">();
+  for (const match of svg.matchAll(/<circle id="n(\d+)"([^>]*)>/g)) {
+    const classes = classesOf(match[2]);
+    if (classes.includes("mastery")) hiddenNodes.set(match[1], "mastery");
+    else if (classes.includes("ascendancy")) hiddenNodes.set(match[1], "ascendancy");
+  }
+  assert.ok(hiddenNodes.size > 300, `only ${hiddenNodes.size} hidden nodes — has the tree changed shape?`);
+
+  const exposed: string[] = [];
+  for (const match of svg.matchAll(/<(?:line|path)([^>]*)id="c(\d+)-(\d+)"([^>]*)>/g)) {
+    const classes = `${classesOf(match[1])} ${classesOf(match[4])}`;
+    for (const end of [match[2], match[3]]) {
+      const hiddenBy = hiddenNodes.get(end);
+      if (hiddenBy && !classes.includes(hiddenBy)) exposed.push(`c${match[2]}-${match[3]} -> n${end}`);
+    }
+  }
+  assert.deepEqual(exposed.slice(0, 8), [], `${exposed.length} connections run to a node that is not drawn`);
+});
+
+/** And the stylesheet that does the hiding has to actually be in the file. */
+test("the generated tree hides a mastery and its links together", () => {
+  const svg = fs.readFileSync(path.join(process.cwd(), "public", "trees", `${versions[0]}.svg`), "utf8");
+  assert.match(svg, /\.nodes circle\.mastery\{color:transparent\}/);
+  assert.match(svg, /\.connections \.mastery\{color:transparent\}/);
+});
