@@ -38,28 +38,44 @@ export function leagueDuration(start: string | null, end: string | null): string
   return running ? `${days} days so far` : `${days} days`;
 }
 
-/** "Archnemesis (Siege of the Atlas)" when the league shipped with an expansion. */
-/**
- * How a league or an event reads everywhere in the archive:
- *
- *   3.26 Mercenaries Secrets of the Atlas     patch, league, expansion
- *   3.25 Runic Strife Gauntlet Settlers of Kalguur   patch, event, parent league
- *   ### Endless Delve                          an event with no patch of its own
- *
- * The third slot is the expansion for a league and the parent league for an
- * event; an event never shows an expansion. A missing patch reads "###" rather
- * than collapsing the columns.
- */
-export function leagueTitle(league: {
-  patch: string | null;
+type NamedLeague = {
   name: string;
   expansion?: string | null;
   kind?: string | null;
   parent?: string | null;
-}): string {
-  const isEvent = league.kind === "event";
-  const trailing = isEvent ? league.parent : league.expansion;
-  return [league.patch || "###", league.name, trailing || null].filter(Boolean).join(" ");
+};
+
+/**
+ * What a league or an event is called, without its patch:
+ *
+ *   Mercenaries of Trarthus (Secrets of the Atlas)    league, its expansion
+ *   Legacy of Phrecia (Settlers of Kalguur)           event, its parent league
+ *   Endless Delve                                     an event that ran alone
+ *
+ * The bracketed half is the expansion for a league and the parent league for an
+ * event; an event never shows an expansion. Brackets rather than a third word
+ * in a row because the two names are not equal billing — "Legacy of Phrecia
+ * Settlers of Kalguur" reads as one four-word name, and at a glance there is
+ * nothing to say where the league stops and the thing it ran inside begins.
+ */
+export function leagueLabel(league: NamedLeague): string {
+  const inner = league.kind === "event" ? league.parent : league.expansion;
+  return inner ? `${league.name} (${inner})` : league.name;
+}
+
+/**
+ * The same thing with its patch in front, which is how a league reads anywhere
+ * it appears as one line — a breadcrumb, a character page, an import row:
+ *
+ *   3.26 Mercenaries of Trarthus (Secrets of the Atlas)
+ *   3.25 Legacy of Phrecia (Settlers of Kalguur)
+ *   ### Unspecified league
+ *
+ * A missing patch reads "###" rather than collapsing the columns. The league
+ * index puts the patch in a column of its own and so uses `leagueLabel`.
+ */
+export function leagueTitle(league: NamedLeague & { patch: string | null }): string {
+  return `${league.patch || "###"} ${leagueLabel(league)}`;
 }
 
 /**
@@ -122,4 +138,38 @@ export function formatPlayed(minutes: number | null | undefined): string | null 
   if (days) return hours ? `${days}d ${hours}h` : `${days}d`;
   if (hours) return rest ? `${hours}h ${rest}m` : `${hours}h`;
   return `${rest}m`;
+}
+
+/**
+ * Order two patch numbers the way the game numbers them, not the way strings
+ * sort. Lexically "3.16" comes before "3.9", which is backwards — Path of Exile
+ * ran 3.9, then 3.10, and on to 3.16 — so each dotted part is compared as a
+ * number. "0.5" sorts before "0.5.5" because the missing third part reads zero.
+ *
+ * `direction` flips the comparison without flipping where a league that has no
+ * patch lands: "###" sorts last whichever way the column is pointed. It is an
+ * absence rather than a low number, and negating the whole comparator — the
+ * obvious way to reverse a sort — floats every unknown to the top of the table
+ * the moment someone clicks the header twice.
+ */
+export function comparePatches(a: string | null, b: string | null, direction: 1 | -1 = 1): number {
+  if (!a && !b) return 0;
+  if (!a) return 1;
+  if (!b) return -1;
+  const left = a.split(".").map(Number);
+  const right = b.split(".").map(Number);
+  for (let part = 0; part < Math.max(left.length, right.length); part += 1) {
+    const difference = (left[part] ?? 0) - (right[part] ?? 0);
+    if (difference) return direction * difference;
+  }
+  return 0;
+}
+
+/** The same rule for dates: unknown last, either way round. See `comparePatches`. */
+export function compareDates(a: string | null, b: string | null, direction: 1 | -1 = 1): number {
+  if (!a && !b) return 0;
+  if (!a) return 1;
+  if (!b) return -1;
+  if (a === b) return 0;
+  return direction * (a < b ? -1 : 1);
 }

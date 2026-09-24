@@ -1,6 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { formatPlayed, isLeagueRunning, leagueDuration, leagueTitle, leagueWindow, parsePlayed } from "../src/lib/format";
+import {
+  comparePatches,
+  formatPlayed,
+  isLeagueRunning,
+  leagueDuration,
+  leagueLabel,
+  leagueTitle,
+  leagueWindow,
+  parsePlayed,
+} from "../src/lib/format";
 import { LEAGUE_SEED } from "../src/lib/leagues";
 
 const seedFor = (game: "poe1" | "poe2") => LEAGUE_SEED.filter((league) => league.game === game);
@@ -170,28 +179,56 @@ test("only the closed beta has unconfirmed dates", () => {
  * patch, name, then the expansion for a league or the parent league for an
  * event. An event never shows an expansion.
  */
-test("a league reads as patch, name, expansion", () => {
+test("a league reads as patch, name, then its expansion in brackets", () => {
   assert.equal(
     leagueTitle({ patch: "3.26", name: "Mercenaries", expansion: "Secrets of the Atlas" }),
-    "3.26 Mercenaries Secrets of the Atlas",
+    "3.26 Mercenaries (Secrets of the Atlas)",
   );
   assert.equal(leagueTitle({ patch: "3.25", name: "Settlers of Kalguur", expansion: null }), "3.25 Settlers of Kalguur");
 });
 
-test("an event reads as patch, name, parent league", () => {
+test("an event reads as patch, name, then its parent league in brackets", () => {
   assert.equal(
     leagueTitle({ patch: "3.25", name: "Runic Strife Gauntlet", kind: "event", parent: "Settlers of Kalguur" }),
-    "3.25 Runic Strife Gauntlet Settlers of Kalguur",
+    "3.25 Runic Strife Gauntlet (Settlers of Kalguur)",
   );
   // An expansion is not shown for an event even when one is set.
   assert.equal(
     leagueTitle({ patch: "3.28", name: "Rapture Gauntlet", kind: "event", parent: "Mirage", expansion: "Ignored" }),
-    "3.28 Rapture Gauntlet Mirage",
+    "3.28 Rapture Gauntlet (Mirage)",
   );
 });
 
-test("an event with no patch of its own reads as ###", () => {
-  assert.equal(leagueTitle({ patch: null, name: "Endless Delve", kind: "event" }), "### Endless Delve");
+/**
+ * Only "Unspecified league" has no patch now — every event in the seed ran
+ * inside a numbered one and says so. Endless Delve used to be the example here
+ * and was simply missing its 3.16, the same patch Endless Heist ran under a
+ * fortnight later.
+ */
+test("a league with no patch of its own reads as ###", () => {
+  assert.equal(leagueTitle({ patch: null, name: "Unspecified league" }), "### Unspecified league");
+});
+
+test("the only seeded league without a patch is the unspecified one", () => {
+  const missing = LEAGUE_SEED.filter((league) => !league.patch).map((league) => league.name);
+  assert.deepEqual(missing, ["Unspecified league"]);
+});
+
+test("both December 2021 events ran inside 3.16", () => {
+  for (const slug of ["endless-delve-2021", "endless-heist-2021"]) {
+    const event = LEAGUE_SEED.find((league) => league.slug === slug);
+    assert.ok(event, `${slug} is missing from the seed`);
+    assert.equal(event.patch, "3.16", `${slug} should be 3.16`);
+  }
+});
+
+/** The closed beta predates 0.1, so it is numbered below it rather than left blank. */
+test("the closed beta rounds are 0.0", () => {
+  for (const slug of ["beta-1", "beta-2"]) {
+    const round = LEAGUE_SEED.find((league) => league.slug === slug);
+    assert.ok(round, `${slug} is missing from the seed`);
+    assert.equal(round.patch, "0.0");
+  }
 });
 
 test("every seeded event names a parent, or has none to name", () => {
@@ -211,4 +248,42 @@ test("only Path of Exile 1 has an unspecified league", () => {
   const unspecified = LEAGUE_SEED.filter((league) => league.slug === "unspecified");
   assert.equal(unspecified.length, 1);
   assert.equal(unspecified[0].game, "poe1");
+});
+
+/**
+ * The league index sorts its patch column with this, and string order is wrong
+ * for version numbers in exactly the range this catalogue covers: Path of Exile
+ * ran 3.9, then 3.10, on to 3.16, and lexically every one of those sorts above
+ * 3.9.
+ */
+test("patches sort as version numbers, not as strings", () => {
+  const sorted = ["3.16", "0.2", "3.9", "0.0", "3.25", "0.5.5", "0.5"].sort(comparePatches);
+  assert.deepEqual(sorted, ["0.0", "0.2", "0.5", "0.5.5", "3.9", "3.16", "3.25"]);
+});
+
+test("a league with no patch sorts last whichever way the column points", () => {
+  const withNull = ["3.25", null, "0.1"];
+  assert.deepEqual([...withNull].sort(comparePatches), ["0.1", "3.25", null]);
+  // Passing the direction in is how the column flips. Negating the comparator
+  // instead — the obvious way — floats every unknown to the top, which is the
+  // bug this pins down.
+  assert.deepEqual([...withNull].sort((a, b) => comparePatches(a, b, -1)), ["3.25", "0.1", null]);
+});
+
+test("two spellings of the same patch compare equal", () => {
+  assert.equal(comparePatches("0.5", "0.5.0"), 0);
+  assert.equal(comparePatches(null, null), 0);
+});
+
+/** The index splits the patch into its own column, so the name stands alone. */
+test("a league label leaves the patch out and brackets the second name", () => {
+  assert.equal(
+    leagueLabel({ name: "Legacy of Phrecia", kind: "event", parent: "Settlers of Kalguur" }),
+    "Legacy of Phrecia (Settlers of Kalguur)",
+  );
+  assert.equal(leagueLabel({ name: "Endless Delve", kind: "event" }), "Endless Delve");
+  assert.equal(
+    leagueLabel({ name: "Mercenaries of Trarthus", expansion: "Secrets of the Atlas" }),
+    "Mercenaries of Trarthus (Secrets of the Atlas)",
+  );
 });

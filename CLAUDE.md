@@ -148,9 +148,25 @@ and its payload is stored in `characters.source_payload` for the same reason.
   — which is why it is plain JavaScript and is copied into the image beside `backup.mjs`. The record is also the source that corrected thirteen league
   windows — it is first-hand and outranks any secondary source.
 - **One format for a league or event everywhere**, from `leagueTitle`: patch, name, then the
-  expansion for a league or the parent league for an event — `3.26 Mercenaries Secrets of the
-  Atlas`, `3.25 Runic Strife Gauntlet Settlers of Kalguur`. An event never shows an expansion,
-  and a missing patch reads `###`.
+  expansion for a league or the parent league for an event **in brackets** — `3.26 Mercenaries
+  of Trarthus (Secrets of the Atlas)`, `3.25 Legacy of Phrecia (Settlers of Kalguur)`. Without
+  the brackets the two names run together into one four-word title and nothing says where the
+  league stops and the thing it ran inside begins. An event never shows an expansion, and a
+  missing patch reads `###` — which now only ever happens for "Unspecified league", and a test
+  pins that. `leagueLabel` is the same thing without the patch, for the league index, which
+  gives the patch a column of its own.
+- **The league index sorts and filters in the browser.** `LeagueIndex` is a client component
+  because three multi-selects and a sort direction are not worth a round trip or a URL that has
+  to carry them. Game, patch and league each sort and each filter; ticking nothing means "all",
+  and the options are built from the rows actually present so a filter can never offer a value
+  that empties the table. Two things that are easy to get wrong and are pinned by tests:
+  patches sort as **version numbers** (`3.9` before `3.16`, which string order reverses), and
+  the sort direction is passed *into* the comparators rather than negating them, so a row with
+  no patch or no known dates stays at the bottom either way round instead of floating to the
+  top on the second click. Ties fall back to the start date — three events share 3.25 and both
+  closed beta rounds are 0.0. Sorting the League column sorts by date, not by name: the
+  catalogue's own order is chronological so an event sits beside the league it ran inside, and
+  alphabetical order would break exactly that.
 - **Migrations must survive a hot reload.** The connection is cached on globalThis so it
   outlives dev-server reloads, so `connection()` re-runs `migrate()` and the catalogue sync
   once per module evaluation. Without that, pulling a schema change left a running dev

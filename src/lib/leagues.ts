@@ -112,7 +112,7 @@ export const LEAGUE_SEED: LeagueSeed[] = [
   {
     game: "poe2",
     slug: "beta-1",
-    patch: null,
+    patch: "0.0",
     name: "Closed Beta: round 1",
     kind: "event",
     startDate: "2024-08-15",
@@ -122,7 +122,7 @@ export const LEAGUE_SEED: LeagueSeed[] = [
   {
     game: "poe2",
     slug: "beta-2",
-    patch: null,
+    patch: "0.0",
     name: "Closed Beta: round 2",
     kind: "event",
     startDate: "2024-09-03",
@@ -210,7 +210,7 @@ export const LEAGUE_SEED: LeagueSeed[] = [
   // Windows from the owner's own record, which is first-hand for the ones they
   // played. An event shows its parent league where it ran inside one, in the
   // slot a league uses for its expansion.
-  { game: "poe1", slug: "endless-delve-2021", patch: null, name: "Endless Delve", kind: "event",
+  { game: "poe1", slug: "endless-delve-2021", patch: "3.16", name: "Endless Delve", kind: "event",
     startDate: "2021-12-03", endDate: "2021-12-13", challengeTotal: null },
   { game: "poe1", slug: "endless-heist-2021", patch: "3.16", name: "Endless Heist", kind: "event",
     startDate: "2021-12-17", endDate: "2021-12-27", challengeTotal: null },

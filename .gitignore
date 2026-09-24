@@ -45,8 +45,15 @@ next-env.d.ts
 /data
 .update.lock
 
-# fetched by npm run art:fetch, not committed
+# fetched by npm run art:fetch, not committed. Both are baked into the image by
+# COPY /app/public at build time, so what matters is that they are on disk when
+# update.ps1 runs — not that they are in git. Two thousand untracked PNGs made
+# `git status` unreadable and buried real changes in the noise.
+#
+# The ascendancy *portraits* under /public/ascendancy/ are committed, and are
+# deliberately not covered here: see the rule in CLAUDE.md.
 /public/ascendancy.webp
+/public/items/
 
 # written by collect.ps1: one export per account, kept so collection stays incremental
 /collect

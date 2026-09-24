@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddLeagueForm } from "@/components/AddLeagueForm";
-import { ChallengeMeter } from "@/components/ChallengeMeter";
 import { CharacterCard } from "@/components/CharacterCard";
+import { LeagueIndex } from "@/components/LeagueIndex";
 import { PlayerAdmin } from "@/components/PlayerAdmin";
-import { formatPlayed, isLeagueRunning, leagueTitle, leagueWindow } from "@/lib/format";
+import { formatPlayed } from "@/lib/format";
 import { getUser, getUserTotals, listLeaguesForUser, listRecentCharacters } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -87,46 +87,7 @@ export default async function PlayerPage({ params, searchParams }: Props) {
           </div>
         </div>
 
-        <div className="panel divide-y divide-line">
-          {visible.map((league) => {
-            const total = league.challengeTotalOverride ?? league.challengeTotal;
-            const empty = league.characterCount === 0;
-            const running = isLeagueRunning(league.startDate, league.endDate);
-            return (
-              <Link
-                key={league.id}
-                href={`/players/${user.username}/${league.game}/${league.slug}`}
-                className={`flex flex-wrap items-center gap-4 px-4 py-4 transition-colors hover:bg-white/[0.03] ${
-                  empty ? "opacity-55" : ""
-                }`}
-              >
-                <span className="min-w-[14rem] flex-1">
-                  <span className="flex items-baseline gap-2 font-display text-base text-aubergine">
-                    {leagueTitle(league)}
-                    {running ? (
-                      <span className="tag border-gold/50 text-gold">live</span>
-                    ) : null}
-                  </span>
-                  <span className="block text-xs text-forest">
-                    {leagueWindow(league.startDate, league.endDate, Boolean(league.endDateEstimated))}
-                    {league.endDateEstimated ? " · end date tentative" : ""}
-                  </span>
-                </span>
-                <span className="w-28 shrink-0 text-sm text-muted">
-                  {league.characterCount > 0
-                    ? `${league.characterCount} character${league.characterCount === 1 ? "" : "s"}`
-                    : "no characters"}
-                </span>
-                <span className="w-24 shrink-0 text-sm text-muted">
-                  {league.maxLevel ? `lvl ${league.maxLevel}` : ""}
-                </span>
-                <span className="shrink-0">
-                  <ChallengeMeter completed={league.challengesCompleted} total={total} size="sm" />
-                </span>
-              </Link>
-            );
-          })}
-        </div>
+        <LeagueIndex username={user.username} leagues={visible} />
       </section>
 
       <AddLeagueForm returnTo={`/players/${user.username}`} />
