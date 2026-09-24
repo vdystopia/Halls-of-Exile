@@ -1,5 +1,5 @@
 import { attributeRequirementPercent, parseSocketString } from "./items";
-import type { BuildData, Gem, ParsedItem, PassiveDetail, SkillGroup } from "../../types";
+import type { BuildData, ClusterGraph, Gem, ParsedItem, PassiveDetail, SkillGroup } from "../../types";
 
 /**
  * Read an export produced by `poe-char-export` — the script that pulls a whole
@@ -37,8 +37,10 @@ export const POE_EXPORT_SCHEMA = 1;
  * 1 — the first mapper.
  * 2 — keeps the allocated passive ids rather than only counting them, so the
  *     character page can draw the tree.
+ * 3 — keeps each socketed cluster jewel's layout and its allocated passives, so
+ *     the tree can draw the clusters too.
  */
-export const POE_API_VERSION = 2;
+export const POE_API_VERSION = 3;
 
 export class PoeExportError extends Error {}
 
@@ -385,6 +387,49 @@ function mapGem(source: Json): Gem {
   };
 }
 
+/**
+ * The endpoint's layout of each expanded cluster jewel, trimmed to what drawing
+ * it takes. `jewel_data` is keyed by jewel slot, and a slot with a cluster in it
+ * carries a `subgraph` of groups and nodes in the main tree's own schema.
+ */
+function mapClusterGraphs(jewelData: Json): ClusterGraph[] {
+  const graphs: ClusterGraph[] = [];
+  for (const [slot, entry] of Object.entries((jewelData ?? {}) as Record<string, Json>)) {
+    const subgraph = entry?.subgraph;
+    if (!subgraph?.groups || !subgraph?.nodes) continue;
+    for (const [groupId, group] of Object.entries(subgraph.groups as Record<string, Json>)) {
+      const nodes = Object.entries(subgraph.nodes as Record<string, Json>)
+        .filter(([, node]) => String(node?.group) === groupId)
+        .map(([key, node]) => ({
+          key,
+          name: String(node?.name ?? ""),
+          stats: Array.isArray(node?.stats) ? node.stats.map(String) : [],
+          orbit: numeric(node?.orbit) ?? 0,
+          orbitIndex: numeric(node?.orbitIndex) ?? 0,
+          kind: node?.isMastery
+            ? ("Mastery" as const)
+            : node?.isKeystone
+              ? ("Keystone" as const)
+              : node?.isJewelSocket
+                ? ("Jewel" as const)
+                : node?.isNotable
+                  ? ("Notable" as const)
+                  : ("Normal" as const),
+          links: [...(node?.in ?? []), ...(node?.out ?? [])].map(String),
+        }));
+      if (!nodes.length) continue;
+      graphs.push({
+        slot: Number(slot),
+        proxy: Number(group?.proxy),
+        x: numeric(group?.x) ?? 0,
+        y: numeric(group?.y) ?? 0,
+        nodes,
+      });
+    }
+  }
+  return graphs;
+}
+
 function mapPassives(passives: Json): PassiveDetail {
   const names = (value: Json): string[] =>
     (Array.isArray(value) ? value : []).map((entry) => str(entry?.name) ?? str(entry) ?? "").filter(Boolean);
@@ -484,6 +529,14 @@ export function buildFromPoeExport(character: PoeExportCharacter, export_: PoeEx
   const allocatedHashes: number[] = (Array.isArray(passives?.hashes) ? passives.hashes : [])
     .map((hash: unknown) => Number(hash))
     .filter((hash: number) => Number.isFinite(hash) && hash > 0);
+  // Cluster passives are a separate list, keyed into the endpoint's own layout
+  // of each expanded jewel rather than into the tree. Both are kept: the layout
+  // is the game's, so the page places it rather than working it out.
+  const apiPassives = source?.raw?.passives ?? {};
+  const extendedNodes: number[] = (Array.isArray(apiPassives.hashes_ex) ? apiPassives.hashes_ex : passives?.hashes_ex ?? [])
+    .map((hash: unknown) => Number(hash))
+    .filter((hash: number) => Number.isFinite(hash) && hash >= 0);
+  const clusterGraphs = mapClusterGraphs(apiPassives.jewel_data);
 
   return {
     source: "poe-api",
@@ -508,6 +561,7 @@ export function buildFromPoeExport(character: PoeExportCharacter, export_: PoeEx
         // draws it on the newest one. That is right for this source: an export
         // is a reading taken today, not a record of an older tree.
         nodes: allocatedHashes.length ? allocatedHashes : undefined,
+        ...(clusterGraphs.length ? { clusterGraphs, extendedNodes } : {}),
       },
     ],
     activeTree: 0,

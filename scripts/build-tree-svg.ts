@@ -33,6 +33,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
+import { arcPath, NODE_RADIUS, type NodeKind, orbitAngle, orbitPoint } from "../src/lib/games/poe1/tree-geometry";
 
 /**
  * The versions the archive currently has characters for. Generating every
@@ -43,6 +44,8 @@ import zlib from "node:zlib";
 const VERSIONS = ["3.29"];
 
 const OUTPUT_ROOT = path.join(process.cwd(), "public", "trees");
+/** Server-side data per version, beside the code that reads it. */
+const DATA_ROOT = path.join(process.cwd(), "src", "lib", "games", "poe1", "tree-data");
 const REPO = "grindinggear/skilltree-export";
 const RAW = (sha: string) => `https://raw.githubusercontent.com/${REPO}/${sha}/data.json`;
 
@@ -82,6 +85,8 @@ type Tree = {
   nodes: Record<string, Node>;
   groups: Record<string, Group>;
   constants: { orbitRadii: number[]; skillsPerOrbit: number[] };
+  /** Socket node ids in the order the game numbers jewel slots. */
+  jewelSlots?: number[];
   min_x: number;
   min_y: number;
   max_x: number;
@@ -93,7 +98,7 @@ type Placed = {
   id: string;
   x: number;
   y: number;
-  kind: "Keystone" | "Notable" | "Mastery" | "Jewel" | "Ascendancy" | "Start" | "Normal";
+  kind: NodeKind;
   name: string;
   stats: string;
   ascendancy?: string;
@@ -110,16 +115,11 @@ type Placed = {
   cy: number;
 };
 
-/** Visible radius per kind, in tree units. A keystone reads as the big one. */
-const RADIUS: Record<Placed["kind"], number> = {
-  Keystone: 80,
-  Start: 70,
-  Notable: 62,
-  Mastery: 50,
-  Jewel: 58,
-  Ascendancy: 45,
-  Normal: 42,
-};
+/**
+ * Shared with the cluster layout so a cluster's nodes are the same sizes as the
+ * tree's, and so the two place passives by exactly the same rule.
+ */
+const RADIUS = NODE_RADIUS;
 
 function kindOf(node: Node): Placed["kind"] {
   // Where the character began. Every build allocates one, so counting it as a
@@ -135,23 +135,19 @@ function kindOf(node: Node): Placed["kind"] {
 
 /**
  * Where a node sits. GGG give a group centre and a position on one of seven
- * concentric orbits around it; the angle is the node's index into that orbit,
- * measured from twelve o'clock. Everything else in the file is derived from
- * these two numbers.
+ * concentric orbits around it; the angle comes from the node's index into that
+ * orbit, and `orbitAngle` holds the rule — including the uneven spacing of the
+ * 16- and 40-slot orbits, which this file got wrong until it shared the rule
+ * with the cluster layout.
  */
 function place(node: Node, tree: Tree): { x: number; y: number; cx: number; cy: number } | null {
   const group = node.group === undefined ? undefined : tree.groups[String(node.group)];
   if (!group) return null;
   const orbit = node.orbit ?? 0;
   const radius = tree.constants.orbitRadii[orbit] ?? 0;
-  const perOrbit = tree.constants.skillsPerOrbit[orbit] ?? 1;
-  const angle = (2 * Math.PI * (node.orbitIndex ?? 0)) / perOrbit - Math.PI / 2;
-  return {
-    x: group.x + radius * Math.cos(angle),
-    y: group.y + radius * Math.sin(angle),
-    cx: group.x,
-    cy: group.y,
-  };
+  const angle = orbitAngle(node.orbitIndex ?? 0, tree.constants.skillsPerOrbit[orbit] ?? 1);
+  const at = orbitPoint(group.x, group.y, radius, angle);
+  return { x: at.x, y: at.y, cx: group.x, cy: group.y };
 }
 
 /** XML-safe, for names and stat text that go into attributes. */
@@ -242,11 +238,12 @@ function build(tree: Tree, version: string, sha: string): string {
     if (node.isBlighted) continue;
     // A jewel socket with a parent is one of the sockets *inside* a cluster
     // jewel — 18 small and 18 medium — and only exists once such a jewel is
-    // socketed. The export still gives them coordinates, parked in the margins
-    // beside the six large sockets they belong to, which drew them as isolated
-    // dots and three-node chains scattered off the corners of the tree. The 18
-    // basic sockets and the 6 large ones have no parent and are kept: those are
-    // really there.
+    // socketed. The export positions them exactly where an expanded cluster
+    // sits, beyond the large socket, so on an empty tree they drew as isolated
+    // dots and three-node chains off its corners. They are not lost: the tree
+    // data written beside this file keeps them, and the cluster layout places
+    // one wherever a character's socketed jewel actually has it. The 18 basic
+    // sockets and the 6 large ones have no parent and are drawn here.
     if (node.expansionJewel?.parent !== undefined) continue;
     const at = place(node, tree);
     if (!at) continue;
@@ -305,6 +302,18 @@ function build(tree: Tree, version: string, sha: string): string {
   const pad = 250;
   const xs = drawn.map((node) => node.x);
   const ys = drawn.map((node) => node.y);
+  // The canvas has to hold the clusters a character might expand as well as the
+  // empty tree. They grow out beyond the large sockets, on the proxy groups the
+  // export names, to at most the third orbit — so each proxy group's reach is
+  // counted in, although nothing there is drawn on the empty tree.
+  const reach = (tree.constants.orbitRadii[3] ?? 335) + RADIUS.Notable;
+  for (const node of Object.values(tree.nodes)) {
+    const proxy = node.expansionJewel?.proxy ? tree.nodes[node.expansionJewel.proxy] : undefined;
+    const group = proxy?.group === undefined ? undefined : tree.groups[String(proxy.group)];
+    if (!group) continue;
+    xs.push(group.x - reach, group.x + reach);
+    ys.push(group.y - reach, group.y + reach);
+  }
   const minX = Math.min(...xs) - pad;
   const minY = Math.min(...ys) - pad;
   const width = Math.max(...xs) + pad - minX;
@@ -355,22 +364,11 @@ function build(tree: Tree, version: string, sha: string): string {
       .join(" ");
     const ascendancy = classes ? ` class="${classes}"` : "";
     if (edge.sameOrbit) {
-      // Which side of the chord the arc bulges. With the large-arc flag off
-      // both sweeps give an arc of the same length, so the wrong one is not
-      // longer — it curves the opposite way, bowing inward across the group
-      // instead of following the ring outward. Half of them did, because the
-      // angles were being measured about the SVG origin: an arbitrary point
-      // thousands of units away whose angles say nothing about this ring. They
-      // are measured about the orbit's own centre, which is its group.
-      const from = Math.atan2(edge.a.y - edge.a.cy, edge.a.x - edge.a.cx);
-      const to = Math.atan2(edge.b.y - edge.b.cy, edge.b.x - edge.b.cx);
-      // SVG's y runs downward, so a rising angle is clockwise on screen and
-      // sweep 1 is the direction of a rising angle. Under half a turn is the
-      // short way round.
-      const sweep = (to - from + 2 * Math.PI) % (2 * Math.PI) < Math.PI ? 1 : 0;
-      lines.push(
-        `<path d="M ${edge.a.x} ${edge.a.y} A ${round(edge.radius)} ${round(edge.radius)} 0 0 ${sweep} ${edge.b.x} ${edge.b.y}" id="${id}"${ascendancy}/>`,
-      );
+      // `arcPath` decides which side of the chord the arc bulges, measuring
+      // both ends about the orbit's own centre. Half the arcs curved inward
+      // across their group when that was measured about the SVG origin.
+      const d = arcPath(edge.a, edge.b, { x: edge.a.cx, y: edge.a.cy }, edge.radius);
+      lines.push(`<path d="${d}" id="${id}"${ascendancy}/>`);
     } else {
       lines.push(
         `<line x1="${edge.a.x}" y1="${edge.a.y}" x2="${edge.b.x}" y2="${edge.b.y}" id="${id}"${ascendancy}/>`,
@@ -402,6 +400,108 @@ function build(tree: Tree, version: string, sha: string): string {
   return lines.join("\n");
 }
 
+/**
+ * What the cluster jewel layout needs from one version of the tree, and nothing
+ * else — written beside the SVG, read only on the server.
+ *
+ * A cluster expands on a *proxy* group that the export names but draws nothing
+ * on, positions its nested sockets by their index within that group, and names
+ * its notables and keystones after nodes that sit in no group at all. None of
+ * that is in the drawn SVG, so it is carried here: every expansion socket with
+ * where it would sit, every proxy group's centre, the jewel slot order the
+ * game's own endpoint numbers sockets by, and the groupless notables by name.
+ */
+function clusterSupport(tree: Tree, version: string, sha: string) {
+  const sockets: Record<string, unknown> = {};
+  const proxyGroups: Record<string, { group: number; x: number; y: number; orbit: number; orbitIndex: number }> = {};
+  const clusterNodes: Record<string, { stats: string[]; keystone?: true }> = {};
+  // Path of Building finds a nested socket by searching a group's own node list
+  // and taking the first with the right index — so the order is kept, per group,
+  // exactly as the export lists it.
+  const groupSockets: Record<string, number[]> = {};
+  for (const [groupId, group] of Object.entries(tree.groups)) {
+    const ids = (group.nodes ?? []).filter((id) => tree.nodes[id]?.isJewelSocket && tree.nodes[id]?.expansionJewel);
+    if (ids.length) groupSockets[groupId] = ids.map(Number);
+  }
+
+  for (const [id, node] of Object.entries(tree.nodes)) {
+    const expansion = node.expansionJewel;
+    if (node.isJewelSocket && expansion) {
+      const at = place(node, tree);
+      sockets[id] = {
+        name: node.name ?? "Jewel Socket",
+        size: expansion.size ?? 0,
+        index: expansion.index ?? 0,
+        proxy: Number(expansion.proxy),
+        ...(expansion.parent !== undefined ? { parent: Number(expansion.parent) } : {}),
+        group: node.group,
+        orbit: node.orbit ?? 0,
+        orbitIndex: node.orbitIndex ?? 0,
+        x: at ? round(at.x) : 0,
+        y: at ? round(at.y) : 0,
+      };
+      const proxy = expansion.proxy ? tree.nodes[expansion.proxy] : undefined;
+      const group = proxy?.group === undefined ? undefined : tree.groups[String(proxy.group)];
+      if (expansion.proxy && group && proxy?.group !== undefined) {
+        // The proxy node's own orbit position is what builds saved before
+        // Path of Building's cluster hash change used to rotate a cluster; the
+        // legacy conversion needs it to map their ids onto today's.
+        proxyGroups[expansion.proxy] = {
+          group: proxy.group,
+          x: group.x,
+          y: group.y,
+          orbit: proxy.orbit ?? 0,
+          orbitIndex: proxy.orbitIndex ?? 0,
+        };
+      }
+    }
+    // Path of Building's `clusterNodeMap`: a notable or keystone whose group is
+    // not on the tree is one a cluster jewel can add.
+    const onTree = node.group !== undefined && tree.groups[String(node.group)];
+    if (!onTree && (node.isNotable || node.isKeystone) && node.name && !node.ascendancyName) {
+      clusterNodes[node.name] = { stats: node.stats ?? [], ...(node.isKeystone ? { keystone: true as const } : {}) };
+    }
+  }
+
+  return {
+    version,
+    commit: sha,
+    orbitRadii: tree.constants.orbitRadii,
+    skillsPerOrbit: tree.constants.skillsPerOrbit,
+    jewelSlots: tree.jewelSlots ?? [],
+    sockets,
+    proxyGroups,
+    groupSockets,
+    clusterNodes,
+  };
+}
+
+/**
+ * The server imports each version's data statically, so a bundler can see it —
+ * a path built from a version string at request time is invisible to the build
+ * and missing from the standalone image. This index is regenerated from
+ * whatever versions are on disk.
+ */
+function writeTreeDataIndex(root: string) {
+  const versions = fs
+    .readdirSync(root)
+    .filter((file) => /^\d[\w.]*\.json$/.test(file))
+    .map((file) => file.replace(/\.json$/, ""))
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  const name = (version: string) => `v${version.replace(/\W/g, "_")}`;
+  const source = [
+    "// Written by scripts/build-tree-svg.ts. Do not edit by hand.",
+    'import type { TreeData } from "../clusters";',
+    ...versions.map((version) => `import ${name(version)} from "./${version}.json";`),
+    "",
+    "export const TREE_DATA: Record<string, TreeData> = {",
+    ...versions.map((version) => `  "${version}": ${name(version)} as unknown as TreeData,`),
+    "};",
+    "",
+  ].join("\n");
+  fs.writeFileSync(path.join(root, "index.ts"), source);
+}
+
 async function main() {
   if (process.argv.includes("--list")) {
     const files = fs.existsSync(OUTPUT_ROOT) ? fs.readdirSync(OUTPUT_ROOT) : [];
@@ -429,8 +529,18 @@ async function main() {
       `  ${nodes} nodes, ${edges} connections — ${(raw / 1024).toFixed(0)} KB raw, ` +
         `${(compressed / 1024).toFixed(0)} KB gzipped\n`,
     );
+    const support = clusterSupport(tree, version, sha);
+    fs.mkdirSync(DATA_ROOT, { recursive: true });
+    const dataFile = path.join(DATA_ROOT, `${version}.json`);
+    fs.writeFileSync(dataFile, `${JSON.stringify(support)}\n`);
+    process.stdout.write(
+      `  cluster data: ${Object.keys(support.sockets).length} sockets, ` +
+        `${Object.keys(support.clusterNodes).length} cluster notables — ` +
+        `${(fs.statSync(dataFile).size / 1024).toFixed(0)} KB\n`,
+    );
     built.push({ version, sha, nodes });
   }
+  writeTreeDataIndex(DATA_ROOT);
 
   // What the server is allowed to point a character at. Written rather than
   // read off the directory at request time, so a tree that was never generated

@@ -1,7 +1,8 @@
 import zlib from "node:zlib";
 import { XMLParser } from "fast-xml-parser";
 import { parseItem } from "./items";
-import type { BuildData, Gem, ParsedItem, SkillGroup, TreeSpec } from "../../types";
+import { readClusterJewel } from "./clusters";
+import type { BuildData, ClusterJewelData, Gem, ParsedItem, SkillGroup, TreeSpec } from "../../types";
 
 const parser = new XMLParser({
   ignoreAttributes: false,
@@ -178,10 +179,42 @@ function parseTrees(root: Node): { trees: TreeSpec[]; activeTree: number } {
       masteryCount: masteries ? masteries.split("},{").length : 0,
       treeVersion: (spec["@_treeVersion"] ?? "").replace(/_/g, "."),
       nodes: allocated.length ? allocated : undefined,
+      // Path of Building's own default: a spec with a node list and no format
+      // attribute predates the attribute, and is format 1.
+      clusterHashFormat: num(spec["@_clusterHashFormatVersion"]) ?? (spec["@_nodes"] ? 1 : 2),
     };
   });
   const active = num(treeNode?.["@_activeSpec"]) ?? 1;
   return { trees, activeTree: Math.max(0, active - 1) };
+}
+
+/**
+ * Which cluster jewel sits in which socket, for each tree the build saved.
+ *
+ * Path of Building stores a cluster as nothing but its item text and the ids it
+ * invented for the allocated passives. Laying the cluster out again needs the
+ * jewel's own lines — its size, node count, sockets, enchant and notables — so
+ * they are read here, per spec, since two saved trees can socket different
+ * jewels. The layout itself is left to render time.
+ */
+function attachClusterJewels(root: Node, trees: TreeSpec[], items: ParsedItem[]): void {
+  const byId = new Map(items.map((item) => [item.id, item]));
+  const specs = toArray<Node>(root?.Tree?.Spec);
+  specs.forEach((spec, index) => {
+    const tree = trees[index];
+    if (!tree) return;
+    const jewels: { socket: number; jewel: ClusterJewelData }[] = [];
+    for (const socket of toArray<Node>(spec?.Sockets?.Socket)) {
+      const node = num(socket["@_nodeId"]);
+      const item = byId.get(num(socket["@_itemId"]) ?? -1);
+      if (!node || !item) continue;
+      // `readClusterJewel` finds the base inside the name, which a magic
+      // cluster needs: it has no separate base line.
+      const jewel = readClusterJewel(item.base, item.raw.split(/\r?\n/));
+      if (jewel?.valid) jewels.push({ socket: node, jewel });
+    }
+    if (jewels.length) tree.clusterJewels = jewels;
+  });
 }
 
 function parseItems(root: Node): { items: ParsedItem[]; slots: Record<string, number> } {
@@ -239,8 +272,13 @@ function parseConfig(root: Node): { name: string; value: string }[] {
  * 3 — jewels socketed in the passive tree are recorded, so the gear panel can
  *     tell them from the spares Path of Building keeps in the same list, and a
  *     gem carries its metadata id so its colour can be looked up.
+ * 4 — the allocated passive ids are kept rather than only counted, so the
+ *     character page can draw the tree.
+ * 5 — each tree records the cluster jewel in each socket, so the page can lay
+ *     the clusters out; and a cluster jewel's "Cluster Jewel Node Count" header
+ *     no longer reads as its first implicit.
  */
-export const PARSER_VERSION = 4;
+export const PARSER_VERSION = 5;
 
 /** Turn a Path of Building export into the structure the character page renders. */
 export function parsePob(code: string): BuildData {
@@ -254,6 +292,7 @@ export function parsePob(code: string): BuildData {
   const { groups, mainSkill } = parseSkills(root, mainSocketGroup);
   const { items, slots } = parseItems(root);
   const { trees, activeTree } = parseTrees(root);
+  attachClusterJewels(root, trees, items);
   const treeJewels = parseTreeJewels(root);
   const notesRaw = root.Notes;
   const notes = typeof notesRaw === "string" ? notesRaw : (notesRaw?.["#text"] ?? "");

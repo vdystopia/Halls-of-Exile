@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { ClusterLayout } from "@/lib/games/poe1/clusters";
 
 /**
  * A character's passive tree, drawn.
@@ -22,15 +23,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * allocation read as a path rather than as scattered dots. The SVG names each
  * connection `c<a>-<b>`, so that needs no graph data on this side.
  *
- * What is deliberately not drawn: cluster jewel passives. Their node ids are
- * invented by Path of Building when the jewel is socketed and exist nowhere in
- * the game's tree export, so there is no position to draw them at. They are
- * listed by name in the panel beside this instead. Nothing marks their absence
- * on the tree, which is the same choice pobb.in makes.
+ * Cluster jewels are the one thing added to the document. The empty tree cannot
+ * hold them — a cluster exists only once a jewel is socketed — so the server
+ * lays out this character's clusters (`lib/games/poe1/clusters.ts`) and passes
+ * finished circles and lines, which are appended under the same ids and classes
+ * the tree uses. The stylesheet then lights them exactly as it lights the rest.
  */
 export function PassiveTree({
   src,
   nodes,
+  clusters,
   ascendancy,
   allocatedCount,
   treeVersion,
@@ -38,8 +40,10 @@ export function PassiveTree({
 }: {
   /** The generated tree for this build's version, under /trees. */
   src: string;
-  /** Allocated node ids. Ids the loaded tree does not have are simply not drawn. */
+  /** Allocated node ids, clusters included. Ids with nothing drawn are counted, not lit. */
   nodes: number[];
+  /** This character's clusters, already placed. */
+  clusters?: ClusterLayout | null;
   /** Which ascendancy cluster to reveal; every one is stacked in the same corner. */
   ascendancy?: string | null;
   allocatedCount: number;
@@ -64,6 +68,9 @@ export function PassiveTree({
   const paint = useCallback(() => {
     const doc = host.current?.contentDocument;
     if (!doc?.documentElement) return;
+
+    // Clusters go in first, so the allocation below finds their nodes.
+    drawClusters(doc, clusters);
 
     const allocated = new Set(nodes);
     const rules: string[] = [];
@@ -102,7 +109,7 @@ export function PassiveTree({
       if (!existing) doc.documentElement.append(style);
     }
     setDrawn(found);
-  }, [nodes, ascendancy]);
+  }, [nodes, clusters, ascendancy]);
 
   // The tooltip text is baked into the SVG as data attributes, so hovering
   // costs nothing beyond reading them off the element under the pointer.
@@ -244,17 +251,73 @@ export function PassiveTree({
         <span className="text-[11px] text-muted">
           {allocatedCount} passives{treeVersion ? ` · tree ${treeVersion}` : ""}
         </span>
-        {/* Cluster jewel passives have no position in the game's own tree, so a
-            count that does not add up is expected rather than a fault. Saying
-            so is cheaper than leaving someone to notice and wonder. */}
+        {/* Clusters are drawn, so a gap here is a passive this tree cannot
+            place — a jewel whose text could not be read, or a build drawn on a
+            tree version that lacks one of its notables. Said rather than hidden,
+            so a count that does not add up is never a mystery. */}
         {missing ? (
-          <span className="text-[11px] text-muted/70">
-            {missing} not on this tree (cluster jewels)
+          <span className="text-[11px] text-muted/70" title="Passives the build records that this tree has no place for">
+            {missing} not on this tree
           </span>
         ) : null}
       </div>
     </div>
   );
+}
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+/**
+ * Append a character's clusters to the loaded tree, under the ids and classes
+ * the tree's own nodes use, so its stylesheet and the allocation rules apply to
+ * them unchanged. Idempotent: a repaint removes the previous layer first.
+ *
+ * Lines go directly after the tree's own connections and circles after its
+ * nodes, so a cluster's links pass under every node rather than over them.
+ */
+function drawClusters(doc: Document, clusters: ClusterLayout | null | undefined) {
+  doc.getElementById("cluster-links")?.remove();
+  doc.getElementById("cluster-nodes")?.remove();
+  if (!clusters?.nodes.length) return;
+
+  const links = doc.createElementNS(SVG_NS, "g");
+  links.id = "cluster-links";
+  links.setAttribute("class", "connections cluster");
+  for (const edge of clusters.edges) {
+    const element = doc.createElementNS(SVG_NS, edge.d ? "path" : "line");
+    element.id = edge.id;
+    if (edge.d) element.setAttribute("d", edge.d);
+    else {
+      element.setAttribute("x1", String(edge.x1));
+      element.setAttribute("y1", String(edge.y1));
+      element.setAttribute("x2", String(edge.x2));
+      element.setAttribute("y2", String(edge.y2));
+    }
+    links.append(element);
+  }
+
+  const nodes = doc.createElementNS(SVG_NS, "g");
+  nodes.id = "cluster-nodes";
+  nodes.setAttribute("class", "nodes cluster");
+  for (const node of clusters.nodes) {
+    const circle = doc.createElementNS(SVG_NS, "circle");
+    circle.id = `n${node.id}`;
+    circle.setAttribute("cx", String(node.x));
+    circle.setAttribute("cy", String(node.y));
+    circle.setAttribute("r", String(node.r));
+    circle.setAttribute("data-kind", node.kind);
+    circle.setAttribute("data-name", node.name);
+    // The separator the tooltip already splits the tree's own stats on.
+    if (node.stats.length) circle.setAttribute("data-stats", node.stats.join(" ;; "));
+    nodes.append(circle);
+  }
+
+  const treeLinks = doc.querySelector("g.connections:not(.cluster)");
+  const treeNodes = doc.querySelector("g.nodes:not(.cluster)");
+  if (treeLinks) treeLinks.after(links);
+  else doc.documentElement.append(links);
+  if (treeNodes) treeNodes.after(nodes);
+  else doc.documentElement.append(nodes);
 }
 
 /** Ids and class names go into selectors, and a name can carry punctuation. */

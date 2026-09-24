@@ -134,10 +134,75 @@ export type TreeSpec = {
    * both used to count them and throw them away, which left the archive holding
    * the number of a character's passives but not which ones.
    *
+   * From Path of Building this also holds the ids it invents for allocated
+   * cluster passives (65536 and up), which `clusterJewels` lets the page place.
+   *
    * Optional because a row written before this existed has only the count, and
    * older rows must still render.
    */
   nodes?: number[];
+  /**
+   * Path of Building's route to a cluster: the jewel in each socket, read from
+   * its item text. The layout is not stored — it is derived at render time, the
+   * way Path of Building derives it, against whichever tree the page is drawing.
+   */
+  clusterJewels?: { socket: number; jewel: ClusterJewelData }[];
+  /**
+   * Path of Building's `clusterHashFormatVersion`. A spec saved before it had
+   * this attribute is format 1 and refers to its clusters by the old ids, which
+   * the layout converts; everything since is 2.
+   */
+  clusterHashFormat?: number;
+  /**
+   * The game's route to a cluster: its own layout of each expanded jewel,
+   * straight from the character endpoint, with `extendedNodes` naming which of
+   * those passives are allocated.
+   */
+  clusterGraphs?: ClusterGraph[];
+  extendedNodes?: number[];
+};
+
+/**
+ * A cluster jewel as Path of Building reads one: what it needs to lay the
+ * cluster out, and nothing else. Field names follow its `jewelData`.
+ */
+export type ClusterJewelData = {
+  /** "Small Cluster Jewel", "Medium Cluster Jewel" or "Large Cluster Jewel". */
+  base: string;
+  /** The small-passive enchant, as Path of Building's skill id. */
+  skill?: string;
+  nodeCount?: number;
+  socketCount?: number;
+  /** A unique that states its socket count outright ("Adds 2 Jewel Socket Passive Skills"). */
+  socketCountOverride?: number;
+  nothingnessCount?: number;
+  smallsNothing?: boolean;
+  notables: string[];
+  /** A unique cluster that adds one keystone and nothing else. */
+  keystone?: string;
+  /** "Added Small Passive Skills also grant" lines, for the small passives' tooltips. */
+  addedMods: string[];
+  /** Path of Building's `clusterJewelValid`: whether it would build this cluster at all. */
+  valid: boolean;
+};
+
+/** One expanded cluster as the game's endpoint lays it out. */
+export type ClusterGraph = {
+  /** The jewel slot the cluster sits in, which the tree's `jewelSlots` maps to a socket. */
+  slot: number;
+  /** The proxy node whose group the cluster is laid out on. */
+  proxy: number;
+  x: number;
+  y: number;
+  nodes: {
+    key: string;
+    name: string;
+    stats: string[];
+    orbit: number;
+    orbitIndex: number;
+    kind: "Keystone" | "Notable" | "Jewel" | "Normal" | "Mastery";
+    links: string[];
+  }[];
 };
 
 /** The named passives an allocation holds, which a node count alone loses. */

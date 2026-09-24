@@ -55,6 +55,11 @@ const META_KEYS = new Set([
   "crafted",
   "implicit",
   "cluster jewel skill",
+  // Path of Building writes this beside the skill line on every cluster jewel.
+  // Without it the line counted as the first implicit, and the jewel's real
+  // third implicit — the one naming what its small passives grant — was pushed
+  // down into its explicits.
+  "cluster jewel node count",
   "item",
   "rarity",
   "block",

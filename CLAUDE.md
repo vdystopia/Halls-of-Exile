@@ -255,20 +255,57 @@ and its payload is stored in `characters.source_payload` for the same reason.
   **says so** rather than drawing a wrong tree quietly. A build from the game's own endpoints
   carries no version at all and is drawn on the newest, which is exact: the API reports what a
   character has allocated today.
-- **Cluster jewel passives are not drawn yet, and the count says so.** The empty tree cannot
-  hold them: a cluster's passives, and the medium and small sockets inside it, only exist once
-  a jewel is socketed. The export positions those nested sockets exactly where an expanded
-  cluster sits, beyond the large socket, which is why drawing them on the empty tree left
-  fragments off its corners — so a socket with an `expansionJewel.parent` is left out. The
-  footer reports how many allocated passives it could not place, and for an export that number
-  is exactly `passives.hashes_ex.length`, measured across five characters. **The layout is
-  known for an export, though, and the earlier note here saying otherwise was wrong**: the
-  game's endpoint returns `passives.jewel_data[socket].subgraph`, the expanded cluster as groups
-  and nodes in the same schema and coordinate space as the main tree, with `hashes_ex` naming
-  which of them are allocated. The mapper reads neither yet. Only a Path of Building import
-  lacks a layout — its cluster ids are synthesised, and placing them means reimplementing its
-  cluster graph. Class start nodes *are* drawn, for the opposite reason: every build allocates
-  one, and leaving it out made every character report one phantom missing passive.
+- **Passives are placed by one shared rule, `tree-geometry.ts`, and 16- and 40-slot orbits are
+  uneven.** Since 3.17 the game puts a 16-slot orbit's passives at every 30 and 45 degrees and a
+  40-slot orbit's at every 10 and 45 — Path of Building's `CalcOrbitAngles`, from the export's own
+  README. The generator spaced every orbit evenly at first, which put 1,040 of the 3.29 tree's
+  2,314 main nodes more than 5 units from the game's position and the worst 44.7 off; against
+  pobb.in's independently generated tree the worst is now 1.4. The generator and the cluster
+  layout both call `orbitAngle`/`orbitPoint`/`arcPath`, because a cluster's entry line has to land
+  on its socket to the unit. A test pins four of the formerly worst nodes to pobb.in's coordinates.
+- **Cluster jewels are drawn, by two routes that are tested against each other.** The empty tree
+  cannot hold them — a cluster's passives, and the medium and small sockets inside it, exist only
+  once a jewel is socketed — so a socket with an `expansionJewel.parent` is left out of the SVG,
+  and `src/lib/games/poe1/clusters.ts` lays out each character's clusters at render time, server
+  side; `PassiveTree` appends the finished circles and lines under the tree's own ids and classes
+  so the allocation stylesheet lights them unchanged. `npm run tree:svg` also writes
+  `tree-data/<ver>.json` (expansion sockets, proxy groups with their centres and node order,
+  jewel slots, the groupless cluster notables) and the `index.ts` that imports each version
+  statically so the standalone build contains them.
+  - **The game's route** (`layoutFromGraphs`): the endpoint returns
+    `raw.passives.jewel_data[slot].subgraph`, each expanded cluster already laid out in the main
+    tree's schema, and `hashes_ex` naming its allocated passives; the mapper keeps both as
+    `clusterGraphs`/`extendedNodes`. Its node keys are small local numbers and are moved clear of
+    the tree's ids; its nested sockets are local nodes too, resolved to the real socket by the
+    same index rule Path of Building uses (position matches it in 49 of 51 cases; the other two
+    are a medium cluster in a large socket, where only the index rule is right).
+  - **Path of Building's route** (`layoutFromJewels`) is a port of `PassiveSpecClass:BuildSubgraph`,
+    with its tables from Path of Building's own `Data/ClusterJewels.lua` via
+    `npm run clusters:index` (GitHub by default, `--from` for a local file). It has to reproduce
+    the ids Path of Building *invents* for cluster passives — 0x10000 plus socket indices, size
+    and template slot packed into the bits — or the stored allocation points at nothing.
+  - **Both are verified against real data**: the port lays out the same jewels as the game for 16
+    of 16 collected characters (250 cluster passives, every size, nesting, the medium-cluster
+    exceptions) and regenerates all 304 cluster ids stored across the owner's 81 saved builds.
+    `tests/clusters.test.ts` keeps five of those characters and two of those saves as fixtures.
+  - **Old saves are converted, and more completely than Path of Building does.** A spec without
+    `clusterHashFormatVersion` is format 1 (Path of Building's own default), from before it
+    changed how nested sockets are chosen and clusters rotated. Its conversion maps old ids to new
+    as it rebuilds, but in one pass that moves a jewel onto its new socket only after that
+    socket's cluster would have been built — so its own load drops a cluster nested inside a
+    converted socket, and the allocation with it. `convertLegacy` runs the same conversion to a
+    fixed point instead, applying each cluster's mappings once; a test shows the nested Lone
+    Messenger that Path of Building loses. Inside clusters the layout's allocation is
+    authoritative (`drawnAllocation`), because an old id can now belong to a different passive.
+  - Three details that each broke real data: a **magic** cluster jewel is one line with no base
+    line, so the base is found inside the name (`clusterBase`); the game sends a **two-line
+    enchant** as one mod with a newline in it, so lines are split before matching (six skills);
+    and a nested socket is **named by what it accepts** — a medium cluster in a large socket
+    borrows a medium socket's id but offers a small socket, as the game labels it.
+  Class start nodes are drawn for the opposite reason to nested sockets: every build allocates
+  one, and leaving it out made every character report one phantom missing passive. A passive the
+  tree still cannot place — an unreadable jewel, a notable a fallback tree version lacks — is
+  counted in the footer rather than hidden.
 - **A stored build is a cache of the parser, so parser fixes need `PARSER_VERSION`.**
   A character's items are parsed once, at import, and written to `characters.data` as JSON;
   the archive went on rendering base percentiles as mods for days after the parser stopped

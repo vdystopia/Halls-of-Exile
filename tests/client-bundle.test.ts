@@ -96,3 +96,16 @@ test("the gem module never reaches the browser", () => {
   const offenders = [...clientGraph()].filter((file) => /poe1[\/]gems\.ts$/.test(file));
   assert.deepEqual(offenders.map((file) => path.relative(process.cwd(), file)), []);
 });
+
+/**
+ * The cluster layout reads Path of Building's cluster tables and each tree
+ * version's data — 28 KB and 52 KB — and runs on the server; the page hands the
+ * client finished circles and lines. `PassiveTree` imports only the layout's
+ * *type*, which ships nothing, and this keeps it that way.
+ */
+test("the cluster layout and its data never reach the browser", () => {
+  const offenders = [...clientGraph()].filter((file) =>
+    /poe1[\/](clusters\.ts|cluster-jewels\.json|tree-data[\/].*)$/.test(file),
+  );
+  assert.deepEqual(offenders.map((file) => path.relative(process.cwd(), file)), []);
+});

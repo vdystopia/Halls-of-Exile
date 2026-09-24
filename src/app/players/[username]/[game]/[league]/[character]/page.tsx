@@ -13,7 +13,9 @@ import { classLine, formatPlayed, leagueTitle, leagueWindow } from "@/lib/format
 import { leagueModifierLabel, leagueModifierTitle } from "@/lib/league-modifiers";
 import { getCharacter, getLeague, getUser } from "@/lib/queries";
 import { gemArt, skillNames } from "@/lib/games/poe1/gems";
+import { clusterLayout, drawnAllocation } from "@/lib/games/poe1/clusters";
 import { treeAsset } from "@/lib/games/poe1/tree";
+import { TREE_DATA } from "@/lib/games/poe1/tree-data";
 import { DEFENCE_PANELS, humanizeStatKey, OFFENCE_PANELS } from "@/lib/games/poe1/stats";
 
 export const dynamic = "force-dynamic";
@@ -50,6 +52,12 @@ export default async function CharacterPage({ params }: Props) {
   // index of what has been generated is server-side data.
   const treeNodes = tree?.nodes ?? [];
   const treeArt = treeNodes.length ? treeAsset(tree?.treeVersion) : null;
+  // Clusters are laid out here, against the tree actually being drawn, and
+  // handed to the client as finished geometry: the tree data they need stays on
+  // the server, the rule the art and gem indexes follow.
+  const treeData = treeArt ? TREE_DATA[treeArt.version] : undefined;
+  const clusters = clusterLayout(tree, treeData);
+  const litNodes = tree ? drawnAllocation(tree, clusters, treeData) : [];
 
   return (
     <div className="space-y-6">
@@ -266,7 +274,8 @@ export default async function CharacterPage({ params }: Props) {
           <div className="p-4">
             <PassiveTree
               src={treeArt.src}
-              nodes={treeNodes}
+              nodes={litNodes}
+              clusters={clusters}
               ascendancy={character.ascendancy}
               allocatedCount={tree?.nodeCount ?? treeNodes.length}
               treeVersion={tree?.treeVersion || treeArt.version}

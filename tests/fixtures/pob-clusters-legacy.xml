@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Trimmed from a real Path of Building save: a MAGIC Medium cluster in a Large socket, with a Lone Messenger nested inside it under its pre-conversion socket id. Format 1. -->
+<PathOfBuilding>
+<Build className="Witch" mainSocketGroup="2" bandit="None" targetVersion="3_0" pantheonMajorGod="None" pantheonMinorGod="None" characterLevelAutoMode="false" level="89" viewMode="TREE" ascendClassName="Herald"/>
+<Tree activeSpec="1">
+<Spec secondaryAscendClassId="0" masteryEffects="{13862,64875},{38921,4500},{54849,40073},{32241,34242},{25535,30612},{34552,57179},{12125,47642},{42792,4319}" classId="3" ascendClassId="2" nodes="7388,54447,20987,23027,36634,59958,20797,11088,64426,34171,20832,8756,44967,26196,13862,61419,37569,55743,14057,29353,18174,15046,65536,17821,26270,22062,5273,1593,1031,35685,57264,50826,26712,65552,4397,43133,25535,50570,15081,65560,44908,27195,44202,32241,1722,60398,7444,19103,5743,60472,3533,20602,9505,41472,7688,42760,12125,7960,50862,21958,65562,54267,61471,15405,54849,27308,43689,46340,31875,25332,35958,19635,62214,24824,26866,57157,62767,46897,7938,39648,52502,14936,35288,42792,6764,38921,9386,58218,33631,53677,15631,2913,6967,35791,65108,48062,25989,29106,21330,36949,36678,42668,6712,41190,64210,63138,10031,53279,36542,33755,16023,40058,34917,34552,48713,50422,19919,23185,2204,7374,26481,56029,16218" treeVersion="3_27_alternate">
+			
+			<Sockets>
+				<Socket itemId="28" nodeId="16218"/>
+				<Socket itemId="24" nodeId="36634"/>
+				<Socket itemId="23" nodeId="7960"/>
+				<Socket itemId="26" nodeId="26196"/>
+				<Socket itemId="1" nodeId="33631"/>
+				<Socket itemId="25" nodeId="61419"/>
+			</Sockets>
+			<Overrides/>
+		</Spec>
+</Tree>
+<Items>
+<Item id="23">
+			Rarity: MAGIC
+Notable Medium Cluster Jewel
+Unique ID: 3065abb8d74e9c9c5210911cce03eed21b76b76924ae141d4fb7b1d35de76aff
+Item Level: 83
+LevelReq: 54
+Implicits: 3
+{crafted}Adds 6 Passive Skills
+{crafted}1 Added Passive Skill is a Jewel Socket
+{crafted}Added Small Passive Skills grant: Minions deal 10% increased Damage while you are affected by a Herald
+1 Added Passive Skill is Pure Agony
+			<ModRange range="0.81" id="1"/>
+			<ModRange range="0.81" id="2"/>
+			<ModRange range="0.81" id="3"/>
+			<ModRange range="0.81" id="4"/>
+		</Item>
+<Item id="28">
+			Rarity: UNIQUE
+Calamitous Visions
+Small Cluster Jewel
+Unique ID: 4cacb4771be0642f49a836979f6390cd1a6d8700c26dbb348f409765c2295971
+Item Level: 81
+Implicits: 0
+Adds Lone Messenger
+			<ModRange range="0.81" id="1"/>
+		</Item>
+</Items>
+</PathOfBuilding>
