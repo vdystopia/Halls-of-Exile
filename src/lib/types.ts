@@ -174,7 +174,15 @@ export type Character = {
   className: string;
   ascendancy: string | null;
   level: number | null;
+  /** The owner's own words for the build: prose, not a gem name. */
   mainSkill: string | null;
+  /**
+   * The exact name of the skill the character was built around, spelled as the
+   * game spells it. Separate from `mainSkill` because that field holds the
+   * record's prose ("golemancer corrupting fever exsanguinate"), which names a
+   * build rather than a skill and so cannot resolve to a gem or its art.
+   */
+  skillGem: string | null;
   notes: string | null;
   /** In-game /played time in minutes, entered by hand — no export carries it. */
   playedMinutes: number | null;

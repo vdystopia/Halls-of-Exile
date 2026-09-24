@@ -52,6 +52,7 @@ function mapCharacter(row: Row): Character {
     ascendancy: row.ascendancy,
     level: row.level,
     mainSkill: row.main_skill,
+    skillGem: row.skill_gem ?? null,
     notes: row.notes,
     playedMinutes: row.played_minutes ?? null,
     isFavorite: row.is_favorite,

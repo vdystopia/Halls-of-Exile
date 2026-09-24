@@ -17,6 +17,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import index from "../src/lib/games/poe1/item-art-index.json";
+import gemArt from "../src/lib/games/poe1/gem-art-index.json";
 import ascendancy from "../src/lib/games/poe1/ascendancy-icons.json";
 
 // The literal type of a 2000-entry JSON file is too much for the compiler to
@@ -98,9 +99,16 @@ async function fetchAscendancySheet(): Promise<void> {
 async function main() {
   await fetchAscendancySheet();
   const entries = [...Object.values(catalogue.bases), ...Object.values(catalogue.uniques)];
-  const paths = [...new Set(entries.map((entry) => entry.art))];
+  // Gem art sits under the same Art/2DItems root and is served by the same CDN,
+  // so it lands beside the equipment art and needs no second output tree.
+  const paths = [
+    ...new Set([
+      ...entries.map((entry) => entry.art),
+      ...Object.values(gemArt as Record<string, string>),
+    ]),
+  ];
   process.stdout.write(
-    `${dryRun ? "would fetch" : "fetching"} ${paths.length} item images from ${baseUrl}\n`,
+    `${dryRun ? "would fetch" : "fetching"} ${paths.length} images from ${baseUrl}\n`,
   );
 
   const tally = { saved: 0, skipped: 0, failed: 0 };

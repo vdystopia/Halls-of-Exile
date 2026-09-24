@@ -1,13 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AscendancyIcon } from "@/components/AscendancyIcon";
 import { CharacterAdmin } from "@/components/CharacterAdmin";
 import { CopyButton } from "@/components/CopyButton";
 import { GearGrid } from "@/components/GearGrid";
 import { PassivePanel } from "@/components/PassivePanels";
 import { SkillGroups } from "@/components/SkillGroups";
+import { SkillIcon } from "@/components/SkillIcon";
 import { AllStatsTable, AttributeStrip, ResistanceBar, StatColumn } from "@/components/StatPanels";
 import { classLine, formatPlayed, leagueTitle, leagueWindow } from "@/lib/format";
 import { getCharacter, getLeague, getUser } from "@/lib/queries";
+import { gemArt } from "@/lib/games/poe1/gems";
 import { DEFENCE_PANELS, humanizeStatKey, OFFENCE_PANELS } from "@/lib/games/poe1/stats";
 
 export const dynamic = "force-dynamic";
@@ -35,6 +38,11 @@ export default async function CharacterPage({ params }: Props) {
   const tree = build.trees?.[build.activeTree] ?? build.trees?.[0];
   const hasStats = Object.keys(stats).length > 0;
   const played = formatPlayed(character.playedMinutes);
+  // Resolved here, on the server, because the gem art index must not be shipped
+  // to the browser. The record's prose is offered as a fallback, but only an
+  // exact gem name resolves, so prose draws nothing rather than a wrong gem.
+  const skill = character.skillGem ?? character.mainSkill;
+  const skillArt = gemArt(skill);
 
   return (
     <div className="space-y-6">
@@ -50,7 +58,12 @@ export default async function CharacterPage({ params }: Props) {
 
       <header className="panel p-6">
         <div className="flex flex-wrap items-start justify-between gap-6">
-          <div>
+          <div className="flex items-start gap-4">
+            <div className="flex shrink-0 items-center gap-2 pt-1">
+              <AscendancyIcon ascendancy={character.ascendancy} />
+              <SkillIcon src={skillArt?.src} name={character.skillGem ?? skillArt?.name} />
+            </div>
+            <div>
             <div className="flex flex-wrap items-baseline gap-3">
               <h1 className="display text-3xl">{character.name}</h1>
               {character.isFavorite ? <span className="text-lg text-gold">★</span> : null}
@@ -60,8 +73,11 @@ export default async function CharacterPage({ params }: Props) {
               {classLine(character.className, character.ascendancy)}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
-              {character.mainSkill ? (
-                <span className="tag border-rarity-gem/40 text-rarity-gem">{character.mainSkill}</span>
+              {character.skillGem ? (
+                <span className="tag border-rarity-gem/60 text-rarity-gem">{character.skillGem}</span>
+              ) : null}
+              {character.mainSkill && character.mainSkill !== character.skillGem ? (
+                <span className="tag text-parchment/70 italic">{character.mainSkill}</span>
               ) : null}
               <span className="tag">
                 {leagueTitle(league)}
@@ -70,6 +86,7 @@ export default async function CharacterPage({ params }: Props) {
               {build.bandit ? <span className="tag">bandit: {build.bandit}</span> : null}
               {build.pobVersion ? <span className="tag">PoB target {build.pobVersion}</span> : null}
               {tree?.treeVersion ? <span className="tag">tree {tree.treeVersion}</span> : null}
+              </div>
             </div>
           </div>
           <div className="flex flex-col items-end gap-2 text-right">

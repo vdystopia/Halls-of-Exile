@@ -12,6 +12,7 @@
     "test": "node --import tsx --test tests/*.test.ts",
     "art:index": "tsx scripts/build-item-art-index.ts",
     "gems:index": "tsx scripts/build-gem-index.ts",
+    "gems:art": "tsx scripts/build-gem-art-index.ts",
     "ascendancy:index": "tsx scripts/build-ascendancy-index.ts",
     "art:fetch": "tsx scripts/fetch-item-art.ts"
   },
