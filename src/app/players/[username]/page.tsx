@@ -4,6 +4,7 @@ import { AddLeagueForm } from "@/components/AddLeagueForm";
 import { BuildCard } from "@/components/BuildCard";
 import { BuildRanking } from "@/components/BuildRanking";
 import { ClassRollup } from "@/components/ClassRollup";
+import { CharacterBanner } from "@/components/CharacterBanner";
 import { CharacterCard } from "@/components/CharacterCard";
 import { LeagueIndex } from "@/components/LeagueIndex";
 import { PlayerAdmin } from "@/components/PlayerAdmin";
@@ -118,8 +119,16 @@ export default async function PlayerPage({ params, searchParams }: Props) {
 
       {mostPlayed.length ? (
         <Section title="Most played">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {mostPlayed.map((character) => card(character, `/played ${formatPlayed(character.playedMinutes)}`))}
+          {/* One banner per row: each is the character page's header, compressed,
+              and three abreast would leave no room for its name. */}
+          <div className="grid gap-3">
+            {mostPlayed.map((character) => (
+              <CharacterBanner
+                key={character.id}
+                character={character}
+                href={`/players/${user.username}/${character.game}/${character.leagueSlug}/${character.slug}`}
+              />
+            ))}
           </div>
         </Section>
       ) : null}

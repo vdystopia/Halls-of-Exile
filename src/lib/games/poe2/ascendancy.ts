@@ -40,3 +40,9 @@ export function ascendancyIcon(ascendancy?: string | null): AscendancyIcon | nul
     sheetHeight: portrait.height,
   };
 }
+
+/**
+ * Path of Exile 2's portrait is already a close crop of the face — its wiki
+ * redirects "avatar" to it — so it serves as the avatar too.
+ */
+export const ascendancyAvatar = ascendancyPortrait;

@@ -378,7 +378,13 @@ and its payload is stored in `characters.source_payload` for the same reason.
   has no emblem sheet, so its card icon is the portrait's centre square. Deadeye and Pathfinder
   are names in both games and different classes in each, so art is looked up through
   `src/lib/games/ascendancy.ts` by game and never by name alone. The wiki's files are small, so
-  the header portrait is slightly soft on a high-DPI screen. `<Name>_official_art.jpg` exists
+  the header portrait is slightly soft on a high-DPI screen.
+  **A third picture, the avatar, is for the compact banner.** The player page's Most played list
+  draws `CharacterBanner`, the character header compressed: at 96px the wide painting is mostly
+  background, so it draws Path of Exile 1's `File:<Ascendancy> avatar.png` (135x105, a close crop
+  of the face; `npm run ascendancy:art -- --game poe1-avatar`, into `public/ascendancy/avatar/` and
+  `poe1/ascendancy-avatars.json`, committed and tested). Path of Exile 2's wiki redirects
+  "avatar" to "portrait", so its portrait serves both. `ascendancyAvatar(game, name)` picks. `<Name>_official_art.jpg` exists
   there at full size if that ever matters, but it is full-body art and would need cropping.
 - **Every league has a logo, and the header is bracketed by two pictures.** The character page
   header draws the portrait on the left and the league's logo on the right at one height

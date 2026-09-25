@@ -1,0 +1,114 @@
+{
+  "portraits": {
+    "Ascendant": {
+      "slug": "ascendant",
+      "width": 135,
+      "height": 105
+    },
+    "Assassin": {
+      "slug": "assassin",
+      "width": 134,
+      "height": 105
+    },
+    "Berserker": {
+      "slug": "berserker",
+      "width": 135,
+      "height": 105
+    },
+    "Champion": {
+      "slug": "champion",
+      "width": 135,
+      "height": 105
+    },
+    "Chieftain": {
+      "slug": "chieftain",
+      "width": 135,
+      "height": 105
+    },
+    "Deadeye": {
+      "slug": "deadeye",
+      "width": 135,
+      "height": 105
+    },
+    "Elementalist": {
+      "slug": "elementalist",
+      "width": 135,
+      "height": 105
+    },
+    "Gladiator": {
+      "slug": "gladiator",
+      "width": 135,
+      "height": 105
+    },
+    "Guardian": {
+      "slug": "guardian",
+      "width": 135,
+      "height": 105
+    },
+    "Hierophant": {
+      "slug": "hierophant",
+      "width": 135,
+      "height": 105
+    },
+    "Inquisitor": {
+      "slug": "inquisitor",
+      "width": 135,
+      "height": 105
+    },
+    "Juggernaut": {
+      "slug": "juggernaut",
+      "width": 135,
+      "height": 105
+    },
+    "Luminary": {
+      "slug": "luminary",
+      "width": 134,
+      "height": 104
+    },
+    "Necromancer": {
+      "slug": "necromancer",
+      "width": 135,
+      "height": 105
+    },
+    "Occultist": {
+      "slug": "occultist",
+      "width": 135,
+      "height": 105
+    },
+    "Pathfinder": {
+      "slug": "pathfinder",
+      "width": 135,
+      "height": 105
+    },
+    "Raider": {
+      "slug": "warden",
+      "width": 135,
+      "height": 105
+    },
+    "Reliquarian": {
+      "slug": "reliquarian",
+      "width": 134,
+      "height": 104
+    },
+    "Saboteur": {
+      "slug": "saboteur",
+      "width": 135,
+      "height": 105
+    },
+    "Slayer": {
+      "slug": "slayer",
+      "width": 135,
+      "height": 105
+    },
+    "Trickster": {
+      "slug": "trickster",
+      "width": 135,
+      "height": 105
+    },
+    "Warden": {
+      "slug": "warden",
+      "width": 135,
+      "height": 105
+    }
+  }
+}

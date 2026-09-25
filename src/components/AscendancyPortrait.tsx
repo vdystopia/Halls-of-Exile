@@ -1,4 +1,4 @@
-import { ascendancyPortrait } from "@/lib/games/ascendancy";
+import { ascendancyAvatar, ascendancyPortrait } from "@/lib/games/ascendancy";
 import type { GameId } from "@/lib/games/types";
 
 /**
@@ -22,20 +22,26 @@ import type { GameId } from "@/lib/games/types";
  * A character with no ascendancy — under level 68, or one that never took one —
  * renders nothing, so the header closes up rather than leaving a hole. The rule
  * `AscendancyIcon` and `SkillIcon` both follow.
+ *
+ * `variant="avatar"` draws the close crop of the face instead, for a compact
+ * banner: in Path of Exile 1 that is its own file, in Path of Exile 2 it is the
+ * same portrait.
  */
 export function AscendancyPortrait({
   game,
   ascendancy,
   height,
+  variant = "portrait",
   className = "",
 }: {
   game: GameId;
+  variant?: "portrait" | "avatar";
   ascendancy?: string | null;
   /** In CSS pixels. */
   height: number;
   className?: string;
 }) {
-  const portrait = ascendancyPortrait(game, ascendancy);
+  const portrait = (variant === "avatar" ? ascendancyAvatar : ascendancyPortrait)(game, ascendancy);
   if (!portrait) return null;
 
   return (

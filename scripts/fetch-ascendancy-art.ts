@@ -5,7 +5,7 @@
  *   npm run ascendancy:art                 # fetch anything missing
  *   npm run ascendancy:art -- --force      # re-download everything
  *   npm run ascendancy:art -- --dry-run    # list what would be fetched
- *   npm run ascendancy:art -- --game poe2  # one game only
+ *   npm run ascendancy:art -- --game poe2  # one game only (poe1, poe1-avatar, poe2)
  *
  * This is the wide key art the game shows on the ascendancy selection screen —
  * not the round emblem in `ascendancy-icons.json`. The emblem is cropped out of
@@ -34,6 +34,12 @@
  * Path of Exile 2 has no emblem sheet at all, so its portrait also stands in
  * for the emblem on a character card. Because the sizes differ, every index
  * records each file's own size and the header draws each at its own shape.
+ *
+ * Path of Exile 1 also has an avatar per ascendancy, "<Ascendancy> avatar.png":
+ * a 135x105 close crop of the face, the same shape as Path of Exile 2's
+ * portraits, which a compact character banner draws where the header draws the
+ * wide painting. Path of Exile 2's wiki redirects "avatar" to "portrait", so its
+ * portraits already serve both jobs and there is no fourth source.
  *
  * Unlike item art, the results are committed, and so is the index written
  * beside them. A missing item picture leaves a silhouette in a grid of eighty;
@@ -64,6 +70,14 @@ const GAMES: Record<string, Source> = {
     suffix: /_ascendancy_class$/i,
     output: path.join(process.cwd(), "public", "ascendancy"),
     index: path.join(process.cwd(), "src", "lib", "games", "poe1", "ascendancy-portraits.json"),
+  },
+  "poe1-avatar": {
+    api: "https://www.poewiki.net/w/api.php",
+    names: Object.keys(icons.icons).sort(),
+    title: (name) => `File:${name} avatar.png`,
+    suffix: /_avatar$/i,
+    output: path.join(process.cwd(), "public", "ascendancy", "avatar"),
+    index: path.join(process.cwd(), "src", "lib", "games", "poe1", "ascendancy-avatars.json"),
   },
   poe2: {
     api: "https://www.poe2wiki.net/api.php",

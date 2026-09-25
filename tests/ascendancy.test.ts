@@ -2,7 +2,11 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
-import { ascendancyIcon as ascendancyIconFor, ascendancyPortrait as ascendancyPortraitFor } from "../src/lib/games/ascendancy";
+import {
+  ascendancyAvatar as ascendancyAvatarFor,
+  ascendancyIcon as ascendancyIconFor,
+  ascendancyPortrait as ascendancyPortraitFor,
+} from "../src/lib/games/ascendancy";
 import { ascendancyIcon, ascendancyPortrait } from "../src/lib/games/poe1/ascendancy";
 import { ASCENDANCIES as POE2_ASCENDANCIES } from "../src/lib/games/poe2/classes";
 
@@ -114,4 +118,27 @@ test("a Path of Exile 2 icon is the centre square of its portrait", () => {
   assert.ok(icon.x >= 0 && icon.x + icon.w <= icon.sheetWidth);
   assert.ok(icon.y >= 0 && icon.y + icon.h <= icon.sheetHeight);
   assert.equal(ascendancyIconFor("poe2", null), null);
+});
+
+/**
+ * The avatar is the picture a Most played banner draws. Every Path of Exile 1
+ * ascendancy has its own on disk; a Path of Exile 2 one is its portrait.
+ */
+test("every ascendancy has an avatar on disk, in both games", () => {
+  const names = Object.keys(
+    (JSON.parse(
+      fs.readFileSync(path.join(process.cwd(), "src/lib/games/poe1/ascendancy-icons.json"), "utf8"),
+    ) as { icons: Record<string, unknown> }).icons,
+  );
+  for (const name of names) {
+    const avatar = ascendancyAvatarFor("poe1", name);
+    assert.ok(avatar, `no avatar for ${name}`);
+    assert.match(avatar.src, /^\/ascendancy\/avatar\//);
+    const file = path.join(process.cwd(), "public", avatar.src.replace(/^\//, ""));
+    assert.ok(fs.existsSync(file), `${avatar.src} is indexed but not on disk`);
+  }
+  assert.deepEqual(ascendancyAvatarFor("poe1", "Raider"), ascendancyAvatarFor("poe1", "Warden"));
+  for (const name of Object.values(POE2_ASCENDANCIES).flat()) {
+    assert.deepEqual(ascendancyAvatarFor("poe2", name), ascendancyPortraitFor("poe2", name));
+  }
 });

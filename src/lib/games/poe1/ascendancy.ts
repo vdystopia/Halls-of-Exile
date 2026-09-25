@@ -1,4 +1,5 @@
 import index from "./ascendancy-icons.json";
+import avatarIndex from "./ascendancy-avatars.json";
 import portraitIndex from "./ascendancy-portraits.json";
 
 /** Where the emblem sits on the sheet, and how big the sheet is. */
@@ -62,4 +63,17 @@ export function ascendancyPortrait(ascendancy?: string | null): AscendancyPortra
   const entry = ascendancy ? PORTRAITS[ascendancy.trim()] : undefined;
   if (!entry) return null;
   return { src: `/ascendancy/${entry.slug}.webp`, width: entry.width, height: entry.height };
+}
+
+const AVATARS = avatarIndex.portraits as Record<string, { slug: string; width: number; height: number }>;
+
+/**
+ * The ascendancy's avatar: a 135x105 close crop of the face, for a compact
+ * character banner where the wide portrait would be mostly background at that
+ * size. Indexed under both of a renamed ascendancy's names, like the others.
+ */
+export function ascendancyAvatar(ascendancy?: string | null): AscendancyPortrait | null {
+  const entry = ascendancy ? AVATARS[ascendancy.trim()] : undefined;
+  if (!entry) return null;
+  return { src: `/ascendancy/avatar/${entry.slug}.webp`, width: entry.width, height: entry.height };
 }
