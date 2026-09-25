@@ -154,6 +154,20 @@ export function formatPlayed(minutes: number | null | undefined): string | null 
 }
 
 /**
+ * Every unit of a /played, for a form field: "5d 3h 22m". `formatPlayed` drops
+ * minutes once there are days, so pre-filling a field with it and saving the
+ * form back threw those minutes away. `parsePlayed` reads this back exactly.
+ */
+export function formatPlayedExact(minutes: number | null | undefined): string | null {
+  if (!minutes || minutes <= 0) return null;
+  const days = Math.floor(minutes / (24 * 60));
+  const hours = Math.floor((minutes % (24 * 60)) / 60);
+  const rest = minutes % 60;
+  const parts = [days && `${days}d`, hours && `${hours}h`, rest && `${rest}m`].filter(Boolean);
+  return parts.join(" ");
+}
+
+/**
  * A player's whole /played, for the archive header: days to two decimals and
  * the same span in whole hours, because at hundreds of days "245d 21h" hides
  * the scale and the hours are the figure people compare. Both are rounded.

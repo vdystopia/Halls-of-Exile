@@ -198,14 +198,37 @@ function Invoke-DeployCheck {
     }
     Step-Unreachable -Reset | Out-Null
 
+    # A commit that failed here once is not tried again until Main moves. It was
+    # green in CI and still failed on this machine, so it will fail again, and
+    # every attempt is a backup and a full rebuild: after a rollback HEAD is
+    # behind Main once more, and without this the next check redeploys it.
+    $failedFile = Join-Path $LogDir 'failed-deploy.sha'
+    if ((Test-Path $failedFile) -and ((Get-Content $failedFile -Raw).Trim() -eq $remote)) {
+        Write-Note "$short failed to deploy here before; waiting for a newer commit. Run .\update.ps1 by hand to retry it."
+        return
+    }
+
     Write-Log "Deploying $short."
     # update.ps1 does the rest: backup, pull, rebuild, health check, rollback,
-    # and the lock that stops two of these overlapping.
-    & (Join-Path $PSScriptRoot 'update.ps1') 2>&1 | Tee-Object -FilePath $LogFile -Append
-    if ($LASTEXITCODE -eq 0) {
+    # and the lock that stops two of these overlapping. It reports failure by
+    # throwing, which would otherwise end this script before anything is logged.
+    $failure = $null
+    try {
+        & (Join-Path $PSScriptRoot 'update.ps1') 2>&1 | Tee-Object -FilePath $LogFile -Append
+        if ($LASTEXITCODE -ne 0 -and $null -ne $LASTEXITCODE) { $failure = "exit code $LASTEXITCODE" }
+    } catch {
+        $failure = $_.Exception.Message
+    }
+    if (-not $failure) {
         Write-Log "Deployed $short."
+        if (Test-Path $failedFile) { Remove-Item $failedFile -Force }
+    } elseif ($failure -match 'already running') {
+        # Another update holds the lock: nothing is wrong with the commit.
+        Write-Log "Deploy of $short deferred: $failure"
     } else {
-        Write-Log "Deploy of $short failed with exit code $LASTEXITCODE."
+        Write-Log "Deploy of $short failed: $failure"
+        New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
+        Set-Content -Path $failedFile -Value $remote
     }
 }
 

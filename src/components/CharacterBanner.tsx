@@ -5,8 +5,7 @@ import { SkillIcon } from "@/components/SkillIcon";
 import { classLine, formatPlayed } from "@/lib/format";
 import { classNameStyle } from "@/lib/games/class-colors";
 import { buildSkill, skillArt } from "@/lib/games/skills";
-import type { GameId } from "@/lib/games/types";
-import type { Character } from "@/lib/types";
+import type { PlayerCharacter } from "@/lib/queries";
 
 /** The banner's picture height: the avatar at left and the league logo at right share it. */
 const HEIGHT = 96;
@@ -25,7 +24,7 @@ export function CharacterBanner({
   character,
   href,
 }: {
-  character: Character & { game: GameId; leagueSlug: string; patch: string | null; leagueName: string };
+  character: PlayerCharacter;
   href: string;
 }) {
   const { game } = character;
@@ -60,7 +59,7 @@ export function CharacterBanner({
       </div>
       {/* Beside the name when there is room, a row of their own beneath it on a phone. */}
       <div className="flex flex-wrap gap-2 sm:flex-col sm:items-end">
-        <span className="tag">{`${character.patch ?? "###"} ${character.leagueName}`}</span>
+        <span className="tag">{character.leagueTitle}</span>
         {played ? <span className="tag">/played {played}</span> : null}
       </div>
       <LeagueLogo

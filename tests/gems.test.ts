@@ -126,3 +126,31 @@ test("every Path of Exile 2 skill has gem art, and shared names stay apart", () 
   assert.equal(poe2.frames, 1);
   assert.equal(buildSkill("poe2", null, "companion / Zekoa the monkey masher"), null);
 });
+
+/**
+ * Older saves name gems the game has since stopped dropping (Discipline), default
+ * attacks (Bow Shot), retired supports (Reverberate) and templated ones
+ * ("Companion: River Drake", the Summon Beast gem). All are in the export; the
+ * index used to keep only gems that still drop, so these drew uncoloured and, as
+ * a main skill, left the header with no skill at all. A skill granted with no gem
+ * (Thorns) has neither, and is named from its id rather than printed raw.
+ */
+test("every gem in every Path of Exile 2 fixture code is coloured, and every main skill drawn", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const { parsePob2 } = await import("../src/lib/games/poe2/pob");
+  const { gearFor } = await import("../src/lib/games/gear");
+  const dir = path.join(process.cwd(), "tests", "fixtures");
+  const missing = new Set<string>();
+  for (const file of fs.readdirSync(dir).filter((name) => /^poe2-pob-.*\.txt$/.test(name))) {
+    const build = parsePob2(fs.readFileSync(path.join(dir, file), "utf8").trim());
+    for (const group of build.skillGroups) {
+      for (const one of group.gems) {
+        if (one.gemId && !gearFor("poe2").gemColor(one)) missing.add(`${file}: ${one.name}`);
+        assert.doesNotMatch(one.name, /Player$/, `${file}: a raw skill id`);
+      }
+    }
+    if (build.mainSkill) assert.ok(buildSkill("poe2", build.mainSkill, null), `${file}: ${build.mainSkill}`);
+  }
+  assert.deepEqual([...missing], []);
+});

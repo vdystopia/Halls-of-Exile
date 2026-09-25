@@ -82,7 +82,9 @@ export function shieldBlock(item: ParsedItem): number | null {
     if (match) increased += Number(match[1]);
   }
 
-  return Math.floor(base.block * (1 + increased / 100));
+  // Integer percentages, as the requirements are scaled: 25 x 1.16 is
+  // 28.999999999999996 in floating point, which floors to 28 instead of 29.
+  return Math.floor((base.block * (100 + increased)) / 100);
 }
 
 /**

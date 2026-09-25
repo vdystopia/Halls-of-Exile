@@ -18,10 +18,9 @@ import { parsePlayed } from "./format";
 import { formatLeagueModifiers } from "./league-modifiers";
 import { getLeague, getUser } from "./queries";
 import type { BuildData } from "./types";
+import { usernameProblem } from "./usernames";
 
 export type ActionState = { error?: string; ok?: boolean };
-
-const USERNAME_RE = /^[a-zA-Z0-9_-]{3,24}$/;
 
 function text(formData: FormData, key: string): string {
   const value = formData.get(key);
@@ -63,9 +62,8 @@ export async function createPlayerAction(_prev: ActionState, formData: FormData)
   const firstName = text(formData, "firstName");
   const tagline = text(formData, "tagline");
 
-  if (!USERNAME_RE.test(username)) {
-    return { error: "Username must be 3-24 characters: letters, numbers, hyphen or underscore." };
-  }
+  const problem = usernameProblem(username);
+  if (problem) return { error: problem };
   if (!firstName || firstName.length > 40) {
     return { error: "First name is required (40 characters max)." };
   }
@@ -304,9 +302,8 @@ export async function renamePlayerAction(_prev: ActionState, formData: FormData)
 
   const user = getUser(current);
   if (!user) return { error: "That player is no longer in the archive." };
-  if (!USERNAME_RE.test(username)) {
-    return { error: "Username must be 3-24 characters: letters, numbers, hyphen or underscore." };
-  }
+  const problem = usernameProblem(username);
+  if (problem) return { error: problem };
   if (!firstName || firstName.length > 40) {
     return { error: "Display name is required (40 characters max)." };
   }

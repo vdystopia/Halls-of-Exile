@@ -403,3 +403,55 @@ test("no two seeded players share an account", async () => {
     assert.match(account, /^.+#\d{3,5}$/, `${account} is not an account name`);
   }
 });
+
+/**
+ * Path of Exile 2's rows are re-derived against its own versions: a stale code
+ * is re-parsed; a row with nothing to re-derive is stamped current so it is not
+ * re-read every boot; and a build the site's export made is rebuilt from that
+ * export even when the row also holds a code that no longer reads.
+ */
+test("Path of Exile 2 rows are re-derived against their own versions", async () => {
+  const fs = await import("node:fs");
+  const path = await import("node:path");
+  const { db, ensureSchema } = await import("../src/lib/db");
+  const { POE2_PARSER_VERSION } = await import("../src/lib/games/poe2/pob");
+  const { POE2_SITE_VERSION, readPoe2Export, storedPoe2Payload } = await import("../src/lib/games/poe2/site-export");
+
+  const user = db
+    .prepare(`INSERT INTO users (username, first_name) VALUES ('poe2-reparse', 'Test')`)
+    .run().lastInsertRowid as number;
+  const league = db.prepare(`SELECT id FROM leagues WHERE game = 'poe2' LIMIT 1`).get() as { id: number };
+  const code = fs.readFileSync(path.join(process.cwd(), "tests", "fixtures", "poe2-pob-0.2.txt"), "utf8").trim();
+  const exported = readPoe2Export(
+    JSON.parse(fs.readFileSync(path.join(process.cwd(), "tests", "fixtures", "poe2-export.json"), "utf8")),
+  );
+  const payload = JSON.stringify(storedPoe2Payload(exported.characters[0], exported));
+  const insert = db.prepare(
+    `INSERT INTO characters (user_id, league_id, slug, name, class_name, pob_code, source_payload, data, parser_version, api_version)
+     VALUES (?, ?, ?, ?, 'Warrior', ?, ?, ?, 0, 0)`,
+  );
+  insert.run(user, league.id, "coded", "Coded", code, null, JSON.stringify({ items: [] }));
+  insert.run(user, league.id, "bare", "Bare", null, null, JSON.stringify({ items: [], className: "Warrior" }));
+  insert.run(user, league.id, "site", "Site", "not a code", payload, JSON.stringify({ items: [], source: "poe2-site" }));
+
+  ensureSchema(db);
+
+  const get = (slug: string) =>
+    db.prepare(`SELECT data, parser_version, api_version FROM characters WHERE slug = ? AND user_id = ?`).get(slug, user) as {
+      data: string;
+      parser_version: number;
+      api_version: number;
+    };
+  const coded = get("coded");
+  assert.equal(JSON.parse(coded.data).ascendClassName, "Smith of Kitava");
+  assert.equal(coded.parser_version, POE2_PARSER_VERSION);
+
+  const bare = get("bare");
+  assert.equal(bare.data, JSON.stringify({ items: [], className: "Warrior" }), "nothing to re-derive it from");
+  assert.equal(bare.parser_version, POE2_PARSER_VERSION, "and it is not re-read every boot");
+  assert.equal(bare.api_version, POE2_SITE_VERSION);
+
+  const site = JSON.parse(get("site").data);
+  assert.equal(site.source, "poe2-site");
+  assert.ok(site.items.length > 0, "rebuilt from the export despite the unreadable code");
+});

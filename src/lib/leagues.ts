@@ -241,6 +241,34 @@ export const LEAGUE_SEED: LeagueSeed[] = [
     startDate: null, endDate: null, datesUncertain: true, challengeTotal: null },
 ];
 
+/**
+ * The catalogue in the order the leagues ran, across both games, oldest first:
+ * the sync numbers `sort_order` from it, and everything that asks for a
+ * player's newest league reads that. An undated event sits just after the
+ * league it ran inside (Real Fake Doryani beside Settlers of Kalguur), and a row
+ * with nothing to date it by — "Unspecified league" — counts as the oldest, so
+ * it is never anybody's latest league and its characters never the most recent.
+ */
+export function orderLeagueSeed(seed: readonly LeagueSeed[]): LeagueSeed[] {
+  const key = (league: LeagueSeed): string => {
+    if (league.startDate) return league.startDate;
+    const parent = league.parent
+      ? seed.find((other) => other.game === league.game && other.kind !== "event" && other.name === league.parent)
+      : undefined;
+    const anchor =
+      parent?.startDate ??
+      (league.patch
+        ? seed.find((other) => other.game === league.game && other.kind !== "event" && other.patch === league.patch)?.startDate
+        : undefined);
+    // "~" sorts after every digit, so the event lands after its league's own date.
+    return anchor ? `${anchor}~` : "";
+  };
+  return seed
+    .map((league, index) => ({ league, index, key: key(league) }))
+    .sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : a.index - b.index))
+    .map(({ league }) => league);
+}
+
 export const ASCENDANCIES: Record<string, string[]> = {
   Marauder: ["Juggernaut", "Berserker", "Chieftain"],
   Duelist: ["Slayer", "Gladiator", "Champion"],

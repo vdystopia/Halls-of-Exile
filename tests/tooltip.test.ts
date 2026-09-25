@@ -366,3 +366,16 @@ test("a whole-percent reduction lands on the exact figure, not one below it", ()
   // float, which would floor to 125.
   assert.deepEqual(linesOf(armour, "requires"), ["Level 62", "126 Str"]);
 });
+
+test("block is scaled in whole percentages, so an exact result is not floored away", () => {
+  // 25 x 1.16 is 28.999999999999996 as a float, which a multiplier floors to 28.
+  const shield = parseItem(
+    `Rarity: RARE
+Test Shield
+Baroque Round Shield
+Implicits: 0
+16% increased Chance to Block`,
+    9,
+  );
+  assert.equal(shieldBlock(shield), 29);
+});

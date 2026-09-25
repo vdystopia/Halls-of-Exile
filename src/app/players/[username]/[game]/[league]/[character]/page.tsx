@@ -11,7 +11,7 @@ import { SkillGroups } from "@/components/SkillGroups";
 import { SkillIcon } from "@/components/SkillIcon";
 import { AllStatsTable, AttributeStrip, ResistanceBar, StatColumn } from "@/components/StatPanels";
 import { classNameStyle } from "@/lib/games/class-colors";
-import { classLine, formatPlayed, leagueTitle, leagueWindow } from "@/lib/format";
+import { classLine, formatPlayed, formatPlayedExact, leagueTitle, leagueWindow } from "@/lib/format";
 import { leagueModifierLabel, leagueModifierTitle } from "@/lib/league-modifiers";
 import { getCharacter, getLeague, getUser } from "@/lib/queries";
 import { buildSkill, skillArt, skillNamesFor } from "@/lib/games/skills";
@@ -336,7 +336,7 @@ export default async function CharacterPage({ params }: Props) {
               weaponSets={tree?.weaponSets}
               choices={gear.choices(tree?.nodes, treeArt.version)}
               attributeChoices={tree?.attributeChoices}
-              ascendancy={character.ascendancy}
+              ascendancy={gear.treeAscendancy(character.ascendancy)}
               allocatedCount={tree?.nodeCount ?? treeNodes.length}
               treeVersion={tree?.treeVersion || treeArt.version}
               className="h-[max(420px,min(calc(100svh_-_8rem),calc(100vw_-_4.5rem)))]"
@@ -378,7 +378,7 @@ export default async function CharacterPage({ params }: Props) {
         leagueModifiers={character.leagueModifiers}
         skills={skillNamesFor(league.game)}
         notes={character.notes}
-        played={played}
+        played={formatPlayedExact(character.playedMinutes)}
         isFavorite={character.isFavorite === 1}
       />
     </div>

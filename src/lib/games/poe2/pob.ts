@@ -63,8 +63,10 @@ function idList(value: unknown): number[] {
  * 1 — the first parser.
  * 2 — a code is the whole build: it no longer takes its gear from the site's
  *     export when both are on the row (see `composePoe2Build`).
+ * 3 — a granted skill with no gem and no name is named from its skill id
+ *     ("ThornsPlayer" reads "Thorns").
  */
-export const POE2_PARSER_VERSION = 2;
+export const POE2_PARSER_VERSION = 3;
 
 /** Which game a decoded share code is for, by its root element. */
 export function codeGame(xml: string): "poe1" | "poe2" | null {
@@ -83,8 +85,18 @@ function parseStats(build: Node, element: string): Record<string, number> {
   return stats;
 }
 
+/**
+ * A skill granted by the tree or an item comes with no gem and an empty
+ * `nameSpec`, only an internal id: "ThornsPlayer", "MeleeUnarmedPlayer".
+ * Dropping the "Player" suffix and spacing the words is what the game calls it.
+ */
+function skillIdName(skillId: unknown): string {
+  if (typeof skillId !== "string") return "";
+  return skillId.replace(/Player$/, "").replace(/([a-z])([A-Z])/g, "$1 $2").trim();
+}
+
 function parseGem(node: Node): Gem {
-  const name: string = node["@_nameSpec"] || node["@_skillId"] || "Unknown gem";
+  const name: string = node["@_nameSpec"] || skillIdName(node["@_skillId"]) || "Unknown gem";
   const gemId: string = node["@_gemId"] ?? "";
   return {
     name,

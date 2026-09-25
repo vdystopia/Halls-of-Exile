@@ -163,3 +163,18 @@ test("a 0.1 build is drawn on the 0.1 tree, every passive placed", async () => {
   assert.deepEqual((tree.nodes ?? []).filter((id) => !drawn.has(id)), []);
   assert.match(svg, /asc-Infernalist/);
 });
+
+/**
+ * Abyssal Lich is its own ascendancy in the game's list, but the game's tree
+ * data gives Witch3b no passives: the Lich's are the ones it allocates. Every
+ * ascendancy must name a class the drawn tree has, or its passives stay hidden.
+ */
+test("every Path of Exile 2 ascendancy reveals passives on the newest tree", async () => {
+  const { ASCENDANCIES } = await import("../src/lib/games/poe2/classes");
+  const { treeAscendancy } = await import("../src/lib/games/poe2/tree");
+  const missing = Object.values(ASCENDANCIES)
+    .flat()
+    .filter((name) => !SVG.includes(`asc-${treeAscendancy(name)!.replace(/\s+/g, "_")}"`) && !SVG.includes(`asc-${treeAscendancy(name)!.replace(/\s+/g, "_")} `));
+  assert.deepEqual(missing, []);
+  assert.equal(treeAscendancy("Abyssal Lich"), "Lich");
+});

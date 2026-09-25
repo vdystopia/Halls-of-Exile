@@ -42,7 +42,7 @@ There are two ways to make even those unattended, and the first is much better:
 
 Deploy is `.\update.ps1` on the owner's PC, never a bare `docker compose up -d --build`:
 it backs up, pulls, rebuilds, health-checks, rolls back on failure, and holds a lock so two
-runs cannot race. **Item art is baked into the image** (`COPY /app/public`), so `npm run
+runs cannot race. `backup.mjs` keeps the newest 20 backups in a folder (`BACKUP_KEEP`). **Item art is baked into the image** (`COPY /app/public`), so `npm run
 art:fetch` has to run *before* the deploy, not after — fetching afterwards leaves the
 container serving the art it was built with. The script counts the images against the
 catalogue and warns when they are behind.
@@ -108,6 +108,12 @@ and its payload is stored in `characters.source_payload` for the same reason.
   Exile 2 arrived, since both games ship a 1.0, and `(game, patch)` broke when events arrived,
   since three of them run inside 3.25 alone. Display order comes from the start date at sync
   time, not from the seed file's order, so an event sorts beside the league it ran inside.
+  `orderLeagueSeed` owns it, and it runs **across both games**, because `sort_order` is what
+  "latest league" and "most recent characters" read: an undated event sits just after its parent
+  (Real Fake Doryani beside Settlers), and a row with nothing to date it by ("Unspecified league")
+  is the oldest. Undated rows used to sort to the end, which made the 23 unspecified characters
+  the owner's "most recent" and put Path of Exile 2 above every Path of Exile 1 league. Previous
+  and next on a league page stay within its game.
 - **Path of Exile 2's catalogue is sourced, and its gaps are marked.** Grinding Gear Games
   publish no machine-readable league list, so the 0.1–0.5.5 dates came from secondary sources
   and one of them (0.3's start) had to be settled between conflicting reports. A row whose
@@ -133,7 +139,9 @@ and its payload is stored in `characters.source_payload` for the same reason.
   covers are corrected; the rest still carry the old convention and are the ones to distrust.
 - **URLs are `/players/<user>/<game>/<league>/<character>`.** The league segment is its slug,
   not its patch: both games have an "unspecified" league and a patch does not identify a row.
-  `getLeague(game, slug)` is the only lookup; there is no patch-keyed one.
+  `getLeague(game, slug)` is the only lookup; there is no patch-keyed one. A username is the
+  segment after `/players/`, so a page there (`new`) is a reserved name: `src/lib/usernames.ts`
+  refuses it, and a test fails if a page is added under `src/app/players/` without joining the list.
 - **"Unspecified league" is Path of Exile 1 only, and closed.** The twenty-three characters
   whose league the owner's record does not name are all Path of Exile 1, and no more are
   coming — a new character arrives with its league. A second such row would put two
@@ -186,7 +194,9 @@ and its payload is stored in `characters.source_payload` for the same reason.
   also carries `min-w-0`, without which a flex child refuses to shrink below its content and
   overflows rather than fitting. A league with **no challenges keeps the meter's shape**: "No
   Challenges" where the count goes and a bar of dark stone (`.challenge-stone-bar`) where the
-  progress goes, so the column's rhythm doesn't break. **Every challenge done is radiant**:
+  progress goes, so the column's rhythm doesn't break — unless a count was recorded against it
+  anyway (a Path of Exile 2 league, an event), which shows as "9 done" over the same stone bar
+  rather than being hidden. **Every challenge done is radiant**:
   a white-hot band sweeps across the count and the bar on one 3.2s clock, the bar breathes a
   glow, and a ✦ twinkles beside the count. It's all in `globals.css` under `.challenge-radiant-*`,
   and still under `prefers-reduced-motion`. The track carries the glow on itself because the
@@ -410,7 +420,9 @@ and its payload is stored in `characters.source_payload` for the same reason.
   and reports a challenge as one. A new catalogue row fails `tests/league-logos.test.ts` until
   it has a logo.
 - **The archive header's total /played is days to two places, then whole hours**:
-  `245.88d (5901h)` from `formatPlayedTotal`. A character's own /played keeps `formatPlayed`.
+  `245.88d (5901h)` from `formatPlayedTotal`. A character's own /played keeps `formatPlayed`,
+  which rounds ("5d 3h") — so the edit form is pre-filled with `formatPlayedExact` ("5d 3h 22m")
+  instead: the form always saves the field back, and the rounded one lost the minutes on every save.
   The stat columns are content-width (`sm:grid-cols-[repeat(4,auto)]`), so a wider figure
   pushes the others left instead of spreading all four.
 - **A character is called by its ascendancy, or its class where it has none.** `classLine`
@@ -514,6 +526,9 @@ and its payload is stored in `characters.source_payload` for the same reason.
   an import onto a character that has one (which the never-overwrite rule already skips unless
   ticked), and `reparseStaleBuilds`, whose Path of Exile 2 branch rebuilds against
   `POE2_PARSER_VERSION` and `POE2_SITE_VERSION` and never reaches the Path of Exile 1 parser.
+  Rows are selected against their own game's versions and every Path of Exile 2 row it reads is
+  stamped current, rebuilt or not, so none is re-read every boot; a build the site's export made is
+  still rebuilt from it when the row also holds a code that no longer reads.
   `parseCodeFor(game, code)` refuses the other game's code by name. A code carries no character
   name, so the add form requires one rather than falling back to the main skill. Gear from a
   code is drawn from Path of Exile 2's own item-art index (`npm run art:poe2`, from repoe-fork's
@@ -534,7 +549,10 @@ and its payload is stored in `characters.source_payload` for the same reason.
   connection's own `orbit` makes it an arc of that radius, bending by its sign, when the ends are
   close enough — PoB2's `BuildConnector`. Ascendancies are moved into the empty centre, inside the
   class-start ring, scaled to fit, and only the character's is revealed; the reveal class turns
-  spaces into underscores (`asc-Acolyte_of_Chayula`), which the component matches. A "choose one"
+  spaces into underscores (`asc-Acolyte_of_Chayula`), which the component matches. The class
+  revealed is `treeAscendancy`'s: the game lists Abyssal Lich (`Witch3b`) as an ascendancy but its
+  tree data gives it no passives — it spends the Lich's — so it reveals `asc-Lich`, and a test
+  fails if any ascendancy in `poe2/classes.ts` has no class on the tree. A "choose one"
   ascendancy passive's options are written hidden (placed, so counted) and
   `poe2/tree-data/<ver>.json` maps each to its parent, so the tooltip names the option taken
   (Point Blank, not Projectile Proximity Specialisation). "+5 to any Attribute" tooltips name the
@@ -560,7 +578,13 @@ and its payload is stored in `characters.source_payload` for the same reason.
   Multiple Projectiles → Multiple Projectiles), because the data only knows the current name
   and the archive spans every version. Path of Exile 2's gems are its own index in
   `poe2/gems.ts`: 108px single-frame pictures from the export's `Art/`, and a skill name
-  shared with Path of Exile 1 ("Spark") never resolves to the other game's gem.
+  shared with Path of Exile 1 ("Spark") never resolves to the other game's gem. That index takes
+  **every released gem, not only the ones that still drop**: older saves name gems since removed
+  from the drop pool (Discipline), default attacks (Bow Shot), retired supports (Reverberate) and
+  templated ones ("Companion: River Drake", indexed by its id). Gems that still drop are indexed
+  first so a shared name takes the real gem's art; one whose base is the game's blank gem (a
+  skill an item grants) takes its skill icon instead. The skill field still offers only current
+  gems. A granted skill with no gem at all is named from its skill id ("ThornsPlayer" → "Thorns").
 - **There are two sources for a build, and they know different things.** A Path of Building
   export is an engine's opinion: it computes life, resistances and damage, and writes none of
   the game's own numbers into an item. An export from the game's character endpoints is the
@@ -620,6 +644,12 @@ and its payload is stored in `characters.source_payload` for the same reason.
   deploying nothing while looking healthy, which is the failure worth shouting about. The
   status is read anonymously, which is 60 requests an hour per address and far more than the
   few this needs; `GITHUB_TOKEN` in the environment lifts it if that is ever the obstacle.
+  **A commit that fails to deploy is not retried until Main moves.** It was green in CI and
+  failed here, so it will fail again, and after the rollback HEAD is behind Main once more — the
+  watcher used to redeploy it every tick, a backup and a full rebuild each time. It records the
+  commit in `logs/failed-deploy.sha`; a lock held by another update is not a failure. update.ps1
+  reports failure by throwing, so the watcher catches it to log it. `.\update.ps1` by hand
+  retries regardless.
 - **A player's Path of Exile account lives on the player row**, in `users.poe_account`. It is
   there so the collector script holds no configuration: it asks `/api/players` which accounts to
   read, and every export names the account it came from, so `playerForAccount` matches the two

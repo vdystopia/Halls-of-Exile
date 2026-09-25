@@ -38,11 +38,12 @@ type SkillGem = {
   gem_type?: string;
   color?: string;
   crafting_types?: unknown;
+  icon_dds_file?: string;
   base_item?: { id?: string; display_name?: string; release_state?: string } | null;
 };
 type BaseItem = { name?: string; visual_identity?: { dds_file?: string } };
 
-const PLACEHOLDER = /^Coming Soon$|^\[DNT|\{\d\}/;
+const PLACEHOLDER = /^Coming Soon$|^\[DNT|\{\d\}|^Playtest |^Removed Skill$/;
 
 async function load<T>(file: string): Promise<T> {
   process.stdout.write(`fetching ${ROOT}/${file}\n`);
@@ -64,22 +65,41 @@ async function main() {
   const colors: Record<string, string> = {};
   const skills = new Set<string>();
   let unmatched = 0;
-  for (const gem of Object.values(gems)) {
+  // Gems that still drop (they carry `crafting_types`) go first, so a name two
+  // rows share (Spark, and the Spark an item grants) takes the real gem's art.
+  // The rest are indexed too: a gem the game stopped dropping (Discipline), a
+  // default attack (Bow Shot) or a support no longer sold (Reverberate) is still
+  // in an older save, and was drawn with no picture and no colour.
+  const ordered = Object.values(gems).sort((a, b) => Number(!a.crafting_types) - Number(!b.crafting_types));
+  for (const gem of ordered) {
     const id = gem.base_item?.id;
     const name = gem.base_item?.display_name;
     if (!id || !name || gem.base_item?.release_state !== "released") continue;
-    if (!gem.crafting_types || PLACEHOLDER.test(name)) continue;
+    // A templated name ("Companion: {0}", filled with the beast tamed) is no
+    // name at all, but the gem is real: it is indexed under its id alone.
+    const templated = /\{\d\}/.test(name);
+    if (PLACEHOLDER.test(name) && !templated) continue;
     const dds = baseFor(id, name)?.visual_identity?.dds_file;
     if (!dds) {
       unmatched += 1;
       continue;
     }
-    const artPath = dds.replace(/\.dds$/, "");
-    for (const key of [id, name, name.replace(/ Support$/, "")]) {
+    // A skill an item or the ascendancy grants (Discipline, Bow Shot, the
+    // concoctions) has no gem of its own, and its base is the game's blank gem.
+    // Its skill icon is the picture the game shows for it.
+    const picture = /BlankGem/.test(dds) && gem.icon_dds_file ? gem.icon_dds_file : dds;
+    const artPath = picture.replace(/\.dds$/, "");
+    // Both spellings of the id, since the export and Path of Building 2 disagree
+    // on "Gem" and "Gems" for the same row.
+    const ids = [id, id.replace("/Gem/", "/Gems/"), id.replace("/Gems/", "/Gem/")];
+    const names = templated ? [] : [name, name.replace(/ Support$/, "")];
+    for (const key of [...ids, ...names]) {
       if (!art[key]) art[key] = artPath;
       if (gem.color && /^[rgbw]$/.test(gem.color) && !colors[key]) colors[key] = gem.color;
     }
-    if (gem.gem_type === "active" || gem.gem_type === "spirit") skills.add(name);
+    // The skill field offers only what a character can be built around today;
+    // it suggests without constraining, so an older gem can still be typed.
+    if (!templated && gem.crafting_types && (gem.gem_type === "active" || gem.gem_type === "spirit")) skills.add(name);
   }
 
   const sorted = Object.fromEntries(Object.keys(art).sort().map((key) => [key, art[key]]));

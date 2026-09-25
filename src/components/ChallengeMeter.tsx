@@ -25,6 +25,11 @@ export function ChallengeMeter({
   // the words where the count goes, a bare stone bar where the progress goes —
   // so a column of meters does not break rhythm at every league without one.
   const none = total === null;
+  // A count recorded against a league whose total nobody knows — a Path of
+  // Exile 2 league, an event — is still a result, and saying "No Challenges"
+  // over it hid what was typed in. It shows as a bare count, with no fraction
+  // to draw, over the same stone bar.
+  const countOnly = none && completed !== null;
   const ratio = none ? 0 : (challengeFraction(completed, total) ?? 0);
   const complete = !none && completed !== null && completed >= total;
   return (
@@ -37,10 +42,10 @@ export function ChallengeMeter({
         <span className={`items-center gap-1.5 ${label ? "inline-flex" : "flex"}`}>
           <span
             className={`font-display text-sm tabular-nums ${
-              none ? "text-muted" : complete ? "challenge-radiant-text" : "text-parchment"
+              none && !countOnly ? "text-muted" : complete ? "challenge-radiant-text" : "text-parchment"
             }`}
           >
-            {none ? "No Challenges" : `${completed}/${total}`}
+            {countOnly ? `${completed} done` : none ? "No Challenges" : `${completed}/${total}`}
           </span>
           {complete ? (
             <span aria-hidden className="challenge-sparkle text-xs leading-none">

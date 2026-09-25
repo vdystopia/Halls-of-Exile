@@ -35,7 +35,7 @@ export default async function LeaguePage({ params }: Props) {
   const duration = leagueDuration(league.startDate, league.endDate);
   const running = isLeagueRunning(league.startDate, league.endDate);
   const classes = getCharacterCountByClass(characters);
-  const { previous, next } = getAdjacentLeagues(user.id, league.sortOrder);
+  const { previous, next } = getAdjacentLeagues(user.id, league.game, league.sortOrder);
 
   return (
     <div className="space-y-8">

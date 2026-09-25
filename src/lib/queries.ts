@@ -1,5 +1,6 @@
 import { db } from "./db";
 import { emptyBuild } from "./games/poe1/pob";
+import { leagueTitle } from "./format";
 import type { GameId } from "./games/types";
 import { parseLeagueModifiers } from "./league-modifiers";
 import type { BuildData, Character, League, LeagueWithProgress, User } from "./types";
@@ -175,6 +176,16 @@ export function listCharacters(userId: number, leagueId: number): Character[] {
   return rows.map(mapCharacter);
 }
 
+/** A character with its league, as the player page's lists draw it. */
+export type PlayerCharacter = Character & {
+  game: GameId;
+  leagueSlug: string;
+  patch: string | null;
+  leagueName: string;
+  /** The one format for a league anywhere, from `leagueTitle`: brackets and all. */
+  leagueTitle: string;
+};
+
 /**
  * The card needs the league's game and slug to build a link, not its patch: a
  * patch does not identify a row and the URL carries the slug.
@@ -182,10 +193,11 @@ export function listCharacters(userId: number, leagueId: number): Character[] {
 export function listRecentCharacters(
   userId: number,
   limit = 6,
-): (Character & { game: GameId; leagueSlug: string; patch: string | null; leagueName: string })[] {
+): PlayerCharacter[] {
   const rows = db
     .prepare(
-      `SELECT c.*, l.game AS game, l.slug AS league_slug, l.patch AS patch, l.name AS league_name
+      `SELECT c.*, l.game AS game, l.slug AS league_slug, l.patch AS patch, l.name AS league_name,
+              l.kind AS league_kind, l.parent AS league_parent, l.expansion AS league_expansion
        FROM characters c JOIN leagues l ON l.id = c.league_id
        WHERE c.user_id = ?
        ORDER BY c.is_favorite DESC, l.sort_order DESC, c.level DESC
@@ -198,16 +210,24 @@ export function listRecentCharacters(
     leagueSlug: row.league_slug,
     patch: row.patch,
     leagueName: row.league_name,
+    leagueTitle: leagueTitle({
+      patch: row.patch,
+      name: row.league_name,
+      kind: row.league_kind,
+      parent: row.league_parent,
+      expansion: row.league_expansion,
+    }),
   }));
 }
 
 /** Every character a player has, with its league, for the player page's rollups and highlights. */
 export function listPlayerCharacters(
   userId: number,
-): (Character & { game: GameId; leagueSlug: string; patch: string | null; leagueName: string })[] {
+): PlayerCharacter[] {
   const rows = db
     .prepare(
-      `SELECT c.*, l.game AS game, l.slug AS league_slug, l.patch AS patch, l.name AS league_name
+      `SELECT c.*, l.game AS game, l.slug AS league_slug, l.patch AS patch, l.name AS league_name,
+              l.kind AS league_kind, l.parent AS league_parent, l.expansion AS league_expansion
        FROM characters c JOIN leagues l ON l.id = c.league_id
        WHERE c.user_id = ?
        ORDER BY l.sort_order DESC, c.level DESC`,
@@ -219,6 +239,13 @@ export function listPlayerCharacters(
     leagueSlug: row.league_slug,
     patch: row.patch,
     leagueName: row.league_name,
+    leagueTitle: leagueTitle({
+      patch: row.patch,
+      name: row.league_name,
+      kind: row.league_kind,
+      parent: row.league_parent,
+      expansion: row.league_expansion,
+    }),
   }));
 }
 
@@ -230,13 +257,21 @@ export function getCharacter(userId: number, leagueId: number, slug: string): Ch
   return row ? mapCharacter(row) : null;
 }
 
-/** Neighbouring leagues for walking the archive one league at a time. */
-export function getAdjacentLeagues(userId: number, sortOrder: number): { previous: League | null; next: League | null } {
+/**
+ * Neighbouring leagues for walking the archive one league at a time, within the
+ * league's own game: `sort_order` runs across both games by date, so without
+ * the filter 0.3 would lead to a Path of Exile 1 league that ran beside it.
+ */
+export function getAdjacentLeagues(
+  userId: number,
+  game: GameId,
+  sortOrder: number,
+): { previous: League | null; next: League | null } {
   const played = `AND EXISTS (SELECT 1 FROM characters c WHERE c.league_id = leagues.id AND c.user_id = ?)`;
   const pick = (comparison: string, direction: string, onlyPlayed: boolean) => {
-    const sql = `SELECT * FROM leagues WHERE sort_order ${comparison} ? ${onlyPlayed ? played : ""}
+    const sql = `SELECT * FROM leagues WHERE game = ? AND sort_order ${comparison} ? ${onlyPlayed ? played : ""}
                  ORDER BY sort_order ${direction} LIMIT 1`;
-    const args = onlyPlayed ? [sortOrder, userId] : [sortOrder];
+    const args = onlyPlayed ? [game, sortOrder, userId] : [game, sortOrder];
     const row = db.prepare(sql).get(...args) as Row;
     return row ? mapLeague(row) : null;
   };

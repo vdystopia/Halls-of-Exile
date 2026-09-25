@@ -5,6 +5,7 @@ import {
   compareNumbers,
   comparePatches,
   formatPlayed,
+  formatPlayedExact,
   formatPlayedTotal,
   isLeagueRunning,
   leagueDuration,
@@ -13,7 +14,7 @@ import {
   leagueWindow,
   parsePlayed,
 } from "../src/lib/format";
-import { LEAGUE_SEED } from "../src/lib/leagues";
+import { LEAGUE_SEED, orderLeagueSeed } from "../src/lib/leagues";
 
 const seedFor = (game: "poe1" | "poe2") => LEAGUE_SEED.filter((league) => league.game === game);
 
@@ -337,4 +338,31 @@ test("a player's total /played reads as days to two places and whole hours", () 
   assert.deepEqual(formatPlayedTotal(90), { days: "0.06d", hours: "2h" });
   assert.equal(formatPlayedTotal(0), null);
   assert.equal(formatPlayedTotal(null), null);
+});
+
+/** The edit form is pre-filled with this and always saved back, so it must survive the round trip. */
+test("an exact /played reads back to the same minutes", () => {
+  for (const minutes of [5 * 1440 + 3 * 60 + 22, 2 * 1440 + 30, 1440, 750, 45, 60, 7402]) {
+    assert.equal(parsePlayed(formatPlayedExact(minutes)!), minutes, String(minutes));
+  }
+  assert.equal(formatPlayedExact(2 * 1440 + 30), "2d 30m");
+  assert.equal(formatPlayedExact(null), null);
+});
+
+/**
+ * `sort_order` is what "latest league" and "most recent characters" read, so an
+ * undated row must not float to the top: "Unspecified league" is the oldest,
+ * an undated event sits beside the league it ran inside, and the two games
+ * interleave by date rather than one game outranking the other.
+ */
+test("the catalogue orders by when each league ran, across both games", () => {
+  const ordered = orderLeagueSeed(LEAGUE_SEED);
+  const at = (game: string, slug: string) => ordered.findIndex((row) => row.game === game && row.slug === slug);
+  assert.equal(at("poe1", "unspecified"), 0);
+  assert.equal(at("poe1", "real-fake-doryani"), at("poe1", "3.25") + 1);
+  const newest = ordered.at(-1)!;
+  const latestStart = LEAGUE_SEED.map((row) => row.startDate ?? "").sort().at(-1);
+  assert.equal(newest.startDate, latestStart);
+  const dated = ordered.filter((row) => row.startDate).map((row) => row.startDate!);
+  assert.deepEqual(dated, [...dated].sort());
 });

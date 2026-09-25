@@ -2,13 +2,14 @@ import Database from "better-sqlite3";
 import fs from "node:fs";
 import path from "node:path";
 import { ACCOUNT_SEED } from "./accounts";
-import { LEAGUE_SEED } from "./leagues";
+import { LEAGUE_SEED, orderLeagueSeed } from "./leagues";
 import { PARSER_VERSION, parsePob } from "./games/poe1/pob";
 import { exportVersion, isExportSource, rebuildFromStored } from "./games/exports";
 import { POE_API_VERSION } from "./games/poe1/poe-api";
 import { composePoe2Build } from "./games/builds";
 import { POE2_PARSER_VERSION } from "./games/poe2/pob";
 import { POE2_SITE_VERSION, type StoredPoe2Export } from "./games/poe2/site-export";
+import type { BuildData } from "./types";
 
 const DEFAULT_PATH = path.join(process.cwd(), "data", "archive.db");
 
@@ -255,11 +256,13 @@ function reparseStaleBuilds(db: Database.Database) {
       `SELECT c.id, c.pob_code, c.source_payload, c.parser_version, c.api_version, l.game,
               json_extract(c.data, '$.source') AS source
          FROM characters c JOIN leagues l ON l.id = c.league_id
-        WHERE c.parser_version < ? OR c.api_version < ?`,
+        WHERE (l.game = 'poe2' AND (c.parser_version < ? OR c.api_version < ?))
+           OR (l.game <> 'poe2' AND (c.parser_version < ? OR c.api_version < ?))`,
     )
-    // Each game's parser and each export mapper has its own version, so rows are
-    // fetched against the highest and each is checked against its own below.
-    .all(Math.max(PARSER_VERSION, POE2_PARSER_VERSION), Math.max(POE_API_VERSION, POE2_SITE_VERSION)) as {
+    // Each game's parser and each export mapper has its own version, and a row
+    // is fetched against its own game's: against the highest of the two, every
+    // row of the game with the lower one was re-read on every boot.
+    .all(POE2_PARSER_VERSION, POE2_SITE_VERSION, PARSER_VERSION, POE_API_VERSION) as {
     id: number;
     game: string;
     pob_code: string | null;
@@ -276,6 +279,7 @@ function reparseStaleBuilds(db: Database.Database) {
   const markApi = db.prepare(`UPDATE characters SET api_version = ? WHERE id = ?`);
 
   const storeBoth = db.prepare(`UPDATE characters SET data = ?, parser_version = ?, api_version = ? WHERE id = ?`);
+  const markBoth = db.prepare(`UPDATE characters SET parser_version = ?, api_version = ? WHERE id = ?`);
 
   const run = db.transaction(() => {
     for (const row of stale) {
@@ -286,19 +290,30 @@ function reparseStaleBuilds(db: Database.Database) {
       if (row.game === "poe2") {
         const codeStale = Boolean(row.pob_code) && row.parser_version < POE2_PARSER_VERSION;
         const siteStale = Boolean(row.source_payload) && row.api_version < POE2_SITE_VERSION;
-        if (!codeStale && !siteStale) continue;
-        const parser = row.pob_code ? POE2_PARSER_VERSION : row.parser_version;
-        const api = row.source_payload ? POE2_SITE_VERSION : row.api_version;
-        try {
-          const composed = composePoe2Build(
-            row.pob_code,
-            row.source_payload ? (JSON.parse(row.source_payload) as StoredPoe2Export) : null,
-          );
-          if (composed) storeBoth.run(JSON.stringify(composed), parser, api, row.id);
-        } catch {
-          // A source that no longer reads keeps the build it has.
-          db.prepare(`UPDATE characters SET parser_version = ?, api_version = ? WHERE id = ?`).run(parser, api, row.id);
+        let composed: BuildData | null = null;
+        if (codeStale || siteStale) {
+          let site: StoredPoe2Export | null = null;
+          try {
+            site = row.source_payload ? (JSON.parse(row.source_payload) as StoredPoe2Export) : null;
+            composed = composePoe2Build(row.pob_code, site);
+          } catch {
+            // A code that no longer reads keeps the build it made. A build the
+            // site's export made is still rebuilt from that export, or a mapper
+            // fix would never reach a row that also holds an unreadable code.
+            if (row.source === "poe2-site" && site) {
+              try {
+                composed = composePoe2Build(null, site);
+              } catch {
+                composed = null;
+              }
+            }
+          }
         }
+        // Both versions are stamped current whatever the row holds, so a row
+        // with nothing to re-derive — typed in by hand, or from the atlas — is
+        // read once and not again on every boot.
+        if (composed) storeBoth.run(JSON.stringify(composed), POE2_PARSER_VERSION, POE2_SITE_VERSION, row.id);
+        else markBoth.run(POE2_PARSER_VERSION, POE2_SITE_VERSION, row.id);
         continue;
       }
       // A character can hold both a share code and an export payload — imported
@@ -354,15 +369,7 @@ function syncLeagueCatalogue(db: Database.Database) {
       sort_order         = excluded.sort_order
     WHERE leagues.is_custom = 0
   `);
-  // Ordered by when a league or event actually ran, not by its position in the
-  // seed file: events are written in their own block but belong beside the
-  // league they ran inside. Anything with no known date sorts to the end.
-  const ordered = [...LEAGUE_SEED].sort((a, b) => {
-    if (a.game !== b.game) return a.game < b.game ? -1 : 1;
-    if (!a.startDate) return 1;
-    if (!b.startDate) return -1;
-    return a.startDate < b.startDate ? -1 : a.startDate > b.startDate ? 1 : 0;
-  });
+  const ordered = orderLeagueSeed(LEAGUE_SEED);
 
   // A row dropped from the seed leaves the archive too, as long as nothing is
   // filed under it — the catalogue is code-owned, so a stale row would otherwise

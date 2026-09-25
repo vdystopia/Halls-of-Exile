@@ -10,7 +10,7 @@ import { findItemArt as poe2Art } from "./poe2/item-art";
 import { DOLL_COLUMNS as POE2_COLUMNS, FLASK_SLOTS as POE2_FLASKS, PAPER_DOLL as POE2_DOLL } from "./poe2/items";
 import { DEFENCE_PANELS as POE2_DEFENCE, OFFENCE_PANELS as POE2_OFFENCE } from "./poe2/stats";
 import { buildTooltip as poe2Tooltip } from "./poe2/tooltip";
-import { chosenOptions, treeAsset as poe2TreeAsset } from "./poe2/tree";
+import { chosenOptions, treeAscendancy as poe2TreeAscendancy, treeAsset as poe2TreeAsset } from "./poe2/tree";
 import { TREE_DATA as POE2_TREE_DATA } from "./poe2/tree-data";
 import type { GameId } from "./types";
 
@@ -46,6 +46,8 @@ type Gear = {
    * option the build took. Read from the drawn version's server-side data.
    */
   choices: (nodes: number[] | undefined, drawnVersion: string | undefined) => Record<string, { name: string; stats: string[] }> | undefined;
+  /** The ascendancy whose passives the drawn tree reveals for a character of this one. */
+  treeAscendancy: (ascendancy: string | null | undefined) => string | null;
 };
 
 const GEAR: Record<GameId, Gear> = {
@@ -60,6 +62,7 @@ const GEAR: Record<GameId, Gear> = {
     offencePanels: POE1_OFFENCE,
     treeAsset: poe1TreeAsset,
     choices: () => undefined,
+    treeAscendancy: (ascendancy) => ascendancy ?? null,
   },
   poe2: {
     doll: POE2_DOLL,
@@ -72,6 +75,7 @@ const GEAR: Record<GameId, Gear> = {
     offencePanels: POE2_OFFENCE,
     treeAsset: poe2TreeAsset,
     choices: (nodes, version) => chosenOptions(nodes, version ? POE2_TREE_DATA[version] : undefined),
+    treeAscendancy: poe2TreeAscendancy,
   },
 };
 

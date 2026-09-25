@@ -48,3 +48,16 @@ export function chosenOptions(
   }
   return Object.keys(chosen).length ? chosen : undefined;
 }
+
+/**
+ * Ascendancies that spend their points on another's passives. The game lists
+ * Abyssal Lich (`Witch3b`) as its own ascendancy, but its tree data gives it no
+ * passives at all — `Witch3`, Lich, owns them — so an Abyssal Lich's allocation
+ * is on the Lich's nodes, and those are what the drawn tree has to reveal.
+ */
+const TREE_ASCENDANCY: Record<string, string> = { "Abyssal Lich": "Lich" };
+
+export function treeAscendancy(ascendancy: string | null | undefined): string | null {
+  if (!ascendancy) return null;
+  return TREE_ASCENDANCY[ascendancy] ?? ascendancy;
+}
