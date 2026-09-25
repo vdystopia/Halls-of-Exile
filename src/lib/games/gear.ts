@@ -10,6 +10,8 @@ import { findItemArt as poe2Art } from "./poe2/item-art";
 import { DOLL_COLUMNS as POE2_COLUMNS, FLASK_SLOTS as POE2_FLASKS, PAPER_DOLL as POE2_DOLL } from "./poe2/items";
 import { DEFENCE_PANELS as POE2_DEFENCE, OFFENCE_PANELS as POE2_OFFENCE } from "./poe2/stats";
 import { buildTooltip as poe2Tooltip } from "./poe2/tooltip";
+import { chosenOptions, treeAsset as poe2TreeAsset } from "./poe2/tree";
+import { TREE_DATA as POE2_TREE_DATA } from "./poe2/tree-data";
 import type { GameId } from "./types";
 
 /**
@@ -32,12 +34,18 @@ type Gear = {
   defencePanels: StatPanel[];
   offencePanels: StatPanel[];
   /**
-   * The drawn tree a build's version is shown on, or null where this game has
-   * none yet. Path of Exile 2 has none: drawing its passives on Path of Exile
-   * 1's newest tree — the fallback that game uses for an ungenerated version —
-   * would light unrelated nodes, so nothing is drawn rather than something wrong.
+   * The drawn tree a build's version is shown on: `npm run tree:svg` for Path
+   * of Exile 1, `npm run tree:poe2` for Path of Exile 2. Each game only ever
+   * falls back to its own newest tree — one game's passives on the other's
+   * tree would light unrelated nodes.
    */
   treeAsset: (version?: string) => ReturnType<typeof poe1TreeAsset> | null;
+  /**
+   * What an allocated passive became where the tree's own node cannot say, by
+   * node id: Path of Exile 2's "choose one" ascendancy passives, named by the
+   * option the build took. Read from the drawn version's server-side data.
+   */
+  choices: (nodes: number[] | undefined, drawnVersion: string | undefined) => Record<string, { name: string; stats: string[] }> | undefined;
 };
 
 const GEAR: Record<GameId, Gear> = {
@@ -51,6 +59,7 @@ const GEAR: Record<GameId, Gear> = {
     defencePanels: POE1_DEFENCE,
     offencePanels: POE1_OFFENCE,
     treeAsset: poe1TreeAsset,
+    choices: () => undefined,
   },
   poe2: {
     doll: POE2_DOLL,
@@ -61,7 +70,8 @@ const GEAR: Record<GameId, Gear> = {
     gemColor: poe2GemColor,
     defencePanels: POE2_DEFENCE,
     offencePanels: POE2_OFFENCE,
-    treeAsset: () => null,
+    treeAsset: poe2TreeAsset,
+    choices: (nodes, version) => chosenOptions(nodes, version ? POE2_TREE_DATA[version] : undefined),
   },
 };
 

@@ -519,11 +519,28 @@ and its payload is stored in `characters.source_payload` for the same reason.
   code is drawn from Path of Exile 2's own item-art index (`npm run art:poe2`, from repoe-fork's
   `/poe2/` bases and uniques; single-frame WebP that `art:fetch` downloads into
   `public/items/poe2/`), and a test fails if any equipped item in the fixture code has no picture.
-  A Path of Exile 2 tree is **not drawn** yet — `gearFor("poe2").treeAsset` is null, because
-  falling back to Path of Exile 1's newest tree would light unrelated nodes — and no tree link is
-  kept, because Path of Building 2 writes Path of Exile 1's viewer URL. Its stat panels add Spirit
+  No tree link is kept, because Path of Building 2 writes Path of Exile 1's viewer URL. Its stat panels add Spirit
   and Deflection (`poe2/stats.ts`). Path of Exile 1 keeps its rule: the last source applied is the
   build.
+- **Path of Exile 2's tree is drawn from Path of Building 2's tree data, and checked against the
+  game's.** `npm run tree:poe2` (`scripts/build-poe2-tree-svg.ts`) turns
+  `src/TreeData/<ver>/tree.json` from PathOfBuilding-PoE2 into `public/trees/poe2/<ver>.svg`, in
+  exactly Path of Exile 1's format (`n<skill>` circles, `c<a>-<b>` paths, `currentColor`), so
+  `PassiveTree` draws both games unchanged. That source is chosen because it is versioned like
+  the codes (`treeVersion="0_5"`); pathofexile2.com's copy has the game's own positions and no
+  version, so it is the test: every main-tree passive lands within 8 units of it
+  (`tests/poe2-tree.test.ts`). Its differences from Path of Exile 1's export: groups are a list
+  and a node's `group` counts from 1; orbit angles come from `orbitAnglesByOrbit`; and a
+  connection's own `orbit` makes it an arc of that radius, bending by its sign, when the ends are
+  close enough — PoB2's `BuildConnector`. Ascendancies are moved into the empty centre, inside the
+  class-start ring, scaled to fit, and only the character's is revealed; the reveal class turns
+  spaces into underscores (`asc-Acolyte_of_Chayula`), which the component matches. A "choose one"
+  ascendancy passive's options are written hidden (placed, so counted) and
+  `poe2/tree-data/<ver>.json` maps each to its parent, so the tooltip names the option taken
+  (Point Blank, not Projectile Proximity Specialisation). "+5 to any Attribute" tooltips name the
+  attribute chosen, and each weapon set's passives are coloured (orange, blue) with a legend.
+  Only 0.5 is generated; PoB2's own character import uses its latest tree, so most codes are
+  0.5, and an older one falls back to the newest Path of Exile 2 tree with the page saying so.
 - **A skill is shown with its gem or not at all, and the gem data comes from the live export.**
   Every index here is built from `repoe-fork.github.io` (Path of Exile 1 at the root, Path of
   Exile 2 under `/poe2/`), never from the RePoE GitHub repository's `master` branch: that

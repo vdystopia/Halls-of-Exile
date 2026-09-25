@@ -36,6 +36,9 @@ export function PassiveTree({
   clusters,
   masteries,
   overrides,
+  weaponSets,
+  attributeChoices,
+  choices,
   ascendancy,
   allocatedCount,
   treeVersion,
@@ -59,7 +62,16 @@ export function PassiveTree({
    * nodes only: the caller drops overrides left on refunded passives.
    */
   overrides?: Record<string, NodeOverride>;
-  /** Which ascendancy cluster to reveal; every one is stacked in the same corner. */
+  /**
+   * Path of Exile 2: the passives each weapon set spends its own points on.
+   * They are allocated like any other, and coloured by set so the two read apart.
+   */
+  weaponSets?: { 1: number[]; 2: number[] };
+  /** Path of Exile 2: the attribute each "+5 to any Attribute" passive was taken as. */
+  attributeChoices?: Record<string, "str" | "dex" | "int">;
+  /** Path of Exile 2: the option a "choose one" passive became, which its own node cannot say. */
+  choices?: Record<string, { name: string; stats: string[] }>;
+  /** Which ascendancy cluster to reveal; every one is stacked in the same place. */
   ascendancy?: string | null;
   allocatedCount: number;
   treeVersion?: string | null;
@@ -91,7 +103,9 @@ export function PassiveTree({
     const rules: string[] = [];
     // Only the ascendancy this character actually took. The generator stacks
     // all thirty-seven in one place, so without this they overlap into a blot.
-    if (ascendancy) rules.push(`.asc-${cssEscape(ascendancy)}{display:inline}`);
+    // Spaces become underscores in the class, as the generators write it —
+    // "Acolyte of Chayula" would otherwise be three classes.
+    if (ascendancy) rules.push(`.asc-${cssEscape(ascendancy.replace(/\s+/g, "_"))}{display:inline}`);
 
     let found = 0;
     for (const id of allocated) {
@@ -103,6 +117,17 @@ export function PassiveTree({
     for (const line of doc.querySelectorAll<SVGElement>("g.connections > *")) {
       const [a, b] = line.id.slice(1).split("-").map(Number);
       if (allocated.has(a) && allocated.has(b)) rules.push(`#${cssEscape(line.id)}{color:var(--tree-on)}`);
+    }
+    // A weapon set's passives, and the links between two of them, take that
+    // set's colour. After the allocation rules, so they win on order.
+    for (const set of [1, 2] as const) {
+      const ids = new Set(weaponSets?.[set] ?? []);
+      if (!ids.size) continue;
+      for (const id of ids) if (doc.getElementById(`n${id}`)) rules.push(`#n${id}{color:${WEAPON_SET_COLOR[set]}}`);
+      for (const line of doc.querySelectorAll<SVGElement>("g.connections > *")) {
+        const [a, b] = line.id.slice(1).split("-").map(Number);
+        if (ids.has(a) && ids.has(b)) rules.push(`#${cssEscape(line.id)}{color:${WEAPON_SET_COLOR[set]}}`);
+      }
     }
     // An allocated node with a runegraft or tattoo on it takes that override's
     // colour instead of gold. Written after the allocation rules on purpose:
@@ -132,7 +157,7 @@ export function PassiveTree({
       if (!existing) doc.documentElement.append(style);
     }
     setDrawn(found);
-  }, [nodes, clusters, overrides, ascendancy]);
+  }, [nodes, clusters, overrides, weaponSets, ascendancy]);
 
   // The tooltip text is baked into the SVG as data attributes, so hovering
   // costs nothing beyond reading them off the element under the pointer.
@@ -156,10 +181,18 @@ export function PassiveTree({
       const id = target.id.slice(1);
       const override = overrides?.[id];
       const chosen = masteries?.[id];
+      // "+5 to any Attribute" says what the character chose, not the choice.
+      const attribute = attributeChoices?.[id] ? ATTRIBUTE_NAME[attributeChoices[id]] : null;
+      const choice = choices?.[id];
       setHover({
-        name: override?.name ?? name,
+        name: override?.name ?? choice?.name ?? attribute ?? name,
         kind: override?.kind ?? target.getAttribute("data-kind") ?? "",
-        stats: override?.stats ?? chosen ?? (target.getAttribute("data-stats") ?? "").split(" ;; ").filter(Boolean),
+        stats:
+          override?.stats ??
+          choice?.stats ??
+          chosen ??
+          (attribute ? [`+5 to ${attribute}`] : null) ??
+          (target.getAttribute("data-stats") ?? "").split(" ;; ").filter(Boolean),
         // The rect is in the inner document's coordinates, which share an
         // origin with the object element once its own offset is added.
         x: box.left + box.width / 2 + (frame?.left ?? 0),
@@ -174,7 +207,7 @@ export function PassiveTree({
       doc.removeEventListener("mouseover", over);
       doc.removeEventListener("mouseleave", out);
     };
-  }, [ready, masteries, overrides]);
+  }, [ready, masteries, overrides, attributeChoices, choices]);
 
   // Zoom and pan by rewriting the viewBox. A CSS transform would be cheaper to
   // composite, but the viewBox keeps hit-testing and the tooltip's coordinates
@@ -284,6 +317,16 @@ export function PassiveTree({
 
       <div className="pointer-events-none absolute right-2 bottom-2 flex flex-col items-end gap-0.5 text-right">
         {/* What the two extra colours mean, shown only when the tree uses them. */}
+        {weaponSets && (weaponSets[1].length || weaponSets[2].length) ? (
+          <span className="flex gap-3 text-[11px] text-muted">
+            {([1, 2] as const).map((set) => (
+              <span key={set} className="flex items-center gap-1">
+                <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: WEAPON_SET_COLOR[set] }} />
+                weapon set {set}
+              </span>
+            ))}
+          </span>
+        ) : null}
         {overrideKinds.length ? (
           <span className="flex gap-3 text-[11px] text-muted">
             {overrideKinds.map((kind) => (
@@ -312,6 +355,15 @@ export function PassiveTree({
 }
 
 const SVG_NS = "http://www.w3.org/2000/svg";
+
+/** Path of Exile 2's two weapon sets, apart from the gold of the passives both share. */
+const WEAPON_SET_COLOR: Record<1 | 2, string> = { 1: "#f97316", 2: "#38bdf8" };
+
+const ATTRIBUTE_NAME: Record<"str" | "dex" | "int", string> = {
+  str: "Strength",
+  dex: "Dexterity",
+  int: "Intelligence",
+};
 
 /** Runegrafts in fuchsia, tattoos in lime: distinct from the gold of an ordinary allocation. */
 const OVERRIDE_COLOR: Record<NodeOverride["kind"], string> = {

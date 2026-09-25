@@ -333,6 +333,9 @@ export default async function CharacterPage({ params }: Props) {
               clusters={clusters}
               masteries={masteries}
               overrides={overrides}
+              weaponSets={tree?.weaponSets}
+              choices={gear.choices(tree?.nodes, treeArt.version)}
+              attributeChoices={tree?.attributeChoices}
               ascendancy={character.ascendancy}
               allocatedCount={tree?.nodeCount ?? treeNodes.length}
               treeVersion={tree?.treeVersion || treeArt.version}
