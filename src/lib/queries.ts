@@ -1,5 +1,6 @@
 import { db } from "./db";
 import { emptyBuild } from "./games/poe1/pob";
+import type { GameId } from "./games/types";
 import { parseLeagueModifiers } from "./league-modifiers";
 import type { BuildData, Character, League, LeagueWithProgress, User } from "./types";
 
@@ -181,7 +182,7 @@ export function listCharacters(userId: number, leagueId: number): Character[] {
 export function listRecentCharacters(
   userId: number,
   limit = 6,
-): (Character & { game: string; leagueSlug: string; patch: string | null; leagueName: string })[] {
+): (Character & { game: GameId; leagueSlug: string; patch: string | null; leagueName: string })[] {
   const rows = db
     .prepare(
       `SELECT c.*, l.game AS game, l.slug AS league_slug, l.patch AS patch, l.name AS league_name

@@ -1,0 +1,119 @@
+{
+  "portraits": {
+    "Abyssal Lich": {
+      "slug": "abyssal-lich",
+      "width": 184,
+      "height": 144
+    },
+    "Acolyte of Chayula": {
+      "slug": "acolyte-of-chayula",
+      "width": 182,
+      "height": 141
+    },
+    "Amazon": {
+      "slug": "amazon",
+      "width": 184,
+      "height": 144
+    },
+    "Blood Mage": {
+      "slug": "blood-mage",
+      "width": 182,
+      "height": 141
+    },
+    "Chronomancer": {
+      "slug": "chronomancer",
+      "width": 182,
+      "height": 141
+    },
+    "Deadeye": {
+      "slug": "deadeye",
+      "width": 182,
+      "height": 141
+    },
+    "Disciple of Varashta": {
+      "slug": "disciple-of-varashta",
+      "width": 184,
+      "height": 144
+    },
+    "Gemling Legionnaire": {
+      "slug": "gemling-legionnaire",
+      "width": 182,
+      "height": 141
+    },
+    "Infernalist": {
+      "slug": "infernalist",
+      "width": 182,
+      "height": 141
+    },
+    "Invoker": {
+      "slug": "invoker",
+      "width": 182,
+      "height": 141
+    },
+    "Lich": {
+      "slug": "lich",
+      "width": 184,
+      "height": 144
+    },
+    "Martial Artist": {
+      "slug": "martial-artist",
+      "width": 136,
+      "height": 108
+    },
+    "Oracle": {
+      "slug": "oracle",
+      "width": 184,
+      "height": 144
+    },
+    "Pathfinder": {
+      "slug": "pathfinder",
+      "width": 182,
+      "height": 141
+    },
+    "Ritualist": {
+      "slug": "ritualist",
+      "width": 184,
+      "height": 144
+    },
+    "Shaman": {
+      "slug": "shaman",
+      "width": 184,
+      "height": 144
+    },
+    "Smith of Kitava": {
+      "slug": "smith-of-kitava",
+      "width": 184,
+      "height": 144
+    },
+    "Spirit Walker": {
+      "slug": "spirit-walker",
+      "width": 136,
+      "height": 108
+    },
+    "Stormweaver": {
+      "slug": "stormweaver",
+      "width": 182,
+      "height": 141
+    },
+    "Tactician": {
+      "slug": "tactician",
+      "width": 184,
+      "height": 144
+    },
+    "Titan": {
+      "slug": "titan",
+      "width": 182,
+      "height": 141
+    },
+    "Warbringer": {
+      "slug": "warbringer",
+      "width": 182,
+      "height": 141
+    },
+    "Witchhunter": {
+      "slug": "witchhunter",
+      "width": 182,
+      "height": 141
+    }
+  }
+}

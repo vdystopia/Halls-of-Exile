@@ -120,6 +120,7 @@ export default async function LeaguePage({ params }: Props) {
               <CharacterCard
                 key={character.id}
                 character={character}
+                game={league.game}
                 href={`/players/${user.username}/${league.game}/${league.slug}/${character.slug}`}
               />
             ))}

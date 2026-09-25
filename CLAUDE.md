@@ -246,6 +246,13 @@ and its payload is stored in `characters.source_payload` for the same reason.
   elements have no business in React's reconciler or in the page's HTML — and the stylesheet
   **must be constructed in the SVG document's own window**: Chrome refuses to adopt one built
   by the parent, which took the whole page down the first time.
+  **The tree panel is as wide as the window, not the page column.** On a 4K screen the 1400px
+  column left it a postage stamp. It breaks out with symmetric negative margins
+  (`mx-[calc(50%_-_50vw_+_1.25rem)]`), so it stays centred under the column and keeps the page's
+  gutter. Never use a transform for this: a transformed ancestor becomes the containing block
+  for the tooltip's `position: fixed` and throws it off the pointer. The tree is square, so width
+  alone only adds empty sides; the box is as tall as the screen allows (`100svh - 8rem`), never
+  taller than it is wide, and at least 420px.
 - **A build is drawn on the tree it was made on.** Node ids are stable between versions but
   positions are not — about a third of an old build's nodes sit somewhere else on a current
   tree — so `treeAsset` matches `treeVersion` to a generated SVG. Only `3.29` is generated;
@@ -353,6 +360,18 @@ and its payload is stored in `characters.source_payload` for the same reason.
   a silhouette in a grid of eighty and a missing portrait is a hole in the first thing on the
   page; the whole set is 432 KB and a test fails if any ascendancy lacks one. Raider and Warden
   share one file, the way they share one emblem.
+  **Path of Exile 2's portraits come from its own wiki, and they are a different shape.** The
+  same script resolves `File:<Ascendancy> portrait.png` on poe2wiki.net for every name in
+  `poe2/classes.ts`, into `public/ascendancy/poe2/` and `src/lib/games/poe2/ascendancy-portraits.json`
+  (23 files, 200 KB, also committed and tested). Each is a close crop of the face, 136–184px wide
+  at about 1.3:1, not a 530x245 painting. So every index records each file's own size, and
+  `AscendancyPortrait` takes a height (111px in the header) and derives the width; one box for
+  both games would cut the forehead and chin off every Path of Exile 2 character. Path of Exile 2
+  has no emblem sheet, so its card icon is the portrait's centre square. Deadeye and Pathfinder
+  are names in both games and different classes in each, so art is looked up through
+  `src/lib/games/ascendancy.ts` by game and never by name alone. The wiki's files are small, so
+  the header portrait is slightly soft on a high-DPI screen. `<Name>_official_art.jpg` exists
+  there at full size if that ever matters, but it is full-body art and would need cropping.
 - **A character is called by its ascendancy, or its class where it has none.** `classLine`
   returns one name, never two: an ascendancy already names its class, so "Occultist · Witch"
   says the same thing twice and spends the widest line on the page doing it. A character with

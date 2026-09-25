@@ -66,8 +66,10 @@ export default async function PlayerPage({ params, searchParams }: Props) {
               <CharacterCard
                 key={character.id}
                 character={character}
+                game={character.game}
                 href={`/players/${user.username}/${character.game}/${character.leagueSlug}/${character.slug}`}
                 meta={`${character.patch ?? "###"} ${character.leagueName}`}
+                notes={false}
               />
             ))}
           </div>

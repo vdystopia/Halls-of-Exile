@@ -1,28 +1,114 @@
 {
-  "width": 530,
-  "height": 245,
   "portraits": {
-    "Ascendant": "ascendant",
-    "Assassin": "assassin",
-    "Berserker": "berserker",
-    "Champion": "champion",
-    "Chieftain": "chieftain",
-    "Deadeye": "deadeye",
-    "Elementalist": "elementalist",
-    "Gladiator": "gladiator",
-    "Guardian": "guardian",
-    "Hierophant": "hierophant",
-    "Inquisitor": "inquisitor",
-    "Juggernaut": "juggernaut",
-    "Luminary": "luminary",
-    "Necromancer": "necromancer",
-    "Occultist": "occultist",
-    "Pathfinder": "pathfinder",
-    "Raider": "warden",
-    "Reliquarian": "reliquarian",
-    "Saboteur": "saboteur",
-    "Slayer": "slayer",
-    "Trickster": "trickster",
-    "Warden": "warden"
+    "Ascendant": {
+      "slug": "ascendant",
+      "width": 530,
+      "height": 245
+    },
+    "Assassin": {
+      "slug": "assassin",
+      "width": 530,
+      "height": 245
+    },
+    "Berserker": {
+      "slug": "berserker",
+      "width": 530,
+      "height": 245
+    },
+    "Champion": {
+      "slug": "champion",
+      "width": 530,
+      "height": 245
+    },
+    "Chieftain": {
+      "slug": "chieftain",
+      "width": 530,
+      "height": 245
+    },
+    "Deadeye": {
+      "slug": "deadeye",
+      "width": 530,
+      "height": 245
+    },
+    "Elementalist": {
+      "slug": "elementalist",
+      "width": 530,
+      "height": 245
+    },
+    "Gladiator": {
+      "slug": "gladiator",
+      "width": 530,
+      "height": 245
+    },
+    "Guardian": {
+      "slug": "guardian",
+      "width": 530,
+      "height": 245
+    },
+    "Hierophant": {
+      "slug": "hierophant",
+      "width": 530,
+      "height": 245
+    },
+    "Inquisitor": {
+      "slug": "inquisitor",
+      "width": 530,
+      "height": 245
+    },
+    "Juggernaut": {
+      "slug": "juggernaut",
+      "width": 530,
+      "height": 245
+    },
+    "Luminary": {
+      "slug": "luminary",
+      "width": 530,
+      "height": 245
+    },
+    "Necromancer": {
+      "slug": "necromancer",
+      "width": 530,
+      "height": 245
+    },
+    "Occultist": {
+      "slug": "occultist",
+      "width": 530,
+      "height": 245
+    },
+    "Pathfinder": {
+      "slug": "pathfinder",
+      "width": 530,
+      "height": 245
+    },
+    "Raider": {
+      "slug": "warden",
+      "width": 530,
+      "height": 245
+    },
+    "Reliquarian": {
+      "slug": "reliquarian",
+      "width": 530,
+      "height": 245
+    },
+    "Saboteur": {
+      "slug": "saboteur",
+      "width": 530,
+      "height": 245
+    },
+    "Slayer": {
+      "slug": "slayer",
+      "width": 530,
+      "height": 245
+    },
+    "Trickster": {
+      "slug": "trickster",
+      "width": 530,
+      "height": 245
+    },
+    "Warden": {
+      "slug": "warden",
+      "width": 530,
+      "height": 245
+    }
   }
 }

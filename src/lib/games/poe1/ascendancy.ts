@@ -33,14 +33,14 @@ export function ascendancySheetUrl(): string {
   return index.sheet;
 }
 
-/** The class portrait: a whole file, not a crop, and always this shape. */
+/** The class portrait: a whole file, not a crop, at the size it was saved. */
 export type AscendancyPortrait = {
   src: string;
   width: number;
   height: number;
 };
 
-const PORTRAITS = portraitIndex.portraits as Record<string, string>;
+const PORTRAITS = portraitIndex.portraits as Record<string, { slug: string; width: number; height: number }>;
 
 /**
  * The ascendancy's key art, as the game draws it on the selection screen.
@@ -59,7 +59,7 @@ const PORTRAITS = portraitIndex.portraits as Record<string, string>;
  * Path of Building that exported it. Both resolve to the one file.
  */
 export function ascendancyPortrait(ascendancy?: string | null): AscendancyPortrait | null {
-  const slug = ascendancy ? PORTRAITS[ascendancy.trim()] : undefined;
-  if (!slug) return null;
-  return { src: `/ascendancy/${slug}.webp`, width: portraitIndex.width, height: portraitIndex.height };
+  const entry = ascendancy ? PORTRAITS[ascendancy.trim()] : undefined;
+  if (!entry) return null;
+  return { src: `/ascendancy/${entry.slug}.webp`, width: entry.width, height: entry.height };
 }

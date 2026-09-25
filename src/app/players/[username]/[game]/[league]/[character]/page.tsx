@@ -82,11 +82,12 @@ export default async function CharacterPage({ params }: Props) {
 
       <header className="panel p-6">
         <div className="flex flex-wrap items-start justify-between gap-6">
-          <div className="flex items-start gap-4">
+          <div className="flex flex-wrap items-start gap-4">
             {/* The class portrait, not the tree's emblem: see AscendancyPortrait.
-                Width is set and the height follows the art's own 530x245, so
-                nothing is cropped and no character is stretched. */}
-            <AscendancyPortrait ascendancy={character.ascendancy} className="aspect-[530/245] w-60" />
+                Height is set and the width follows each picture's own shape —
+                240px for Path of Exile's 530x245 painting — so nothing is
+                cropped and no character is stretched. */}
+            <AscendancyPortrait game={league.game} ascendancy={character.ascendancy} height={111} />
             <div>
               <div className="flex flex-wrap items-baseline gap-3">
                 <h1 className="display text-3xl">{character.name}</h1>
@@ -268,10 +269,16 @@ export default async function CharacterPage({ params }: Props) {
         </div>
       </div>
 
-      {/* Full width, because a tree drawn small is a smudge. The panel beside
-          the gear keeps the counts and the link out; this is the tree itself. */}
+      {/* The whole window's width, not the page column's: a tree drawn small is
+          a smudge, and on a 4K screen the 1400px column left it a postage stamp.
+          The negative margins break out of the column symmetrically, so the
+          panel stays centred under everything else, and keep the page's own
+          1.25rem gutter; margins rather than a translate, because a transform
+          would become the containing block for the tooltip's position: fixed.
+          The tree is square, so width alone only adds empty sides — the box is
+          as tall as the screen allows and never taller than it is wide. */}
       {treeArt && treeNodes.length ? (
-        <section className="panel">
+        <section className="panel mx-[calc(50%_-_50vw_+_1.25rem)]">
           <div className="panel-header">
             <h2 className="panel-title">Passive tree</h2>
             <span className="text-xs text-muted">
@@ -290,7 +297,7 @@ export default async function CharacterPage({ params }: Props) {
               ascendancy={character.ascendancy}
               allocatedCount={tree?.nodeCount ?? treeNodes.length}
               treeVersion={tree?.treeVersion || treeArt.version}
-              className="h-[420px] md:h-[620px]"
+              className="h-[max(420px,min(calc(100svh_-_8rem),calc(100vw_-_4.5rem)))]"
             />
           </div>
         </section>

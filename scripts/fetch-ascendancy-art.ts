@@ -1,9 +1,11 @@
 /**
- * Download every ascendancy's class portrait into public/ascendancy/.
+ * Download every ascendancy's class portrait, for both games, into
+ * public/ascendancy/ (Path of Exile) and public/ascendancy/poe2/.
  *
- *   npm run ascendancy:art              # fetch anything missing
- *   npm run ascendancy:art -- --force   # re-download everything
- *   npm run ascendancy:art -- --dry-run # list what would be fetched
+ *   npm run ascendancy:art                 # fetch anything missing
+ *   npm run ascendancy:art -- --force      # re-download everything
+ *   npm run ascendancy:art -- --dry-run    # list what would be fetched
+ *   npm run ascendancy:art -- --game poe2  # one game only
  *
  * This is the wide key art the game shows on the ascendancy selection screen —
  * not the round emblem in `ascendancy-icons.json`. The emblem is cropped out of
@@ -25,29 +27,65 @@
  * `npm run ascendancy:index` and this script follows. A list written out here
  * would go stale without saying so.
  *
+ * Path of Exile 2 is the same job against its own wiki, poe2wiki.net, where the
+ * picture is "<Ascendancy> portrait.png": a close crop of the face rather than
+ * a wide painting, and not all one size (182x141, 184x144 and 136x108 across
+ * 0.1 to 0.5). Its names come from `poe2/classes.ts`, the 0.5 tree's own list.
+ * Path of Exile 2 has no emblem sheet at all, so its portrait also stands in
+ * for the emblem on a character card. Because the sizes differ, every index
+ * records each file's own size and the header draws each at its own shape.
+ *
  * Unlike item art, the results are committed, and so is the index written
  * beside them. A missing item picture leaves a silhouette in a grid of eighty;
  * a missing portrait leaves a hole in the first thing on the page, and there
- * are only twenty-one of them.
+ * are only forty-four of them across both games.
  */
 import fs from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import icons from "../src/lib/games/poe1/ascendancy-icons.json";
+import { ASCENDANCIES as POE2_ASCENDANCIES } from "../src/lib/games/poe2/classes";
 
-const API = "https://www.poewiki.net/w/api.php";
-const OUTPUT_ROOT = path.join(process.cwd(), "public", "ascendancy");
-const INDEX_PATH = path.join(process.cwd(), "src", "lib", "games", "poe1", "ascendancy-portraits.json");
+type Source = {
+  api: string;
+  names: string[];
+  title: (name: string) => string;
+  /** What the wiki's file name carries beyond the ascendancy, stripped for the slug. */
+  suffix: RegExp;
+  output: string;
+  index: string;
+};
+
+const GAMES: Record<string, Source> = {
+  poe1: {
+    api: "https://www.poewiki.net/w/api.php",
+    names: Object.keys(icons.icons).sort(),
+    title: (name) => `File:${name} ascendancy class.png`,
+    suffix: /_ascendancy_class$/i,
+    output: path.join(process.cwd(), "public", "ascendancy"),
+    index: path.join(process.cwd(), "src", "lib", "games", "poe1", "ascendancy-portraits.json"),
+  },
+  poe2: {
+    api: "https://www.poe2wiki.net/api.php",
+    names: Object.values(POE2_ASCENDANCIES).flat().sort(),
+    title: (name) => `File:${name} portrait.png`,
+    suffix: /_portrait$/i,
+    output: path.join(process.cwd(), "public", "ascendancy", "poe2"),
+    index: path.join(process.cwd(), "src", "lib", "games", "poe2", "ascendancy-portraits.json"),
+  },
+};
+
 // The wiki asks that a script identify itself, and rejects some default agents.
 const USER_AGENT = "halls-of-exile (personal character archive)";
-// The source files are all 530x245. The size is kept: the header draws one at
-// about a third of that, and the spare resolution is what keeps it sharp on a
-// high-DPI screen. Only the encoding changes.
+// Sizes are kept as the wiki serves them; only the encoding changes. The Path of
+// Exile paintings are drawn at about a third of their width, which is what keeps
+// them sharp on a high-DPI screen.
 const QUALITY = 82;
 
 const flag = (name: string) => process.argv.includes(`--${name}`);
 const force = flag("force");
 const dryRun = flag("dry-run");
+const only = process.argv.includes("--game") ? process.argv[process.argv.indexOf("--game") + 1] : undefined;
 
 type ImageInfo = { url: string; width: number; height: number };
 
@@ -59,9 +97,10 @@ type ImageInfo = { url: string; width: number; height: number };
  * and rewrites a redirect's title, so position cannot be relied on. `redirects`
  * is what collapses Raider onto Warden.
  */
-async function resolve(names: string[]): Promise<Map<string, ImageInfo>> {
-  const titles = names.map((name) => `File:${name} ascendancy class.png`);
-  const url = new URL(API);
+async function resolve(source: Source): Promise<Map<string, ImageInfo>> {
+  const names = source.names;
+  const titles = names.map(source.title);
+  const url = new URL(source.api);
   url.searchParams.set("action", "query");
   url.searchParams.set("format", "json");
   url.searchParams.set("prop", "imageinfo");
@@ -110,30 +149,30 @@ async function resolve(names: string[]): Promise<Map<string, ImageInfo>> {
 }
 
 /** ".../Warden_ascendancy_class.png" -> "warden". Two names, one file, one slug. */
-function slugFor(info: ImageInfo): string {
+function slugFor(info: ImageInfo, source: Source): string {
   const file = decodeURIComponent(info.url.split("/").pop() ?? "");
   return file
     .replace(/\.[a-z]+$/i, "")
-    .replace(/_ascendancy_class$/i, "")
+    .replace(source.suffix, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-");
 }
 
-async function download(info: ImageInfo, slug: string): Promise<"saved" | "skipped" | "failed"> {
-  const destination = path.join(OUTPUT_ROOT, `${slug}.webp`);
+async function download(info: ImageInfo, slug: string, source: Source): Promise<"saved" | "skipped" | "failed"> {
+  const destination = path.join(source.output, `${slug}.webp`);
   if (!force && fs.existsSync(destination) && fs.statSync(destination).size > 0) return "skipped";
   if (dryRun) return "saved";
 
   try {
     const response = await fetch(info.url, { headers: { "user-agent": USER_AGENT } });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const source = Buffer.from(await response.arrayBuffer());
-    if (source.length === 0) throw new Error("empty body");
+    const buffer = Buffer.from(await response.arrayBuffer());
+    if (buffer.length === 0) throw new Error("empty body");
     // The wiki's PNGs run from 55 KB to 734 KB for the same 530x245 picture,
     // which is the encoder rather than the art. WebP puts them all in one range
     // and takes the set from megabytes to well under one.
-    const encoded = await sharp(source).webp({ quality: QUALITY }).toBuffer();
-    fs.mkdirSync(OUTPUT_ROOT, { recursive: true });
+    const encoded = await sharp(buffer).webp({ quality: QUALITY }).toBuffer();
+    fs.mkdirSync(source.output, { recursive: true });
     fs.writeFileSync(destination, encoded);
     return "saved";
   } catch (error) {
@@ -142,21 +181,21 @@ async function download(info: ImageInfo, slug: string): Promise<"saved" | "skipp
   }
 }
 
-async function main() {
-  const names = Object.keys(icons.icons).sort();
-  process.stdout.write(`resolving ${names.length} ascendancy portraits on the wiki\n`);
-  const resolved = await resolve(names);
+async function fetchGame(game: string, source: Source) {
+  const names = source.names;
+  process.stdout.write(`${game}: resolving ${names.length} ascendancy portraits on the wiki\n`);
+  const resolved = await resolve(source);
 
   const missing = names.filter((name) => !resolved.has(name));
   for (const name of missing) process.stderr.write(`  no portrait on the wiki for ${name}\n`);
 
   // One file can serve two names, so the downloads are deduplicated by slug
   // while the index keeps an entry for every name a build might carry.
-  const portraits: Record<string, string> = {};
+  const portraits: Record<string, { slug: string; width: number; height: number }> = {};
   const bySlug = new Map<string, ImageInfo>();
   for (const [name, info] of resolved) {
-    const slug = slugFor(info);
-    portraits[name] = slug;
+    const slug = slugFor(info, source);
+    portraits[name] = { slug, width: info.width, height: info.height };
     if (!bySlug.has(slug)) bySlug.set(slug, info);
   }
 
@@ -164,37 +203,28 @@ async function main() {
   let skipped = 0;
   let failed = 0;
   for (const [slug, info] of bySlug) {
-    const result = await download(info, slug);
+    const result = await download(info, slug, source);
     if (result === "saved") saved += 1;
     else if (result === "skipped") skipped += 1;
     else failed += 1;
   }
 
-  const shapes = [...new Set([...bySlug.values()].map((info) => `${info.width}x${info.height}`))];
-  const first = [...bySlug.values()][0];
-  if (!dryRun && failed === 0 && first) {
-    fs.writeFileSync(
-      INDEX_PATH,
-      `${JSON.stringify(
-        {
-          width: first.width,
-          height: first.height,
-          portraits: Object.fromEntries(Object.entries(portraits).sort(([a], [b]) => a.localeCompare(b))),
-        },
-        null,
-        2,
-      )}\n`,
-    );
+  if (!dryRun && failed === 0 && bySlug.size) {
+    const sorted = Object.fromEntries(Object.entries(portraits).sort(([a], [b]) => a.localeCompare(b)));
+    fs.writeFileSync(source.index, `${JSON.stringify({ portraits: sorted }, null, 2)}\n`);
   }
 
   process.stdout.write(
-    `${bySlug.size} files for ${Object.keys(portraits).length} names: ` +
+    `${game}: ${bySlug.size} files for ${Object.keys(portraits).length} names: ` +
       `${saved} saved, ${skipped} already there, ${failed} failed\n`,
   );
-  if (shapes.length > 1) {
-    process.stdout.write(`note: the portraits are not all one size (${shapes.join(", ")})\n`);
-  }
   if (failed > 0 || missing.length > 0) process.exitCode = 1;
+}
+
+async function main() {
+  for (const [game, source] of Object.entries(GAMES)) {
+    if (!only || only === game) await fetchGame(game, source);
+  }
 }
 
 main().catch((error) => {

@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
+import { ascendancyIcon as ascendancyIconFor, ascendancyPortrait as ascendancyPortraitFor } from "../src/lib/games/ascendancy";
 import { ascendancyIcon, ascendancyPortrait } from "../src/lib/games/poe1/ascendancy";
+import { ASCENDANCIES as POE2_ASCENDANCIES } from "../src/lib/games/poe2/classes";
 
 test("an ascendancy resolves to a crop of the sheet", () => {
   const icon = ascendancyIcon("Elementalist");
@@ -72,4 +74,44 @@ test("no ascendancy and an unknown one both resolve to no portrait", () => {
   assert.equal(ascendancyPortrait(null), null);
   assert.equal(ascendancyPortrait(""), null);
   assert.equal(ascendancyPortrait("Witch"), null, "a base class is not an ascendancy");
+});
+
+/**
+ * Path of Exile 2 has its own portraits, from its own wiki, and a missing one is
+ * the same hole in the header — so every ascendancy in the 0.5 tree's list has
+ * to resolve to a file that is on disk.
+ */
+test("every Path of Exile 2 ascendancy has a portrait on disk", () => {
+  for (const name of Object.values(POE2_ASCENDANCIES).flat()) {
+    const portrait = ascendancyPortraitFor("poe2", name);
+    assert.ok(portrait, `no Path of Exile 2 portrait for ${name}`);
+    assert.match(portrait.src, /^\/ascendancy\/poe2\//);
+    assert.ok(portrait.width > 0 && portrait.height > 0);
+    const file = path.join(process.cwd(), "public", portrait.src.replace(/^\//, ""));
+    assert.ok(fs.existsSync(file), `${portrait.src} is indexed but not on disk`);
+  }
+});
+
+/** Deadeye and Pathfinder are names in both games and different classes in each. */
+test("a name both games use resolves to each game's own art", () => {
+  for (const name of ["Deadeye", "Pathfinder"]) {
+    const first = ascendancyPortraitFor("poe1", name);
+    const second = ascendancyPortraitFor("poe2", name);
+    assert.ok(first && second);
+    assert.notEqual(first.src, second.src);
+  }
+  assert.equal(ascendancyPortraitFor("poe2", "Elementalist"), null, "a Path of Exile ascendancy is not a Path of Exile 2 one");
+});
+
+/** No emblem sheet exists for Path of Exile 2, so a card crops the portrait's centre square. */
+test("a Path of Exile 2 icon is the centre square of its portrait", () => {
+  const icon = ascendancyIconFor("poe2", "Spirit Walker");
+  const portrait = ascendancyPortraitFor("poe2", "Spirit Walker");
+  assert.ok(icon && portrait);
+  assert.equal(icon.src, portrait.src);
+  assert.equal(icon.w, icon.h);
+  assert.equal(icon.w, Math.min(portrait.width, portrait.height));
+  assert.ok(icon.x >= 0 && icon.x + icon.w <= icon.sheetWidth);
+  assert.ok(icon.y >= 0 && icon.y + icon.h <= icon.sheetHeight);
+  assert.equal(ascendancyIconFor("poe2", null), null);
 });
