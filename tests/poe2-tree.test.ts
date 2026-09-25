@@ -100,3 +100,20 @@ test("a 0.4 build is drawn on the 0.4 tree, every passive placed", async () => {
   assert.deepEqual((tree.nodes ?? []).filter((id) => !drawn.has(id)), []);
   assert.match(svg, /asc-Shaman/);
 });
+
+/** A level 89 Warbringer saved on tree 0.3, with passives on both weapon sets. */
+test("a 0.3 build is drawn on the 0.3 tree, weapon sets included", async () => {
+  const { parsePob2 } = await import("../src/lib/games/poe2/pob");
+  const { treeAsset } = await import("../src/lib/games/poe2/tree");
+  const code = fs.readFileSync(path.join(process.cwd(), "tests", "fixtures", "poe2-pob-0.3.txt"), "utf8").trim();
+  const build = parsePob2(code);
+  const [tree] = build.trees;
+  assert.equal(build.ascendClassName, "Warbringer");
+  assert.equal(tree.treeVersion, "0.3");
+  assert.deepEqual(treeAsset(tree.treeVersion), { src: "/trees/poe2/0.3.svg", version: "0.3", exact: true });
+  assert.ok((tree.weaponSets?.[1].length ?? 0) > 0 && (tree.weaponSets?.[2].length ?? 0) > 0);
+  const svg = fs.readFileSync(path.join(process.cwd(), "public", "trees", "poe2", "0.3.svg"), "utf8");
+  const drawn = new Set([...svg.matchAll(/<circle id="n(\d+)"/g)].map((match) => Number(match[1])));
+  assert.deepEqual((tree.nodes ?? []).filter((id) => !drawn.has(id)), []);
+  assert.match(svg, /asc-Warbringer/);
+});
