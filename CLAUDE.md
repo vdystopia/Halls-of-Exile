@@ -539,8 +539,10 @@ and its payload is stored in `characters.source_payload` for the same reason.
   `poe2/tree-data/<ver>.json` maps each to its parent, so the tooltip names the option taken
   (Point Blank, not Projectile Proximity Specialisation). "+5 to any Attribute" tooltips name the
   attribute chosen, and each weapon set's passives are coloured (orange, blue) with a legend.
-  Only 0.5 is generated; PoB2's own character import uses its latest tree, so most codes are
-  0.5, and an older one falls back to the newest Path of Exile 2 tree with the page saying so.
+  0.4 and 0.5 are generated (`VERSIONS` in the script; `npm run tree:poe2 -- 0.3` adds one). PoB2's
+  own character import uses its latest tree, so most codes are the newest version, but a save
+  made during an earlier league keeps that league's tree and is drawn on it; a version not yet
+  generated falls back to the newest Path of Exile 2 tree with the page saying so.
 - **A skill is shown with its gem or not at all, and the gem data comes from the live export.**
   Every index here is built from `repoe-fork.github.io` (Path of Exile 1 at the root, Path of
   Exile 2 under `/poe2/`), never from the RePoE GitHub repository's `master` branch: that

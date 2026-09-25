@@ -81,3 +81,22 @@ test("a 'choose one' passive is named by the option the build took", async () =>
   // The options themselves are in the document, hidden, so they count as placed.
   assert.match(SVG, /<circle id="n41875"[^>]*class="[^"]*option/);
 });
+
+/**
+ * A build saved on an older tree is drawn on that tree, not the newest: a level
+ * 94 Shaman whose Path of Building 2 save names tree 0.4.
+ */
+test("a 0.4 build is drawn on the 0.4 tree, every passive placed", async () => {
+  const { parsePob2 } = await import("../src/lib/games/poe2/pob");
+  const { treeAsset } = await import("../src/lib/games/poe2/tree");
+  const code = fs.readFileSync(path.join(process.cwd(), "tests", "fixtures", "poe2-pob-shaman-0.4.txt"), "utf8").trim();
+  const build = parsePob2(code);
+  const [tree] = build.trees;
+  assert.equal(build.ascendClassName, "Shaman");
+  assert.equal(tree.treeVersion, "0.4");
+  assert.deepEqual(treeAsset(tree.treeVersion), { src: "/trees/poe2/0.4.svg", version: "0.4", exact: true });
+  const svg = fs.readFileSync(path.join(process.cwd(), "public", "trees", "poe2", "0.4.svg"), "utf8");
+  const drawn = new Set([...svg.matchAll(/<circle id="n(\d+)"/g)].map((match) => Number(match[1])));
+  assert.deepEqual((tree.nodes ?? []).filter((id) => !drawn.has(id)), []);
+  assert.match(svg, /asc-Shaman/);
+});
