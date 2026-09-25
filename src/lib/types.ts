@@ -119,6 +119,17 @@ export type SkillGroup = {
   enabled: boolean;
   isMain: boolean;
   gems: Gem[];
+  /**
+   * Path of Exile 2 only: the weapon set a skill is used with — 1, 2, or both.
+   * Path of Building 2 records it as `set1`/`set2` on each group.
+   */
+  weaponSets?: (1 | 2)[];
+  /**
+   * Where a group comes from when it is not a gem the player socketed: Path of
+   * Building 2 writes "Default Attack" for the weapon's own attack and
+   * "Tree:<node>" for a skill a passive grants.
+   */
+  source?: string;
 };
 
 export type TreeSpec = {
@@ -177,6 +188,17 @@ export type TreeSpec = {
    * the game's endpoint as `skill_overrides`.
    */
   overrides?: Record<string, NodeOverride>;
+  /**
+   * Path of Exile 2 only: the passives allocated to each weapon set. Each set
+   * spends its own points, so a node can be lit on one set and not the other;
+   * both lists are also in `nodes`, as Path of Building 2 writes them.
+   */
+  weaponSets?: { 1: number[]; 2: number[] };
+  /**
+   * Path of Exile 2 only: which attribute each "+5 to any Attribute" passive
+   * was allocated as, by node id. The tree cannot say; the save does.
+   */
+  attributeChoices?: Record<string, "str" | "dex" | "int">;
 };
 
 export type NodeOverride = {

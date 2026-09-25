@@ -6,7 +6,9 @@ import { LEAGUE_SEED } from "./leagues";
 import { PARSER_VERSION, parsePob } from "./games/poe1/pob";
 import { exportVersion, isExportSource, rebuildFromStored } from "./games/exports";
 import { POE_API_VERSION } from "./games/poe1/poe-api";
-import { POE2_SITE_VERSION } from "./games/poe2/site-export";
+import { composePoe2Build } from "./games/builds";
+import { POE2_PARSER_VERSION } from "./games/poe2/pob";
+import { POE2_SITE_VERSION, type StoredPoe2Export } from "./games/poe2/site-export";
 
 const DEFAULT_PATH = path.join(process.cwd(), "data", "archive.db");
 
@@ -250,15 +252,16 @@ function widenLeagueUniqueness(db: Database.Database) {
 function reparseStaleBuilds(db: Database.Database) {
   const stale = db
     .prepare(
-      `SELECT id, pob_code, source_payload, parser_version, api_version,
-              json_extract(data, '$.source') AS source
-         FROM characters
-        WHERE parser_version < ? OR api_version < ?`,
+      `SELECT c.id, c.pob_code, c.source_payload, c.parser_version, c.api_version, l.game,
+              json_extract(c.data, '$.source') AS source
+         FROM characters c JOIN leagues l ON l.id = c.league_id
+        WHERE c.parser_version < ? OR c.api_version < ?`,
     )
-    // Each export mapper has its own version (see `exportVersion`), so rows are
-    // fetched against the higher of the two and each is checked against its own.
-    .all(PARSER_VERSION, Math.max(POE_API_VERSION, POE2_SITE_VERSION)) as {
+    // Each game's parser and each export mapper has its own version, so rows are
+    // fetched against the highest and each is checked against its own below.
+    .all(Math.max(PARSER_VERSION, POE2_PARSER_VERSION), Math.max(POE_API_VERSION, POE2_SITE_VERSION)) as {
     id: number;
+    game: string;
     pob_code: string | null;
     source_payload: string | null;
     parser_version: number;
@@ -272,8 +275,32 @@ function reparseStaleBuilds(db: Database.Database) {
   const storeApi = db.prepare(`UPDATE characters SET data = ?, api_version = ? WHERE id = ?`);
   const markApi = db.prepare(`UPDATE characters SET api_version = ? WHERE id = ?`);
 
+  const storeBoth = db.prepare(`UPDATE characters SET data = ?, parser_version = ?, api_version = ? WHERE id = ?`);
+
   const run = db.transaction(() => {
     for (const row of stale) {
+      // Path of Exile 2 combines its sources rather than letting the last one
+      // win (see `composePoe2Build`), so a stale version on either side
+      // rebuilds from both, against that game's own versions. It never reaches
+      // the Path of Exile 1 parser below, which would misread its code.
+      if (row.game === "poe2") {
+        const codeStale = Boolean(row.pob_code) && row.parser_version < POE2_PARSER_VERSION;
+        const siteStale = Boolean(row.source_payload) && row.api_version < POE2_SITE_VERSION;
+        if (!codeStale && !siteStale) continue;
+        const parser = row.pob_code ? POE2_PARSER_VERSION : row.parser_version;
+        const api = row.source_payload ? POE2_SITE_VERSION : row.api_version;
+        try {
+          const composed = composePoe2Build(
+            row.pob_code,
+            row.source_payload ? (JSON.parse(row.source_payload) as StoredPoe2Export) : null,
+          );
+          if (composed) storeBoth.run(JSON.stringify(composed), parser, api, row.id);
+        } catch {
+          // A source that no longer reads keeps the build it has.
+          db.prepare(`UPDATE characters SET parser_version = ?, api_version = ? WHERE id = ?`).run(parser, api, row.id);
+        }
+        continue;
+      }
       // A character can hold both a share code and an export payload — imported
       // from Path of Building, then filled in from the game. Whichever produced
       // the build it is showing is the one allowed to rewrite it; the other is

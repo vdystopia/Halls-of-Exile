@@ -52,7 +52,19 @@ export function SkillGroups({ groups, game }: { groups: SkillGroup[]; game: Game
                 ) : null}
                 {group.isMain ? <span className="tag border-gold/50 text-gold">main</span> : null}
               </span>
-              {group.slot ? <span className="text-[0.68rem] text-muted uppercase">{group.slot}</span> : null}
+              <span className="text-right text-[0.68rem] text-muted uppercase">
+                {[
+                  group.slot,
+                  // Path of Exile 2: which weapon set the skill is used with, when
+                  // it is only one of them, and where a group comes from when it
+                  // is not a gem the player socketed.
+                  group.weaponSets?.length === 1 ? `set ${group.weaponSets[0]}` : null,
+                  group.source === "Default Attack" ? "weapon attack" : null,
+                  group.source?.startsWith("Tree:") ? "from a passive" : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
             </div>
             <ul className="space-y-1 text-sm">
               {orderGems(group.gems).map((gem, gemIndex) => (

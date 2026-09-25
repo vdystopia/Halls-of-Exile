@@ -17,9 +17,9 @@ import { getCharacter, getLeague, getUser } from "@/lib/queries";
 import { buildSkill, skillArt, skillNamesFor } from "@/lib/games/skills";
 import { clusterLayout, drawnAllocation } from "@/lib/games/poe1/clusters";
 import { chosenMasteries } from "@/lib/games/poe1/masteries";
-import { treeAsset } from "@/lib/games/poe1/tree";
 import { TREE_DATA } from "@/lib/games/poe1/tree-data";
-import { DEFENCE_PANELS, humanizeStatKey, OFFENCE_PANELS } from "@/lib/games/poe1/stats";
+import { gearFor } from "@/lib/games/gear";
+import { humanizeStatKey } from "@/lib/games/poe1/stats";
 
 export const dynamic = "force-dynamic";
 
@@ -60,7 +60,8 @@ export default async function CharacterPage({ params }: Props) {
   // Which generated tree this build is drawn on, resolved here because the
   // index of what has been generated is server-side data.
   const treeNodes = tree?.nodes ?? [];
-  const treeArt = treeNodes.length ? treeAsset(tree?.treeVersion) : null;
+  const gear = gearFor(league.game);
+  const treeArt = treeNodes.length ? gear.treeAsset(tree?.treeVersion) : null;
   // Clusters are laid out here, against the tree actually being drawn, and
   // handed to the client as finished geometry: the tree data they need stays on
   // the server, the rule the art and gem indexes follow.
@@ -174,7 +175,7 @@ export default async function CharacterPage({ params }: Props) {
           <div className="space-y-4 lg:col-span-3">
             {hasStats ? (
               <>
-                <StatColumn title="Defence" panels={DEFENCE_PANELS} stats={stats} />
+                <StatColumn title="Defence" panels={gear.defencePanels} stats={stats} />
                 <ResistanceBar stats={stats} />
                 <AttributeStrip stats={stats} />
               </>
@@ -213,7 +214,7 @@ export default async function CharacterPage({ params }: Props) {
         </div>
 
         <div className="space-y-4 lg:col-span-3">
-          {hasStats ? <StatColumn title="Offence" panels={OFFENCE_PANELS} stats={stats} /> : null}
+          {hasStats ? <StatColumn title="Offence" panels={gear.offencePanels} stats={stats} /> : null}
 
           <section className="panel">
             <div className="panel-header">
@@ -243,6 +244,24 @@ export default async function CharacterPage({ params }: Props) {
                   <div className="flex justify-between">
                     <span className="text-muted">Bandit</span>
                     <span className="capitalize">{build.bandit}</span>
+                  </div>
+                ) : null}
+                {tree.weaponSets ? (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-muted">Weapon set 1</span>
+                      <span className="tabular-nums">{tree.weaponSets[1].length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted">Weapon set 2</span>
+                      <span className="tabular-nums">{tree.weaponSets[2].length}</span>
+                    </div>
+                  </>
+                ) : null}
+                {tree.treeVersion ? (
+                  <div className="flex justify-between">
+                    <span className="text-muted">Tree version</span>
+                    <span className="tabular-nums">{tree.treeVersion}</span>
                   </div>
                 ) : null}
                 {build.trees.length > 1 ? (

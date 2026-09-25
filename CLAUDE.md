@@ -501,9 +501,25 @@ and its payload is stored in `characters.source_payload` for the same reason.
   art, its own tooltip that derives nothing, and its own gem colours, because the games share
   base and gem names (Ruby Ring, Spark) and not the numbers behind them. The site's tree data is
   public but unversioned; `npm run tree:poe2:snapshot` keeps a gzipped copy per change in
-  `scripts/data/poe2-trees/`, for drawing trees later. **When the Path of Building 2 reader
-  lands, `reparseStaleBuilds` must stop sending a Path of Exile 2 share code through the Path of
-  Exile 1 parser** — it keys on `pob_code` and `PARSER_VERSION` alone today.
+  `scripts/data/poe2-trees/`, for drawing trees later.
+- **A Path of Exile 2 character combines its two sources; neither undoes the other.** A Path of
+  Building 2 code (`<PathOfBuilding2>` root, read by `poe2/pob.ts` and `poe2/pob-items.ts`) is
+  the only source of the passive tree — with `weaponSets` and the `attributeChoices` made on
+  "+5 to any Attribute" nodes — the skill-slot gems (each group's `weaponSets` and `source`:
+  "Default Attack", "Tree:<node>"), tree jewels, config and computed stats. The site's export is
+  the better source for gear. `composePoe2Build` in `src/lib/games/builds.ts` takes gear and
+  slots from the export when there is one and everything else from the code; the code's tree
+  jewels are re-id'd above 100000 so they cannot collide with the export's items. Every writer
+  goes through it — pasting a code (`updateCharacterAction`), an import filling a character
+  that has a code, and `reparseStaleBuilds`, whose Path of Exile 2 branch rebuilds from both
+  against `POE2_PARSER_VERSION` and `POE2_SITE_VERSION` and never reaches the Path of Exile 1
+  parser. `parseCodeFor(game, code)` refuses the other game's code by name. Path of Exile 1 keeps
+  its rule: the last source applied is the build. A Path of Exile 2 tree is **not drawn** yet —
+  `gearFor("poe2").treeAsset` is null, because falling back to Path of Exile 1's newest tree
+  would light unrelated nodes — and no tree link is kept, because Path of Building 2 writes Path
+  of Exile 1's viewer URL. Its stat panels add Spirit and Deflection (`poe2/stats.ts`). An item
+  from a code names no picture, so it draws a silhouette until Path of Exile 2 has an item-art
+  index.
 - **A skill is shown with its gem or not at all, and the gem data comes from the live export.**
   Every index here is built from `repoe-fork.github.io` (Path of Exile 1 at the root, Path of
   Exile 2 under `/poe2/`), never from the RePoE GitHub repository's `master` branch: that

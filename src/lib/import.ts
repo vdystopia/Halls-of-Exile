@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { db } from "./db";
 import { leagueTitle } from "./format";
+import { composeBuild } from "./games/builds";
 import {
   buildFromExport,
   exportVersion,
@@ -103,6 +104,7 @@ type MatchRow = {
   ascendancy: string | null;
   main_skill: string | null;
   skill_gem: string | null;
+  pob_code: string | null;
   /** 1 once a build has come from somewhere — a share code or an export. */
   imported: number;
 };
@@ -117,7 +119,7 @@ export type ImportUser = { id: number; username: string };
 function matchesFor(userId: number, game: GameId, name: string): MatchRow[] {
   return db
     .prepare(
-      `SELECT c.id, c.slug, c.name, c.class_name, c.ascendancy, c.main_skill, c.skill_gem, l.game, l.slug AS league,
+      `SELECT c.id, c.slug, c.name, c.class_name, c.ascendancy, c.main_skill, c.skill_gem, c.pob_code, l.game, l.slug AS league,
               (c.pob_code IS NOT NULL OR c.source_payload IS NOT NULL) AS imported
          FROM characters c JOIN leagues l ON l.id = c.league_id
         WHERE c.user_id = ? AND l.game = ? AND c.name = ? COLLATE NOCASE
@@ -341,7 +343,8 @@ export function applyImport(
     for (const character of exported.characters) {
       if (!options.include(character.name)) continue;
       const build = buildFromExport(character, exported);
-      const payload = JSON.stringify(storedPayloadFor(character, exported));
+      const stored = storedPayloadFor(character, exported);
+      const payload = JSON.stringify(stored);
       const data = JSON.stringify(build);
       const version = exportVersion(build.source);
       const found = matchesFor(user.id, exported.game, character.name);
@@ -369,13 +372,18 @@ export function applyImport(
         // said so. Without one this falls back to the old order — what is
         // there, then the guess — so an unattended import still only fills.
         const chosen = options.skillFor?.(character.name) ?? null;
+        // A Path of Exile 2 character that already holds a Path of Building 2
+        // code keeps its tree, skills and stats from it; the export brings the
+        // gear. Path of Exile 1 keeps its rule: the export is the build.
+        const composed =
+          composeBuild(exported.game, { pobCode: existing.pob_code, sitePayload: stored, fallback: build }) ?? build;
         update.run(
           character.baseClass ?? known(existing.class_name) ?? "Unknown",
           character.ascendancy ?? known(existing.ascendancy),
           character.level,
           known(existing.main_skill) ?? build.mainSkill ?? null,
           chosen ?? known(existing.skill_gem) ?? build.mainSkill ?? null,
-          data,
+          JSON.stringify(composed),
           payload,
           version,
           existing.id,

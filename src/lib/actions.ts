@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "./db";
-import { emptyBuild, fetchPobCode, isPobUrl, parsePob, PARSER_VERSION, PobError } from "./games/poe1/pob";
+import { composeBuild, parseCodeFor, parserVersionFor } from "./games/builds";
+import { emptyBuild, fetchPobCode, isPobUrl, PobError } from "./games/poe1/pob";
+import type { GameId } from "./games/types";
 import { PoeExportError, readAccountExport, type AccountExport } from "./games/exports";
 import {
   applyImport,
@@ -81,7 +83,10 @@ export async function createPlayerAction(_prev: ActionState, formData: FormData)
   redirect(`/players/${username}`);
 }
 
-async function buildFromForm(formData: FormData): Promise<{ data: BuildData; code: string | null; url: string | null }> {
+async function buildFromForm(
+  formData: FormData,
+  game: GameId,
+): Promise<{ data: BuildData; code: string | null; url: string | null }> {
   const mode = text(formData, "mode") || "manual";
   if (mode !== "pob") return { data: emptyBuild(), code: null, url: null };
 
@@ -89,7 +94,8 @@ async function buildFromForm(formData: FormData): Promise<{ data: BuildData; cod
   if (!input) throw new PobError("Paste a Path of Building code or a pobb.in / pastebin link.");
   const url = isPobUrl(input) ? input : null;
   const code = url ? await fetchPobCode(url) : input;
-  return { data: parsePob(code), code, url };
+  // Read by the character's own game's parser, which refuses the other game's code.
+  return { data: parseCodeFor(game, code), code, url };
 }
 
 function manualStats(formData: FormData): Record<string, number> {
@@ -116,7 +122,7 @@ export async function addCharacterAction(_prev: ActionState, formData: FormData)
 
   let parsed: { data: BuildData; code: string | null; url: string | null };
   try {
-    parsed = await buildFromForm(formData);
+    parsed = await buildFromForm(formData, league.game);
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Could not read that build." };
   }
@@ -168,7 +174,7 @@ export async function addCharacterAction(_prev: ActionState, formData: FormData)
     parsed.code,
     parsed.url,
     JSON.stringify(data),
-    PARSER_VERSION,
+    parserVersionFor(league.game),
   );
 
   revalidatePath(`/players/${username}`);
@@ -187,7 +193,7 @@ export async function updateCharacterAction(_prev: ActionState, formData: FormDa
 
   const existing = db
     .prepare(`SELECT * FROM characters WHERE user_id = ? AND league_id = ? AND slug = ?`)
-    .get(user.id, league.id, slug) as { id: number; data: string } | undefined;
+    .get(user.id, league.id, slug) as { id: number; data: string; source_payload: string | null } | undefined;
   if (!existing) return { error: "Character not found." };
 
   const input = text(formData, "pobInput");
@@ -199,7 +205,16 @@ export async function updateCharacterAction(_prev: ActionState, formData: FormDa
     try {
       url = isPobUrl(input) ? input : null;
       code = url ? await fetchPobCode(url) : input;
-      data = parsePob(code);
+      data = parseCodeFor(league.game, code);
+      // A Path of Exile 2 character that also holds the site's export keeps its
+      // gear from there: the code brings the tree, skills and stats, and each
+      // source replaces only what it owns. Path of Exile 1 is unchanged.
+      data =
+        composeBuild(league.game, {
+          pobCode: code,
+          sitePayload: existing.source_payload ? JSON.parse(existing.source_payload) : null,
+          fallback: data,
+        }) ?? data;
     } catch (error) {
       return { error: error instanceof Error ? error.message : "Could not read that build." };
     }
@@ -250,7 +265,7 @@ export async function updateCharacterAction(_prev: ActionState, formData: FormDa
     code,
     url,
     data ? JSON.stringify(data) : null,
-    data ? PARSER_VERSION : null,
+    data ? parserVersionFor(league.game) : null,
     existing.id,
   );
 
