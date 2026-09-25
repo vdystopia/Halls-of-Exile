@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ClusterLayout } from "@/lib/games/poe1/clusters";
+import type { NodeOverride } from "@/lib/types";
 
 /**
  * A character's passive tree, drawn.
@@ -34,6 +35,7 @@ export function PassiveTree({
   nodes,
   clusters,
   masteries,
+  overrides,
   ascendancy,
   allocatedCount,
   treeVersion,
@@ -50,6 +52,13 @@ export function PassiveTree({
    * node carries only its name; the choice is the build's, so it arrives here.
    */
   masteries?: Record<string, string[]>;
+  /**
+   * Runegrafts and tattoos by node id. The node does what the override says —
+   * a runegraft supersedes the mastery it is applied over — so the tooltip
+   * shows the override, and the node takes the override's colour. Allocated
+   * nodes only: the caller drops overrides left on refunded passives.
+   */
+  overrides?: Record<string, NodeOverride>;
   /** Which ascendancy cluster to reveal; every one is stacked in the same corner. */
   ascendancy?: string | null;
   allocatedCount: number;
@@ -95,6 +104,14 @@ export function PassiveTree({
       const [a, b] = line.id.slice(1).split("-").map(Number);
       if (allocated.has(a) && allocated.has(b)) rules.push(`#${cssEscape(line.id)}{color:var(--tree-on)}`);
     }
+    // An allocated node with a runegraft or tattoo on it takes that override's
+    // colour instead of gold. Written after the allocation rules on purpose:
+    // both are id selectors, so the later one wins. Only allocated nodes — an
+    // override on a passive the character never took does nothing.
+    for (const [id, override] of Object.entries(overrides ?? {})) {
+      if (!allocated.has(Number(id)) || !doc.getElementById(`n${id}`)) continue;
+      rules.push(`#n${id}{color:${OVERRIDE_COLOR[override.kind]}}`);
+    }
 
     // The sheet has to be constructed in the SVG document's own realm: Chrome
     // refuses to adopt one built by the parent window, which is what the first
@@ -115,7 +132,7 @@ export function PassiveTree({
       if (!existing) doc.documentElement.append(style);
     }
     setDrawn(found);
-  }, [nodes, clusters, ascendancy]);
+  }, [nodes, clusters, overrides, ascendancy]);
 
   // The tooltip text is baked into the SVG as data attributes, so hovering
   // costs nothing beyond reading them off the element under the pointer.
@@ -131,14 +148,18 @@ export function PassiveTree({
       if (!name) return setHover(null);
       const box = target.getBoundingClientRect();
       const frame = host.current?.getBoundingClientRect();
-      // A mastery's node holds only its name. The effect the character chose is
-      // the build's, not the tree's, so it comes from `masteries` — and only
-      // that one: the options not taken were never active.
-      const chosen = masteries?.[target.id.slice(1)];
+      // What the node does, most specific first. A runegraft or tattoo replaces
+      // the node outright — a runegraft over a mastery suppresses the effect
+      // chosen under it — so it wins. Otherwise a mastery shows the one effect
+      // the character chose, and only that one: the options not taken were
+      // never active. Anything else shows the tree's own lines.
+      const id = target.id.slice(1);
+      const override = overrides?.[id];
+      const chosen = masteries?.[id];
       setHover({
-        name,
-        kind: target.getAttribute("data-kind") ?? "",
-        stats: chosen ?? (target.getAttribute("data-stats") ?? "").split(" ;; ").filter(Boolean),
+        name: override?.name ?? name,
+        kind: override?.kind ?? target.getAttribute("data-kind") ?? "",
+        stats: override?.stats ?? chosen ?? (target.getAttribute("data-stats") ?? "").split(" ;; ").filter(Boolean),
         // The rect is in the inner document's coordinates, which share an
         // origin with the object element once its own offset is added.
         x: box.left + box.width / 2 + (frame?.left ?? 0),
@@ -153,7 +174,7 @@ export function PassiveTree({
       doc.removeEventListener("mouseover", over);
       doc.removeEventListener("mouseleave", out);
     };
-  }, [ready, masteries]);
+  }, [ready, masteries, overrides]);
 
   // Zoom and pan by rewriting the viewBox. A CSS transform would be cheaper to
   // composite, but the viewBox keeps hit-testing and the tooltip's coordinates
@@ -231,6 +252,10 @@ export function PassiveTree({
   }, []);
 
   const missing = drawn !== null && allocatedCount - drawn;
+  const allocatedIds = new Set(nodes);
+  const overrideKinds = (["runegraft", "tattoo"] as const).filter((kind) =>
+    Object.entries(overrides ?? {}).some(([id, override]) => override.kind === kind && allocatedIds.has(Number(id))),
+  );
 
   return (
     <div className={`relative ${className}`}>
@@ -258,6 +283,17 @@ export function PassiveTree({
       ) : null}
 
       <div className="pointer-events-none absolute right-2 bottom-2 flex flex-col items-end gap-0.5 text-right">
+        {/* What the two extra colours mean, shown only when the tree uses them. */}
+        {overrideKinds.length ? (
+          <span className="flex gap-3 text-[11px] text-muted">
+            {overrideKinds.map((kind) => (
+              <span key={kind} className="flex items-center gap-1">
+                <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: OVERRIDE_COLOR[kind] }} />
+                {kind}
+              </span>
+            ))}
+          </span>
+        ) : null}
         <span className="text-[11px] text-muted">
           {allocatedCount} passives{treeVersion ? ` · tree ${treeVersion}` : ""}
         </span>
@@ -276,6 +312,12 @@ export function PassiveTree({
 }
 
 const SVG_NS = "http://www.w3.org/2000/svg";
+
+/** Runegrafts in fuchsia, tattoos in lime: distinct from the gold of an ordinary allocation. */
+const OVERRIDE_COLOR: Record<NodeOverride["kind"], string> = {
+  runegraft: "#d946ef",
+  tattoo: "#a3e635",
+};
 
 /**
  * Append a character's clusters to the loaded tree, under the ids and classes

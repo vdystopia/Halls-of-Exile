@@ -145,7 +145,7 @@ test("records which jewels are socketed into the active tree", () => {
   <Build level="90" className="Witch"/>
   <Tree activeSpec="2">
     <Spec title="Levelling" nodes="1,2"><Sockets><Socket itemId="1" nodeId="100"/></Sockets></Spec>
-    <Spec title="Current" nodes="1,2,3">
+    <Spec title="Current" nodes="1,2,3,200,300">
       <Sockets><Socket itemId="2" nodeId="200"/><Socket itemId="3" nodeId="300"/></Sockets>
     </Spec>
   </Tree>
@@ -181,6 +181,39 @@ Implicits: 0
   const build = parsePob(encode(xml));
   assert.deepEqual(build.treeJewels, [2, 3], "only the active tree's sockets count");
   assert.equal(build.items.length, 4, "the spares are still parsed, just not in use");
+});
+
+/**
+ * A real save listed one medium cluster in six sockets, two of them refunded,
+ * and left a Watcher's Eye on a socket it no longer held; the gear panel drew
+ * the cluster six times and React warned about the repeated key.
+ */
+test("a tree jewel counts once, and only in a socket the tree holds", () => {
+  const jewel = (id: number, name: string) => `    <Item id="${id}">Rarity: RARE
+${name}
+Crimson Jewel
+Implicits: 0
++10 to Strength
+    </Item>`;
+  const xml = `<?xml version="1.0"?>
+<PathOfBuilding>
+  <Build level="90" className="Witch"/>
+  <Tree activeSpec="1">
+    <Spec title="Current" nodes="1,200,300,400">
+      <Sockets>
+        <Socket itemId="1" nodeId="200"/><Socket itemId="1" nodeId="300"/><Socket itemId="1" nodeId="500"/>
+        <Socket itemId="2" nodeId="600"/><Socket itemId="3" nodeId="400"/><Socket itemId="0" nodeId="1"/>
+      </Sockets>
+    </Spec>
+  </Tree>
+  <Items activeItemSet="1">
+${jewel(1, "Planned Cluster")}
+${jewel(2, "Refunded Jewel")}
+${jewel(3, "Kept Jewel")}
+    <ItemSet id="1"><Slot name="Weapon 1" itemId="0"/></ItemSet>
+  </Items>
+</PathOfBuilding>`;
+  assert.deepEqual(parsePob(encode(xml)).treeJewels, [1, 3]);
 });
 
 /** The colour lookup needs the metadata id, since a name can be transfigured. */

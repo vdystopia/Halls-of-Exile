@@ -281,12 +281,14 @@ test("a game export's chosen masteries resolve to the text the game reports", ()
     const reported = (character.raw?.passives?.masteries ?? []) as { effect_id: number; stats: string[] }[];
     const effects = spec.masteryEffects ?? {};
     for (const [node, effect] of Object.entries(effects)) {
-      // The one place the collector is wrong, across 473 masteries checked:
-      // it labels VronDmon's Life Mastery (node 292, effect 47642 — "+30 to
-      // maximum Life", one of that node's own options) as "Runegraft of
-      // Refraction", a different effect that happens to share the id number.
-      // The tree's lookup is right; this pins that it stays right.
-      if (character.name === "VronDmon" && node === "292") {
+      // A runegraft over the mastery. VronDmon chose "+30 to maximum Life" on
+      // this Life Mastery and then applied Runegraft of Refraction over it, which
+      // supersedes the choice. The collector reports what is in force — the
+      // runegraft — so it is compared against the override, and the choice
+      // underneath still resolves to the mastery's own option.
+      const override = spec.overrides?.[node];
+      if (override?.kind === "runegraft") {
+        assert.deepEqual(override.stats, reported.find((mastery) => mastery.effect_id === effect)?.stats);
         assert.deepEqual(chosen[node], ["+30 to maximum Life"]);
         checked += 1;
         continue;
@@ -317,4 +319,55 @@ test("a mastery with no recorded choice gets no invented text", () => {
   assert.deepEqual(chosenMasteries({ nodeCount: 0, masteryCount: 0 }, tree), {});
   // An effect id this tree does not know is omitted, not guessed at.
   assert.deepEqual(chosenMasteries({ nodeCount: 0, masteryCount: 0, masteryEffects: { "1": 99999999 } }, tree), {});
+});
+
+/**
+ * A runegraft is applied over an allocated mastery and replaces its effect; a
+ * tattoo replaces an ordinary passive. The endpoint reports both in
+ * `skill_overrides`, flagging a runegraft `isMastery`.
+ */
+test("a game export's runegrafts and tattoos are kept, each for what it is", () => {
+  const exported = readPoeExport(fixture("cluster-export.json"));
+  const vron = exported.characters.find((character) => character.name === "VronDmon");
+  assert.ok(vron);
+  const overrides = buildFromPoeExport(vron, exported).trees[0].overrides ?? {};
+  assert.deepEqual(overrides["292"], {
+    kind: "runegraft",
+    name: "Runegraft of Refraction",
+    stats: ["Fire at most 1 Projectile", "Projectiles Fork", "Projectiles Chain an additional time"],
+  });
+  const tattoos = Object.values(overrides).filter((override) => override.kind === "tattoo");
+  assert.ok(tattoos.length > 0 && tattoos.every((tattoo) => tattoo.name.startsWith("Tattoo of")));
+
+  const optimal = exported.characters.find((character) => character.name === "OptimalDystopia");
+  assert.ok(optimal);
+  const theirs = Object.values(buildFromPoeExport(optimal, exported).trees[0].overrides ?? {});
+  assert.equal(theirs.length, 28);
+  assert.ok(theirs.every((override) => override.kind === "tattoo"), "no runegraft on this character");
+});
+
+/**
+ * Path of Building stores the same overrides as `<Override nodeId dn>` with the
+ * lines as text. The fixture's three trees each carry three runegrafts, and the
+ * nodes they sit on are masteries on the tree — which is what makes them
+ * runegrafts rather than tattoos.
+ */
+test("a Path of Building save's runegrafts sit on masteries and keep their lines", () => {
+  const build = parsePob(encode(fixture("pob-clusters.xml")));
+  const svg = fs.readFileSync(path.join(process.cwd(), "public", "trees", "3.29.svg"), "utf8");
+  for (const spec of build.trees) {
+    const runegrafts = Object.entries(spec.overrides ?? {}).filter(([, override]) => override.kind === "runegraft");
+    assert.deepEqual(
+      runegrafts.map(([node]) => node).sort(),
+      ["4139", "41415", "48505"],
+      `${spec.title} runegrafts`,
+    );
+    for (const [node, override] of runegrafts) {
+      assert.match(svg, new RegExp(`<circle id="n${node}"[^>]*class="mastery"`), `${node} is not a mastery`);
+      assert.ok(override.stats.length > 0, `${override.name} has no lines`);
+    }
+    const fortress = spec.overrides?.["48505"];
+    assert.deepEqual(fortress?.stats, ["10% reduced Attributes", "40% increased Global Defences", "Limited to 1 Runegraft of the Fortress"]);
+    assert.ok(Object.values(spec.overrides ?? {}).some((override) => override.kind === "tattoo"), `${spec.title} has no tattoos`);
+  }
 });

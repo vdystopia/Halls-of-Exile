@@ -1,5 +1,5 @@
 import { attributeRequirementPercent, parseSocketString } from "./items";
-import type { BuildData, ClusterGraph, Gem, ParsedItem, PassiveDetail, SkillGroup } from "../../types";
+import type { BuildData, ClusterGraph, Gem, NodeOverride, ParsedItem, PassiveDetail, SkillGroup } from "../../types";
 
 /**
  * Read an export produced by `poe-char-export` — the script that pulls a whole
@@ -40,8 +40,9 @@ export const POE_EXPORT_SCHEMA = 1;
  * 3 — keeps each socketed cluster jewel's layout and its allocated passives, so
  *     the tree can draw the clusters too.
  * 4 — keeps the effect chosen on each allocated mastery.
+ * 5 — keeps runegrafts and tattoos, which replace what a node does.
  */
-export const POE_API_VERSION = 4;
+export const POE_API_VERSION = 5;
 
 export class PoeExportError extends Error {}
 
@@ -538,6 +539,19 @@ export function buildFromPoeExport(character: PoeExportCharacter, export_: PoeEx
     .map((hash: unknown) => Number(hash))
     .filter((hash: number) => Number.isFinite(hash) && hash >= 0);
   const clusterGraphs = mapClusterGraphs(apiPassives.jewel_data);
+  // Runegrafts and tattoos. The endpoint flags a runegraft `isMastery` — it is
+  // applied over an allocated mastery and supersedes it — and a tattoo
+  // `isTattoo`; both carry the name and lines the node now has.
+  const overrides: Record<string, NodeOverride> = {};
+  for (const [node, entry] of Object.entries((apiPassives.skill_overrides ?? {}) as Record<string, Json>)) {
+    const name = str(entry?.name);
+    if (!name) continue;
+    overrides[node] = {
+      kind: entry?.isMastery || /^Runegraft\b/i.test(name) ? "runegraft" : "tattoo",
+      name,
+      stats: Array.isArray(entry?.stats) ? entry.stats.map(String) : [],
+    };
+  }
   // Mastery node → chosen effect, so the tree can say what each mastery does.
   const masteryEffects: Record<string, number> = {};
   for (const [node, effect] of Object.entries((apiPassives.mastery_effects ?? {}) as Record<string, unknown>)) {
@@ -570,6 +584,7 @@ export function buildFromPoeExport(character: PoeExportCharacter, export_: PoeEx
         nodes: allocatedHashes.length ? allocatedHashes : undefined,
         ...(clusterGraphs.length ? { clusterGraphs, extendedNodes } : {}),
         ...(Object.keys(masteryEffects).length ? { masteryEffects } : {}),
+        ...(Object.keys(overrides).length ? { overrides } : {}),
       },
     ],
     activeTree: 0,

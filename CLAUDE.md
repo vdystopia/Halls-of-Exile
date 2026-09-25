@@ -306,10 +306,21 @@ and its payload is stored in `characters.source_payload` for the same reason.
   store the choice as mastery node → effect id (Path of Building's `masteryEffects`, the
   endpoint's `mastery_effects`), kept as `TreeSpec.masteryEffects`; the text comes from the tree
   data's `masteryEffects`, resolved server-side by `chosenMasteries`. The collector resolves the
-  same choice itself and agrees in 472 of 473 cases; the one it gets wrong (VronDmon's Life
-  Mastery, labelled "Runegraft of Refraction" because a runegraft shares the id number) is pinned
-  in a test. The "Allocated" panel still reads the collector's resolution, so that one line is
-  wrong there until the panel reads the tree's.
+  same choice itself and agrees in all 473 cases. The one that looked like a disagreement,
+  VronDmon's Life Mastery reported as "Runegraft of Refraction", is the collector being right: a
+  runegraft applied over an allocated mastery supersedes it, and the mastery's choice stays in
+  the data underneath, inactive.
+  **Runegrafts and tattoos replace what a node does, and the tree says so.** Both sources carry
+  them — the endpoint's `skill_overrides` (`isMastery` marks a runegraft, `isTattoo` a tattoo),
+  Path of Building's `<Overrides><Override nodeId dn>` with the stat lines as its text, kind
+  told apart by the name starting "Runegraft" — kept as `TreeSpec.overrides`. The tooltip reads
+  override, then chosen mastery effect, then the tree's own lines. An overridden node is drawn
+  **fuchsia (`#d946ef`) for a runegraft, lime (`#a3e635`) for a tattoo**, and the footer carries
+  a legend only for the kinds present. Only allocated nodes count: Path of Building keeps an
+  override on a node after it is refunded (h3r4ld's save has a runegraft on an unallocated
+  mastery), so the page filters to the allocation before the tree sees them. Jewel sockets have
+  the same habit — a jewel left on a refunded socket, one item listed in several — which is why
+  `parseTreeJewels` keeps allocated sockets only and each item once.
   Class start nodes are drawn for the opposite reason to nested sockets: every build allocates
   one, and leaving it out made every character report one phantom missing passive. A passive the
   tree still cannot place — an unreadable jewel, a notable a fallback tree version lacks — is

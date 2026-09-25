@@ -2,7 +2,7 @@ import zlib from "node:zlib";
 import { XMLParser } from "fast-xml-parser";
 import { parseItem } from "./items";
 import { readClusterJewel } from "./clusters";
-import type { BuildData, ClusterJewelData, Gem, ParsedItem, SkillGroup, TreeSpec } from "../../types";
+import type { BuildData, ClusterJewelData, Gem, NodeOverride, ParsedItem, SkillGroup, TreeSpec } from "../../types";
 
 const parser = new XMLParser({
   ignoreAttributes: false,
@@ -153,9 +153,22 @@ function parseTreeJewels(root: Node): number[] {
   const treeNode = root?.Tree;
   const specs = toArray<Node>(treeNode?.Spec);
   const active = specs[(num(treeNode?.["@_activeSpec"]) ?? 1) - 1] ?? specs[0];
-  return toArray<Node>(active?.Sockets?.Socket)
+  // Path of Building keeps a jewel assigned to a socket after the socket is
+  // refunded, and lets one item sit in several sockets as a planning shortcut —
+  // one saved build lists the same medium cluster in six. Only an allocated
+  // socket holds anything, and an item is one piece of gear however many
+  // sockets name it. A spec old enough to carry no node list is taken on trust.
+  const listed = typeof active?.["@_nodes"] === "string" && active["@_nodes"].trim() !== "";
+  const allocated = new Set(
+    String(active?.["@_nodes"] ?? "")
+      .split(",")
+      .map((id) => Number(id.trim())),
+  );
+  const ids = toArray<Node>(active?.Sockets?.Socket)
+    .filter((socket) => !listed || allocated.has(num(socket["@_nodeId"]) ?? 0))
     .map((socket) => num(socket["@_itemId"]))
     .filter((id): id is number => Boolean(id));
+  return [...new Set(ids)];
 }
 
 /**
@@ -169,6 +182,28 @@ function readMasteryEffects(value: string): Record<string, number> | undefined {
     if (Number(effect) < 65536) chosen[node] = Number(effect);
   }
   return Object.keys(chosen).length ? chosen : undefined;
+}
+
+/**
+ * Runegrafts and tattoos, from the spec's `<Override nodeId dn …>` elements,
+ * whose text is the override's stat lines. Path of Building files both under
+ * its tattoo data; a runegraft is the one whose name says so, and it is the one
+ * applied over a mastery.
+ */
+function readOverrides(spec: Node): Record<string, NodeOverride> | undefined {
+  const overrides: Record<string, NodeOverride> = {};
+  for (const entry of toArray<Node>(spec?.Overrides?.Override)) {
+    const node = num(entry?.["@_nodeId"]);
+    const name = typeof entry?.["@_dn"] === "string" ? entry["@_dn"].trim() : "";
+    if (!node || !name) continue;
+    const text: string = typeof entry === "string" ? entry : (entry["#text"] ?? "");
+    const stats = String(text)
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    overrides[String(node)] = { kind: /^Runegraft\b/i.test(name) ? "runegraft" : "tattoo", name, stats };
+  }
+  return Object.keys(overrides).length ? overrides : undefined;
 }
 
 function parseTrees(root: Node): { trees: TreeSpec[]; activeTree: number } {
@@ -196,6 +231,7 @@ function parseTrees(root: Node): { trees: TreeSpec[]; activeTree: number } {
       // attribute predates the attribute, and is format 1.
       clusterHashFormat: num(spec["@_clusterHashFormatVersion"]) ?? (spec["@_nodes"] ? 1 : 2),
       masteryEffects: readMasteryEffects(masteries),
+      overrides: readOverrides(spec),
     };
   });
   const active = num(treeNode?.["@_activeSpec"]) ?? 1;
@@ -293,8 +329,13 @@ function parseConfig(root: Node): { name: string; value: string }[] {
  *     no longer reads as its first implicit.
  * 6 — each tree records the effect chosen on every allocated mastery, so the
  *     tree's tooltip can say what the mastery does rather than only name it.
+ * 7 — each tree records its runegrafts and tattoos, which replace what a node
+ *     does, so the tooltip shows the override rather than the tree's text.
+ * 8 — a tree jewel counts only in an allocated socket, and once: Path of
+ *     Building leaves jewels on refunded sockets and lets one item fill
+ *     several, and the gear panel drew every one of them.
  */
-export const PARSER_VERSION = 6;
+export const PARSER_VERSION = 8;
 
 /** Turn a Path of Building export into the structure the character page renders. */
 export function parsePob(code: string): BuildData {

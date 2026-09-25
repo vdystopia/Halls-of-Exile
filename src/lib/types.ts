@@ -168,6 +168,21 @@ export type TreeSpec = {
    * game's endpoint as `mastery_effects` — and the text comes from the tree.
    */
   masteryEffects?: Record<string, number>;
+  /**
+   * Nodes whose effect is replaced, by node id. A **runegraft** is applied over
+   * an allocated mastery and supersedes its chosen effect entirely; a **tattoo**
+   * replaces an ordinary passive. Either way the node does what the override
+   * says, not what the tree says, so the tooltip shows the override's name and
+   * lines. Both sources record them: Path of Building as `<Override>` elements,
+   * the game's endpoint as `skill_overrides`.
+   */
+  overrides?: Record<string, NodeOverride>;
+};
+
+export type NodeOverride = {
+  kind: "runegraft" | "tattoo";
+  name: string;
+  stats: string[];
 };
 
 /**

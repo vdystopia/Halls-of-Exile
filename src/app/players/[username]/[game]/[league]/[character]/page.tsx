@@ -60,6 +60,13 @@ export default async function CharacterPage({ params }: Props) {
   const clusters = clusterLayout(tree, treeData);
   const litNodes = tree ? drawnAllocation(tree, clusters, treeData) : [];
   const masteries = chosenMasteries(tree, treeData);
+  // Path of Building keeps a runegraft or tattoo on a node after the node is
+  // refunded, and an override on a passive the character does not hold does
+  // nothing — so only the allocated ones reach the tree, tooltip and colour alike.
+  const lit = new Set(litNodes);
+  const overrides = tree?.overrides
+    ? Object.fromEntries(Object.entries(tree.overrides).filter(([id]) => lit.has(Number(id))))
+    : undefined;
 
   return (
     <div className="space-y-6">
@@ -279,6 +286,7 @@ export default async function CharacterPage({ params }: Props) {
               nodes={litNodes}
               clusters={clusters}
               masteries={masteries}
+              overrides={overrides}
               ascendancy={character.ascendancy}
               allocatedCount={tree?.nodeCount ?? treeNodes.length}
               treeVersion={tree?.treeVersion || treeArt.version}
