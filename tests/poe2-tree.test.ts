@@ -64,8 +64,8 @@ test("each game only ever falls back to its own tree", async () => {
   const { treeAsset: poe2 } = await import("../src/lib/games/poe2/tree");
   const { treeAsset: poe1 } = await import("../src/lib/games/poe1/tree");
   assert.deepEqual(poe2("0.5"), { src: "/trees/poe2/0.5.svg", version: "0.5", exact: true });
-  assert.equal(poe2("0.1")?.exact, false);
-  assert.match(poe2("0.1")?.src ?? "", /^\/trees\/poe2\//);
+  assert.equal(poe2("0.0")?.exact, false);
+  assert.match(poe2("0.0")?.src ?? "", /^\/trees\/poe2\//);
   assert.doesNotMatch(poe1("0.5")?.src ?? "", /poe2/);
 });
 
@@ -132,4 +132,24 @@ test("a 0.2 build is drawn on the 0.2 tree, every passive placed", async () => {
   const drawn = new Set([...svg.matchAll(/<circle id="n(\d+)"/g)].map((match) => Number(match[1])));
   assert.deepEqual((tree.nodes ?? []).filter((id) => !drawn.has(id)), []);
   assert.match(svg, /asc-Smith_of_Kitava/);
+});
+
+/**
+ * A 0.1 Infernalist imported into Path of Building 2 during 0.5. Every PoB2 save
+ * says targetVersion="0_1"; the tree it holds is the spec's, and this one is
+ * the character's allocation today, on 0.5.
+ */
+test("the tree version is the spec's, not the build's targetVersion", async () => {
+  const { parsePob2 } = await import("../src/lib/games/poe2/pob");
+  const code = fs.readFileSync(path.join(process.cwd(), "tests", "fixtures", "poe2-pob-0.1.txt"), "utf8").trim();
+  const build = parsePob2(code);
+  assert.equal(build.ascendClassName, "Infernalist");
+  assert.equal(build.trees[0].treeVersion, "0.5");
+  assert.deepEqual((build.trees[0].nodes ?? []).filter((id) => !circles().has(String(id))), []);
+});
+
+test("0.1 is generated from Path of Building 2's 0.1 tree data", () => {
+  const svg = fs.readFileSync(path.join(process.cwd(), "public", "trees", "poe2", "0.1.svg"), "utf8");
+  assert.ok([...svg.matchAll(/<circle id="n\d+"/g)].length > 2500);
+  assert.match(svg, /asc-Infernalist/);
 });

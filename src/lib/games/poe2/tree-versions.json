@@ -1,6 +1,11 @@
 {
   "versions": [
     {
+      "version": "0.1",
+      "sha": "0147a870fa1b49ad5d056a4be24b01b843682852",
+      "nodes": 2916
+    },
+    {
       "version": "0.2",
       "sha": "0147a870fa1b49ad5d056a4be24b01b843682852",
       "nodes": 3154
