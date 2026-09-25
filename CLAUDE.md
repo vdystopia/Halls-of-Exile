@@ -525,6 +525,13 @@ bugs can pass there and still fail on the server.
 
 ## Working with the owner
 
+- **Still in development: nothing stored is final (as of 2026-09-24).** The owner uploads the
+  finished characters only once development is done, so every character in the archive today,
+  dev or deployed, is test data. Re-deriving, reshaping or breaking stored builds is fine, and so
+  is changing the import process. Perfecting the functionality comes first. The rules above
+  still describe how the finished product must behave, so keep their guards; just don't let
+  protecting today's rows hold a fix back. Remove this note when final uploads begin.
+
 - Wants scientific, critical, objective answers. No preamble, no restating the question,
   no flattery. Recommend one option rather than surveying five.
 - Flag guesses as guesses and put uncertainty in the data model rather than hiding it —
