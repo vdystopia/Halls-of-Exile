@@ -52,6 +52,8 @@ export type TreeData = {
   /** Expansion sockets per group, in the order the export lists the group's nodes. */
   groupSockets: Record<string, number[]>;
   clusterNodes: Record<string, { stats: string[]; keystone?: true }>;
+  /** Every mastery effect's text, by effect id. */
+  masteryEffects: Record<string, string[]>;
 };
 
 type JewelDef = {

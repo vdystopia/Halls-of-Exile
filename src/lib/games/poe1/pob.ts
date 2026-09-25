@@ -158,6 +158,19 @@ function parseTreeJewels(root: Node): number[] {
     .filter((id): id is number => Boolean(id));
 }
 
+/**
+ * "{27733,61071},{53188,64875}" into mastery node → chosen effect. Path of
+ * Building skips an effect of 65536 or more, which is a code from a profile
+ * import rather than an effect id, and so does this.
+ */
+function readMasteryEffects(value: string): Record<string, number> | undefined {
+  const chosen: Record<string, number> = {};
+  for (const [, node, effect] of value.matchAll(/\{(\d+),(\d+)\}/g)) {
+    if (Number(effect) < 65536) chosen[node] = Number(effect);
+  }
+  return Object.keys(chosen).length ? chosen : undefined;
+}
+
 function parseTrees(root: Node): { trees: TreeSpec[]; activeTree: number } {
   const treeNode = root?.Tree;
   const specs = toArray<Node>(treeNode?.Spec);
@@ -182,6 +195,7 @@ function parseTrees(root: Node): { trees: TreeSpec[]; activeTree: number } {
       // Path of Building's own default: a spec with a node list and no format
       // attribute predates the attribute, and is format 1.
       clusterHashFormat: num(spec["@_clusterHashFormatVersion"]) ?? (spec["@_nodes"] ? 1 : 2),
+      masteryEffects: readMasteryEffects(masteries),
     };
   });
   const active = num(treeNode?.["@_activeSpec"]) ?? 1;
@@ -277,8 +291,10 @@ function parseConfig(root: Node): { name: string; value: string }[] {
  * 5 — each tree records the cluster jewel in each socket, so the page can lay
  *     the clusters out; and a cluster jewel's "Cluster Jewel Node Count" header
  *     no longer reads as its first implicit.
+ * 6 — each tree records the effect chosen on every allocated mastery, so the
+ *     tree's tooltip can say what the mastery does rather than only name it.
  */
-export const PARSER_VERSION = 5;
+export const PARSER_VERSION = 6;
 
 /** Turn a Path of Building export into the structure the character page renders. */
 export function parsePob(code: string): BuildData {

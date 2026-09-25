@@ -302,6 +302,14 @@ and its payload is stored in `characters.source_payload` for the same reason.
     enchant** as one mod with a newline in it, so lines are split before matching (six skills);
     and a nested socket is **named by what it accepts** — a medium cluster in a large socket
     borrows a medium socket's id but offers a small socket, as the game labels it.
+  A mastery's tooltip shows **the effect the character chose, and only that one**. Both sources
+  store the choice as mastery node → effect id (Path of Building's `masteryEffects`, the
+  endpoint's `mastery_effects`), kept as `TreeSpec.masteryEffects`; the text comes from the tree
+  data's `masteryEffects`, resolved server-side by `chosenMasteries`. The collector resolves the
+  same choice itself and agrees in 472 of 473 cases; the one it gets wrong (VronDmon's Life
+  Mastery, labelled "Runegraft of Refraction" because a runegraft shares the id number) is pinned
+  in a test. The "Allocated" panel still reads the collector's resolution, so that one line is
+  wrong there until the panel reads the tree's.
   Class start nodes are drawn for the opposite reason to nested sockets: every build allocates
   one, and leaving it out made every character report one phantom missing passive. A passive the
   tree still cannot place — an unreadable jewel, a notable a fallback tree version lacks — is

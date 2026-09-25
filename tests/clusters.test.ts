@@ -5,6 +5,7 @@ import test from "node:test";
 import zlib from "node:zlib";
 import { clusterBase, clusterLayout, drawnAllocation, layoutFromGraphs, layoutFromJewels, readClusterJewel } from "../src/lib/games/poe1/clusters";
 import { parseItem } from "../src/lib/games/poe1/items";
+import { chosenMasteries } from "../src/lib/games/poe1/masteries";
 import { buildFromPoeExport, readPoeExport } from "../src/lib/games/poe1/poe-api";
 import { parsePob } from "../src/lib/games/poe1/pob";
 import { TREE_DATA } from "../src/lib/games/poe1/tree-data";
@@ -263,4 +264,57 @@ test("the tree data carries a proxy group for every expansion socket", () => {
   }
   assert.equal(Object.values(tree.sockets).filter((socket) => socket.size === 2).length, 6, "six large sockets");
   assert.ok(Object.keys(tree.clusterNodes).length > 250, "cluster notables are missing");
+});
+
+/**
+ * A mastery offers several effects and the character chose one. The tooltip
+ * shows that one, resolved from the tree data by the effect id the build
+ * stores. The collector resolves the same choice independently from the game's
+ * own response, so its text is the oracle: 37 masteries across the fixture.
+ */
+test("a game export's chosen masteries resolve to the text the game reports", () => {
+  const exported = readPoeExport(fixture("cluster-export.json"));
+  let checked = 0;
+  for (const character of exported.characters) {
+    const spec = buildFromPoeExport(character, exported).trees[0];
+    const chosen = chosenMasteries(spec, tree);
+    const reported = (character.raw?.passives?.masteries ?? []) as { effect_id: number; stats: string[] }[];
+    const effects = spec.masteryEffects ?? {};
+    for (const [node, effect] of Object.entries(effects)) {
+      // The one place the collector is wrong, across 473 masteries checked:
+      // it labels VronDmon's Life Mastery (node 292, effect 47642 — "+30 to
+      // maximum Life", one of that node's own options) as "Runegraft of
+      // Refraction", a different effect that happens to share the id number.
+      // The tree's lookup is right; this pins that it stays right.
+      if (character.name === "VronDmon" && node === "292") {
+        assert.deepEqual(chosen[node], ["+30 to maximum Life"]);
+        checked += 1;
+        continue;
+      }
+      const expected = reported.find((mastery) => mastery.effect_id === effect)?.stats;
+      assert.ok(expected, `${character.name}: the collector reports no effect ${effect}`);
+      assert.deepEqual(chosen[node], expected, `${character.name}: mastery ${node} resolved differently`);
+      checked += 1;
+    }
+  }
+  assert.equal(checked, 37);
+});
+
+/** Path of Building stores the same choice as "{node,effect}" pairs. */
+test("a Path of Building save's chosen masteries resolve, one effect each", () => {
+  const build = parsePob(encode(fixture("pob-clusters.xml")));
+  for (const spec of build.trees) {
+    const effects = spec.masteryEffects ?? {};
+    const chosen = chosenMasteries(spec, tree);
+    assert.ok(Object.keys(effects).length > 0, `${spec.title} stored no mastery choices`);
+    for (const node of Object.keys(effects)) {
+      assert.ok(chosen[node]?.length, `${spec.title}: mastery ${node} has no text on the 3.29 tree`);
+    }
+  }
+});
+
+test("a mastery with no recorded choice gets no invented text", () => {
+  assert.deepEqual(chosenMasteries({ nodeCount: 0, masteryCount: 0 }, tree), {});
+  // An effect id this tree does not know is omitted, not guessed at.
+  assert.deepEqual(chosenMasteries({ nodeCount: 0, masteryCount: 0, masteryEffects: { "1": 99999999 } }, tree), {});
 });

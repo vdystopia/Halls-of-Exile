@@ -160,6 +160,14 @@ export type TreeSpec = {
    */
   clusterGraphs?: ClusterGraph[];
   extendedNodes?: number[];
+  /**
+   * Which effect was chosen on each allocated mastery: mastery node id to
+   * effect id. A mastery offers several and exactly one is active, so without
+   * this the tree can only name the mastery, not say what it does. Both sources
+   * record it — Path of Building as `masteryEffects="{node,effect},…"`, the
+   * game's endpoint as `mastery_effects` — and the text comes from the tree.
+   */
+  masteryEffects?: Record<string, number>;
 };
 
 /**

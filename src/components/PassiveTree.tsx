@@ -33,6 +33,7 @@ export function PassiveTree({
   src,
   nodes,
   clusters,
+  masteries,
   ascendancy,
   allocatedCount,
   treeVersion,
@@ -44,6 +45,11 @@ export function PassiveTree({
   nodes: number[];
   /** This character's clusters, already placed. */
   clusters?: ClusterLayout | null;
+  /**
+   * The effect chosen on each allocated mastery, by node id. A mastery's own
+   * node carries only its name; the choice is the build's, so it arrives here.
+   */
+  masteries?: Record<string, string[]>;
   /** Which ascendancy cluster to reveal; every one is stacked in the same corner. */
   ascendancy?: string | null;
   allocatedCount: number;
@@ -125,10 +131,14 @@ export function PassiveTree({
       if (!name) return setHover(null);
       const box = target.getBoundingClientRect();
       const frame = host.current?.getBoundingClientRect();
+      // A mastery's node holds only its name. The effect the character chose is
+      // the build's, not the tree's, so it comes from `masteries` — and only
+      // that one: the options not taken were never active.
+      const chosen = masteries?.[target.id.slice(1)];
       setHover({
         name,
         kind: target.getAttribute("data-kind") ?? "",
-        stats: (target.getAttribute("data-stats") ?? "").split(" ;; ").filter(Boolean),
+        stats: chosen ?? (target.getAttribute("data-stats") ?? "").split(" ;; ").filter(Boolean),
         // The rect is in the inner document's coordinates, which share an
         // origin with the object element once its own offset is added.
         x: box.left + box.width / 2 + (frame?.left ?? 0),
@@ -143,7 +153,7 @@ export function PassiveTree({
       doc.removeEventListener("mouseover", over);
       doc.removeEventListener("mouseleave", out);
     };
-  }, [ready]);
+  }, [ready, masteries]);
 
   // Zoom and pan by rewriting the viewBox. A CSS transform would be cheaper to
   // composite, but the viewBox keeps hit-testing and the tooltip's coordinates

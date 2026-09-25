@@ -77,6 +77,7 @@ type Node = {
    * means the socket lives *inside* another jewel rather than on the tree.
    */
   expansionJewel?: { size?: number; index?: number; proxy?: string; parent?: string };
+  masteryEffects?: { effect: number; stats?: string[] }[];
 };
 
 type Group = { x: number; y: number; orbits?: number[]; nodes?: string[]; isProxy?: boolean };
@@ -415,6 +416,13 @@ function clusterSupport(tree: Tree, version: string, sha: string) {
   const sockets: Record<string, unknown> = {};
   const proxyGroups: Record<string, { group: number; x: number; y: number; orbit: number; orbitIndex: number }> = {};
   const clusterNodes: Record<string, { stats: string[]; keystone?: true }> = {};
+  // Every mastery effect by its id. A build records which effect it chose for
+  // each allocated mastery — as an id — and the tooltip shows that effect's text
+  // rather than the mastery's bare name.
+  const masteryEffects: Record<string, string[]> = {};
+  for (const node of Object.values(tree.nodes)) {
+    for (const effect of node.masteryEffects ?? []) masteryEffects[String(effect.effect)] = effect.stats ?? [];
+  }
   // Path of Building finds a nested socket by searching a group's own node list
   // and taking the first with the right index — so the order is kept, per group,
   // exactly as the export lists it.
@@ -473,6 +481,7 @@ function clusterSupport(tree: Tree, version: string, sha: string) {
     proxyGroups,
     groupSockets,
     clusterNodes,
+    masteryEffects,
   };
 }
 

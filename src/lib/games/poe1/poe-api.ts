@@ -39,8 +39,9 @@ export const POE_EXPORT_SCHEMA = 1;
  *     character page can draw the tree.
  * 3 — keeps each socketed cluster jewel's layout and its allocated passives, so
  *     the tree can draw the clusters too.
+ * 4 — keeps the effect chosen on each allocated mastery.
  */
-export const POE_API_VERSION = 3;
+export const POE_API_VERSION = 4;
 
 export class PoeExportError extends Error {}
 
@@ -537,6 +538,12 @@ export function buildFromPoeExport(character: PoeExportCharacter, export_: PoeEx
     .map((hash: unknown) => Number(hash))
     .filter((hash: number) => Number.isFinite(hash) && hash >= 0);
   const clusterGraphs = mapClusterGraphs(apiPassives.jewel_data);
+  // Mastery node → chosen effect, so the tree can say what each mastery does.
+  const masteryEffects: Record<string, number> = {};
+  for (const [node, effect] of Object.entries((apiPassives.mastery_effects ?? {}) as Record<string, unknown>)) {
+    const id = Number(effect);
+    if (Number.isFinite(id)) masteryEffects[node] = id;
+  }
 
   return {
     source: "poe-api",
@@ -562,6 +569,7 @@ export function buildFromPoeExport(character: PoeExportCharacter, export_: PoeEx
         // is a reading taken today, not a record of an older tree.
         nodes: allocatedHashes.length ? allocatedHashes : undefined,
         ...(clusterGraphs.length ? { clusterGraphs, extendedNodes } : {}),
+        ...(Object.keys(masteryEffects).length ? { masteryEffects } : {}),
       },
     ],
     activeTree: 0,
