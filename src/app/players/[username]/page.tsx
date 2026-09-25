@@ -5,11 +5,10 @@ import { BuildCard } from "@/components/BuildCard";
 import { BuildRanking } from "@/components/BuildRanking";
 import { ClassRollup } from "@/components/ClassRollup";
 import { CharacterBanner } from "@/components/CharacterBanner";
-import { CharacterCard } from "@/components/CharacterCard";
 import { LeagueIndex } from "@/components/LeagueIndex";
 import { PlayerAdmin } from "@/components/PlayerAdmin";
 import { Section } from "@/components/Section";
-import { formatPlayed, formatPlayedTotal } from "@/lib/format";
+import { formatPlayedTotal } from "@/lib/format";
 import { buildSkill, skillArt } from "@/lib/games/skills";
 import { GAME_NAMES } from "@/lib/games/types";
 import { rollupByClass, rollupBySkill } from "@/lib/metrics";
@@ -68,15 +67,18 @@ export default async function PlayerPage({ params, searchParams }: Props) {
     .sort((a, b) => (b.playedMinutes ?? 0) - (a.playedMinutes ?? 0))
     .slice(0, 3);
   const level100 = characters.filter((c) => c.level === 100);
-  const card = (character: (typeof characters)[number], lead?: string | null) => (
-    <CharacterCard
-      key={character.id}
-      character={character}
-      game={character.game}
-      href={`/players/${user.username}/${character.game}/${character.leagueSlug}/${character.slug}`}
-      meta={[lead, `${character.patch ?? "###"} ${character.leagueName}`].filter(Boolean).join(" · ")}
-      notes={false}
-    />
+  // One banner per row, in every list here: each is the character page's
+  // header, compressed, and three abreast would leave no room for its name.
+  const banners = (list: typeof characters) => (
+    <div className="grid gap-3">
+      {list.map((character) => (
+        <CharacterBanner
+          key={character.id}
+          character={character}
+          href={`/players/${user.username}/${character.game}/${character.leagueSlug}/${character.slug}`}
+        />
+      ))}
+    </div>
   );
 
   return (
@@ -119,17 +121,7 @@ export default async function PlayerPage({ params, searchParams }: Props) {
 
       {mostPlayed.length ? (
         <Section title="Most played">
-          {/* One banner per row: each is the character page's header, compressed,
-              and three abreast would leave no room for its name. */}
-          <div className="grid gap-3">
-            {mostPlayed.map((character) => (
-              <CharacterBanner
-                key={character.id}
-                character={character}
-                href={`/players/${user.username}/${character.game}/${character.leagueSlug}/${character.slug}`}
-              />
-            ))}
-          </div>
+          {banners(mostPlayed)}
         </Section>
       ) : null}
 
@@ -141,9 +133,7 @@ export default async function PlayerPage({ params, searchParams }: Props) {
             </>
           }
         >
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {level100.map((character) => card(character, formatPlayed(character.playedMinutes) ? `/played ${formatPlayed(character.playedMinutes)}` : null))}
-          </div>
+          {banners(level100)}
         </Section>
       ) : null}
 
@@ -155,18 +145,7 @@ export default async function PlayerPage({ params, searchParams }: Props) {
 
       {recent.length ? (
         <Section title="Pinned & most recent">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {recent.map((character) => (
-              <CharacterCard
-                key={character.id}
-                character={character}
-                game={character.game}
-                href={`/players/${user.username}/${character.game}/${character.leagueSlug}/${character.slug}`}
-                meta={`${character.patch ?? "###"} ${character.leagueName}`}
-                notes={false}
-              />
-            ))}
-          </div>
+          {banners(recent)}
         </Section>
       ) : null}
 

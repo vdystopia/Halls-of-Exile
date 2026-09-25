@@ -110,6 +110,8 @@ test("an estimated end date is rendered as a projection", () => {
   assert.equal(leagueWindow("2026-07-24", "2026-11-24", false), "24 Jul 2026 — 24 Nov 2026");
   assert.equal(leagueWindow("2026-07-24", null), "24 Jul 2026 — ongoing");
   assert.equal(leagueWindow(null, null), "dates unknown");
+  assert.equal(leagueWindow("2026-07-04", "2026-11-24", true, "month-first"), "Jul 04 2026 — ~Nov 24 2026");
+  assert.equal(leagueWindow("2026-07-04", null, false, "month-first"), "Jul 04 2026 — ongoing");
 });
 
 test("a league is running until its end date passes", () => {

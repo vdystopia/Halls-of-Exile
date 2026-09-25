@@ -1,9 +1,17 @@
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-export function formatDate(iso: string | null): string {
+/**
+ * "24 Jul 2026", or with `"month-first"` "Jul 24 2026" — the league index's
+ * order, where the day is padded to two digits so the dates line up down the
+ * column.
+ */
+export type DateOrder = "day-first" | "month-first";
+
+export function formatDate(iso: string | null, order: DateOrder = "day-first"): string {
   if (!iso) return "—";
   const [year, month, day] = iso.split("-").map((part) => Number(part));
   if (!year || !month || !day) return iso;
+  if (order === "month-first") return `${MONTHS[month - 1]} ${String(day).padStart(2, "0")} ${year}`;
   return `${day} ${MONTHS[month - 1]} ${year}`;
 }
 
@@ -11,10 +19,15 @@ export function formatDate(iso: string | null): string {
  * The league's live window. An estimated end date is prefixed with "~" so a
  * projection never reads like an announced date.
  */
-export function leagueWindow(start: string | null, end: string | null, estimated = false): string {
+export function leagueWindow(
+  start: string | null,
+  end: string | null,
+  estimated = false,
+  order: DateOrder = "day-first",
+): string {
   if (!start) return "dates unknown";
-  if (!end) return `${formatDate(start)} — ongoing`;
-  return `${formatDate(start)} — ${estimated ? "~" : ""}${formatDate(end)}`;
+  if (!end) return `${formatDate(start, order)} — ongoing`;
+  return `${formatDate(start, order)} — ${estimated ? "~" : ""}${formatDate(end, order)}`;
 }
 
 /** True while the league is still being played. */

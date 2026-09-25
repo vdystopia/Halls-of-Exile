@@ -304,7 +304,7 @@ export function LeagueIndex({
                   {running ? <span className="tag border-gold/50 text-gold">live</span> : null}
                 </span>
                 <span className="block text-xs text-forest">
-                  {leagueWindow(league.startDate, league.endDate, Boolean(league.endDateEstimated))}
+                  {leagueWindow(league.startDate, league.endDate, Boolean(league.endDateEstimated), "month-first")}
                   {league.endDateEstimated ? " · end date tentative" : ""}
                 </span>
               </span>
