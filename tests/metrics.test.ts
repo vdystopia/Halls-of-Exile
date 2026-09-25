@@ -56,16 +56,28 @@ test("the two games are never added together, even for a shared class name", () 
   );
 });
 
-test("builds rank by /played, not by how many characters tried them", () => {
-  const builds = rollupBySkill([
+test("builds rank by character count by default, and by /played when asked", () => {
+  const characters = [
     character({ skill: "Arc", playedMinutes: 60 }),
     character({ skill: "arc", playedMinutes: 60, ascendancy: "Elementalist" }),
     character({ skill: "Winter Orb", playedMinutes: 5000 }),
     character({ skill: null, playedMinutes: 99999 }),
-  ]);
+  ];
   assert.deepEqual(
-    builds.map((b) => [b.name, b.characters, b.playedMinutes]),
-    [["Winter Orb", 1, 5000], ["Arc", 2, 120]],
+    rollupBySkill(characters).map((b) => [b.name, b.characters, b.playedMinutes]),
+    [["Arc", 2, 120], ["Winter Orb", 1, 5000]],
   );
-  assert.deepEqual(builds[1].classes.sort(), ["Elementalist", "Necromancer"]);
+  assert.deepEqual(
+    rollupBySkill(characters, "played").map((b) => b.name),
+    ["Winter Orb", "Arc"],
+  );
+  assert.deepEqual(rollupBySkill(characters)[0].classes.sort(), ["Elementalist", "Necromancer"]);
+});
+
+test("a tie on one measure is broken by the other", () => {
+  const characters = [
+    character({ skill: "Arc", playedMinutes: 60 }),
+    character({ skill: "Spark", playedMinutes: 600 }),
+  ];
+  assert.deepEqual(rollupBySkill(characters).map((b) => b.name), ["Spark", "Arc"]);
 });

@@ -119,13 +119,16 @@ export function rollupByClass(characters: MetricCharacter[]): { game: GameId; cl
 }
 
 /**
- * Builds by the skill they were built around, longest /played first — the
- * question is which build got the hours, and a skill tried on five characters
- * for an evening each has not earned more than one played for a whole league.
- * Characters with no skill recorded are left out rather than pooled. A skill is
+ * Builds by the skill they were built around, ranked two ways: by how many
+ * characters used it, or by the hours they got — a skill tried on five
+ * characters for an evening each ranks first by one and last by the other.
+ * Each breaks its ties with the other measure. Characters with no skill recorded are left out rather than pooled. A skill is
  * kept per game: the two games share skill names and nothing else about them.
  */
-export function rollupBySkill(characters: MetricCharacter[]): (Rollup & { game: GameId })[] {
+export function rollupBySkill(
+  characters: MetricCharacter[],
+  by: "characters" | "played" = "characters",
+): (Rollup & { game: GameId })[] {
   const games = [...new Set(characters.map((c) => c.game))];
   return games
     .flatMap((game) =>
@@ -139,7 +142,9 @@ export function rollupBySkill(characters: MetricCharacter[]): (Rollup & { game: 
         classes: mostCommon(members, (c) => known(c.ascendancy) ?? known(c.className)),
       })),
     )
-    .sort(
-      (a, b) => b.playedMinutes - a.playedMinutes || b.characters - a.characters || a.name.localeCompare(b.name),
-    );
+    .sort((a, b) => {
+      const played = b.playedMinutes - a.playedMinutes;
+      const count = b.characters - a.characters;
+      return (by === "played" ? played || count : count || played) || a.name.localeCompare(b.name);
+    });
 }

@@ -2,10 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddLeagueForm } from "@/components/AddLeagueForm";
 import { BuildCard } from "@/components/BuildCard";
+import { BuildRanking } from "@/components/BuildRanking";
 import { ClassRollup } from "@/components/ClassRollup";
 import { CharacterCard } from "@/components/CharacterCard";
 import { LeagueIndex } from "@/components/LeagueIndex";
 import { PlayerAdmin } from "@/components/PlayerAdmin";
+import { Section } from "@/components/Section";
 import { formatPlayed, formatPlayedTotal } from "@/lib/format";
 import { buildSkill, skillArt } from "@/lib/games/skills";
 import { GAME_NAMES } from "@/lib/games/types";
@@ -49,7 +51,17 @@ export default async function PlayerPage({ params, searchParams }: Props) {
     skill: buildSkill(c.game, c.skillGem, c.mainSkill),
   }));
   const byClass = rollupByClass(facts);
-  const builds = rollupBySkill(facts).slice(0, 4);
+  const buildGrid = (by: "characters" | "played") => {
+    const top = rollupBySkill(facts, by).slice(0, 4);
+    return (
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {top.map((build, index) => (
+          <BuildCard key={`${build.game}/${build.name}`} build={build} art={skillArt(build.game, build.name)} rank={index + 1} />
+        ))}
+      </div>
+    );
+  };
+  const hasBuilds = facts.some((c) => c.skill);
   const mostPlayed = characters
     .filter((c) => c.playedMinutes)
     .sort((a, b) => (b.playedMinutes ?? 0) - (a.playedMinutes ?? 0))
@@ -105,39 +117,35 @@ export default async function PlayerPage({ params, searchParams }: Props) {
       </header>
 
       {mostPlayed.length ? (
-        <section>
-          <h2 className="display mb-4 text-xl">Most played</h2>
+        <Section title="Most played">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {mostPlayed.map((character) => card(character, `/played ${formatPlayed(character.playedMinutes)}`))}
           </div>
-        </section>
+        </Section>
       ) : null}
 
       {level100.length ? (
-        <section>
-          <h2 className="display mb-4 text-xl">
-            Level 100 <span className="text-base text-muted">· {level100.length}</span>
-          </h2>
+        <Section
+          title={
+            <>
+              Level 100 <span className="text-base text-muted">· {level100.length}</span>
+            </>
+          }
+        >
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {level100.map((character) => card(character, formatPlayed(character.playedMinutes) ? `/played ${formatPlayed(character.playedMinutes)}` : null))}
           </div>
-        </section>
+        </Section>
       ) : null}
 
-      {builds.length ? (
-        <section>
-          <h2 className="display mb-4 text-xl">Most played builds</h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {builds.map((build, index) => (
-              <BuildCard key={`${build.game}/${build.name}`} build={build} art={skillArt(build.game, build.name)} rank={index + 1} />
-            ))}
-          </div>
-        </section>
+      {hasBuilds ? (
+        <Section title="Most played builds">
+          <BuildRanking byCharacters={buildGrid("characters")} byPlayed={buildGrid("played")} />
+        </Section>
       ) : null}
 
       {recent.length ? (
-        <section>
-          <h2 className="display mb-4 text-xl">Pinned &amp; most recent</h2>
+        <Section title="Pinned & most recent">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {recent.map((character) => (
               <CharacterCard
@@ -150,36 +158,42 @@ export default async function PlayerPage({ params, searchParams }: Props) {
               />
             ))}
           </div>
-        </section>
+        </Section>
       ) : null}
 
       {byClass.map(({ game, classes }) => (
-        <section key={game}>
-          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
-            <h2 className="display text-xl">
+        <Section
+          key={game}
+          title={
+            <>
               Classes{byClass.length > 1 ? <span className="text-base text-muted"> · {GAME_NAMES[game]}</span> : null}
-            </h2>
-            <span className="text-xs text-muted">open a class for its ascendancies</span>
-          </div>
+            </>
+          }
+          aside={<span className="text-muted">open a class for its ascendancies</span>}
+        >
           <ClassRollup game={game} classes={classes} />
-        </section>
+        </Section>
       ))}
 
-      <section>
-        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
-          <h2 className="display text-xl">League index</h2>
-          <div className="flex items-center gap-4 text-xs">
-            <span className="text-muted">
-              {played.length} of {leagues.length} leagues played
-            </span>
-            <Link href={showAll ? `/players/${user.username}` : `/players/${user.username}?all=1`} className="link-gold">
-              {showAll ? "Show only leagues played" : "Show every league"}
-            </Link>
-          </div>
+      {/* Open when the page was reached through its own "show every league"
+          link, which would otherwise land on the section it just closed. */}
+      <Section
+        title="League index"
+        open={all !== undefined}
+        aside={
+          <span className="text-muted">
+            {played.length} of {leagues.length} leagues played
+          </span>
+        }
+      >
+        {/* In the body, not beside the title, where a click would also toggle the section. */}
+        <div className="mb-3 text-right text-xs">
+          <Link href={showAll ? `/players/${user.username}?all=0` : `/players/${user.username}?all=1`} className="link-gold">
+            {showAll ? "Show only leagues played" : "Show every league"}
+          </Link>
         </div>
-
         <LeagueIndex username={user.username} leagues={visible} />
-      </section>
+      </Section>
 
       <AddLeagueForm returnTo={`/players/${user.username}`} />
 
