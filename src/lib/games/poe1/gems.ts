@@ -122,3 +122,14 @@ function found(artPath: string, name: string): GemArt {
 export function skillNames(): string[] {
   return SKILLS;
 }
+
+const SKILL_BY_LOWER = new Map(SKILLS.map((name) => [name.toLowerCase(), name]));
+
+/**
+ * The gem's own spelling for text that is exactly a gem's name in any case —
+ * "tectonic slam" becomes "Tectonic Slam" — and null for anything else. Like
+ * `gemArt`, nothing fuzzier is tried: "poison srs" stays prose.
+ */
+export function canonicalSkill(text?: string | null): string | null {
+  return SKILL_BY_LOWER.get(text?.trim().toLowerCase() ?? "") ?? null;
+}

@@ -1,11 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddLeagueForm } from "@/components/AddLeagueForm";
+import { BuildCard } from "@/components/BuildCard";
+import { ClassRollup } from "@/components/ClassRollup";
 import { CharacterCard } from "@/components/CharacterCard";
 import { LeagueIndex } from "@/components/LeagueIndex";
 import { PlayerAdmin } from "@/components/PlayerAdmin";
-import { formatPlayedTotal } from "@/lib/format";
-import { getUser, getUserTotals, listLeaguesForUser, listRecentCharacters } from "@/lib/queries";
+import { formatPlayed, formatPlayedTotal } from "@/lib/format";
+import { buildSkill, skillArt } from "@/lib/games/skills";
+import { GAME_NAMES } from "@/lib/games/types";
+import { rollupByClass, rollupBySkill } from "@/lib/metrics";
+import { getUser, getUserTotals, listLeaguesForUser, listPlayerCharacters, listRecentCharacters } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +37,34 @@ export default async function PlayerPage({ params, searchParams }: Props) {
   const showAll = all === "1" || played.length === 0;
   const visible = showAll ? leagues : played;
   const total = formatPlayedTotal(totals.playedMinutes);
+
+  const characters = listPlayerCharacters(user.id);
+  const facts = characters.map((c) => ({
+    game: c.game,
+    className: c.className,
+    ascendancy: c.ascendancy,
+    level: c.level,
+    playedMinutes: c.playedMinutes,
+    leagueId: c.leagueId,
+    skill: buildSkill(c.game, c.skillGem, c.mainSkill),
+  }));
+  const byClass = rollupByClass(facts);
+  const builds = rollupBySkill(facts).slice(0, 4);
+  const mostPlayed = characters
+    .filter((c) => c.playedMinutes)
+    .sort((a, b) => (b.playedMinutes ?? 0) - (a.playedMinutes ?? 0))
+    .slice(0, 3);
+  const level100 = characters.filter((c) => c.level === 100);
+  const card = (character: (typeof characters)[number], lead?: string | null) => (
+    <CharacterCard
+      key={character.id}
+      character={character}
+      game={character.game}
+      href={`/players/${user.username}/${character.game}/${character.leagueSlug}/${character.slug}`}
+      meta={[lead, `${character.patch ?? "###"} ${character.leagueName}`].filter(Boolean).join(" · ")}
+      notes={false}
+    />
+  );
 
   return (
     <div className="space-y-8">
@@ -71,6 +104,37 @@ export default async function PlayerPage({ params, searchParams }: Props) {
         </div>
       </header>
 
+      {mostPlayed.length ? (
+        <section>
+          <h2 className="display mb-4 text-xl">Most played</h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {mostPlayed.map((character) => card(character, `/played ${formatPlayed(character.playedMinutes)}`))}
+          </div>
+        </section>
+      ) : null}
+
+      {level100.length ? (
+        <section>
+          <h2 className="display mb-4 text-xl">
+            Level 100 <span className="text-base text-muted">· {level100.length}</span>
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {level100.map((character) => card(character, formatPlayed(character.playedMinutes) ? `/played ${formatPlayed(character.playedMinutes)}` : null))}
+          </div>
+        </section>
+      ) : null}
+
+      {builds.length ? (
+        <section>
+          <h2 className="display mb-4 text-xl">Most played builds</h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {builds.map((build, index) => (
+              <BuildCard key={`${build.game}/${build.name}`} build={build} art={skillArt(build.game, build.name)} rank={index + 1} />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       {recent.length ? (
         <section>
           <h2 className="display mb-4 text-xl">Pinned &amp; most recent</h2>
@@ -88,6 +152,18 @@ export default async function PlayerPage({ params, searchParams }: Props) {
           </div>
         </section>
       ) : null}
+
+      {byClass.map(({ game, classes }) => (
+        <section key={game}>
+          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
+            <h2 className="display text-xl">
+              Classes{byClass.length > 1 ? <span className="text-base text-muted"> · {GAME_NAMES[game]}</span> : null}
+            </h2>
+            <span className="text-xs text-muted">open a class for its ascendancies</span>
+          </div>
+          <ClassRollup game={game} classes={classes} />
+        </section>
+      ))}
 
       <section>
         <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">

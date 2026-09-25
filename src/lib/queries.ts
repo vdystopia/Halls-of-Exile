@@ -201,6 +201,28 @@ export function listRecentCharacters(
   }));
 }
 
+/** Every character a player has, with its league, for the player page's rollups and highlights. */
+export function listPlayerCharacters(
+  userId: number,
+): (Character & { game: GameId; leagueSlug: string; patch: string | null; leagueName: string })[] {
+  const rows = db
+    .prepare(
+      `SELECT c.*, l.game AS game, l.slug AS league_slug, l.patch AS patch, l.name AS league_name
+       FROM characters c JOIN leagues l ON l.id = c.league_id
+       WHERE c.user_id = ?
+       ORDER BY l.sort_order DESC, c.level DESC`,
+    )
+    .all(userId) as Row[];
+  return rows.map((row) => ({
+    ...mapCharacter(row),
+    game: row.game,
+    leagueSlug: row.league_slug,
+    patch: row.patch,
+    leagueName: row.league_name,
+  }));
+}
+
+
 export function getCharacter(userId: number, leagueId: number, slug: string): Character | null {
   const row = db
     .prepare(`SELECT * FROM characters WHERE user_id = ? AND league_id = ? AND slug = ?`)

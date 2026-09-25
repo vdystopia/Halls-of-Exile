@@ -414,6 +414,14 @@ and its payload is stored in `characters.source_payload` for the same reason.
   light to dark, a hybrid runs one colour into the other, Scion runs all three. `.gem-name` in
   `globals.css` puts a gem's gloss and facet over it. A class the map lacks keeps the gold. Path
   of Exile 2's attributes (Huntress dex, Druid int/str) come from memory, not a source.
+- **The player page's metrics are computed in `src/lib/metrics.ts`, per game.** Classes roll up
+  into ascendancies (characters, leagues, /played, average and highest level, 90+, most-built
+  skill); builds are grouped by skill and ranked by /played, not by count. Witch and Ranger are
+  classes in both games and skills share names across them, so nothing is summed across games.
+  A /played total covers only characters that have one, and the table marks a partial total
+  with `*` and says how many it covers. The skill for grouping is `buildSkill`: the recorded gem,
+  else the record's words when they are exactly a gem name, else the words as written; "Unknown"
+  is not a skill. The class list is `<details>`, so it needs no client code.
 - **How a league was played is a fact about the character, not the league.** Every league opens
   as several parallel leagues — Settlers, Hardcore Settlers, SSF Settlers — so the catalogue
   holds one row and `characters.league_modifiers` holds which of them a character played in, as

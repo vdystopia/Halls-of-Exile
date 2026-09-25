@@ -61,3 +61,6 @@ export type GameModule = {
   /** The wide class portrait, for the character page header. */
   ascendancyPortrait: (ascendancy?: string | null) => AscendancyPortrait | null;
 };
+
+/** Each game's name for a heading, for pages that list both before Path of Exile 2 has a module. */
+export const GAME_NAMES: Record<GameId, string> = { poe1: "Path of Exile", poe2: "Path of Exile 2" };
