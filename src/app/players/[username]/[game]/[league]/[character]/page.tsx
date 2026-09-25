@@ -10,6 +10,7 @@ import { PassiveTree } from "@/components/PassiveTree";
 import { SkillGroups } from "@/components/SkillGroups";
 import { SkillIcon } from "@/components/SkillIcon";
 import { AllStatsTable, AttributeStrip, ResistanceBar, StatColumn } from "@/components/StatPanels";
+import { classNameStyle } from "@/lib/games/class-colors";
 import { classLine, formatPlayed, leagueTitle, leagueWindow } from "@/lib/format";
 import { leagueModifierLabel, leagueModifierTitle } from "@/lib/league-modifiers";
 import { getCharacter, getLeague, getUser } from "@/lib/queries";
@@ -53,6 +54,8 @@ export default async function CharacterPage({ params }: Props) {
   // exact gem name resolves, so prose draws nothing rather than a wrong gem.
   const skill = character.skillGem ?? character.mainSkill;
   const skillArt = gemArt(skill);
+  const skillName = character.skillGem ?? skillArt?.name ?? null;
+  const nameStyle = classNameStyle(league.game, character.className);
   // Which generated tree this build is drawn on, resolved here because the
   // index of what has been generated is server-side data.
   const treeNodes = tree?.nodes ?? [];
@@ -92,9 +95,14 @@ export default async function CharacterPage({ params }: Props) {
                 240px for Path of Exile's 530x245 painting — so nothing is
                 cropped and no character is stretched. */}
             <AscendancyPortrait game={league.game} ascendancy={character.ascendancy} height={PORTRAIT_HEIGHT} />
+            {/* Name, level and class, the skill: nothing else. Prose from the
+                record ("chaos dot") and build details belong elsewhere; only a
+                named gem is shown here, and only with its picture. */}
             <div>
               <div className="flex flex-wrap items-baseline gap-3">
-                <h1 className="display text-3xl">{character.name}</h1>
+                <h1 className={`display text-3xl ${nameStyle ? "gem-name" : ""}`} style={nameStyle}>
+                  {character.name}
+                </h1>
                 {character.isFavorite ? <span className="text-lg text-gold">★</span> : null}
               </div>
               {/* The ascendancy alone — it already names the class. A character
@@ -104,22 +112,12 @@ export default async function CharacterPage({ params }: Props) {
                 {`Level ${character.level ?? "Unknown"} · `}
                 {classLine(character.className, character.ascendancy)}
               </p>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                {character.skillGem ? (
-                  <span className="tag border-rarity-gem/60 text-rarity-gem">{character.skillGem}</span>
-                ) : null}
-                {character.mainSkill && character.mainSkill !== character.skillGem ? (
-                  <span className="tag text-parchment/70 italic">{character.mainSkill}</span>
-                ) : null}
-                <SkillIcon
-                  src={skillArt?.src}
-                  name={character.skillGem ?? skillArt?.name}
-                  frames={skillArt?.frames}
-                  size={28}
-                />
-                {played ? <span className="tag">/played {played}</span> : null}
-                {build.bandit ? <span className="tag">bandit: {build.bandit}</span> : null}
-              </div>
+              {skillName ? (
+                <div className="mt-3 flex items-center gap-2">
+                  <SkillIcon src={skillArt?.src} name={skillName} frames={skillArt?.frames} size={28} />
+                  <span className="tag border-rarity-gem/60 text-rarity-gem">{skillName}</span>
+                </div>
+              ) : null}
             </div>
           </div>
           {/* The league's logo closes the header on the right, at the
@@ -141,6 +139,7 @@ export default async function CharacterPage({ params }: Props) {
               <p className="text-xs text-muted">
                 {leagueWindow(league.startDate, league.endDate, Boolean(league.endDateEstimated))}
               </p>
+              {played ? <span className="tag">/played {played}</span> : null}
               <div className="flex flex-wrap justify-end gap-2">
                 {character.pobUrl ? (
                   <a href={character.pobUrl} target="_blank" rel="noreferrer" className="btn px-3 py-1.5 text-xs">
@@ -232,6 +231,12 @@ export default async function CharacterPage({ params }: Props) {
                   <div className="flex justify-between">
                     <span className="text-muted">Masteries</span>
                     <span className="tabular-nums">{tree.masteryCount}</span>
+                  </div>
+                ) : null}
+                {build.bandit ? (
+                  <div className="flex justify-between">
+                    <span className="text-muted">Bandit</span>
+                    <span className="capitalize">{build.bandit}</span>
                   </div>
                 ) : null}
                 {build.trees.length > 1 ? (

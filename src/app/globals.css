@@ -215,3 +215,24 @@ body {
   .challenge-radiant-text { background-position: 50% 0; }
   .challenge-radiant-track { box-shadow: 0 0 6px 1px rgb(232 217 168 / 0.5), 0 0 14px 2px rgb(200 170 110 / 0.3); }
 }
+
+/*
+ * A character's name, cut from its class's gem. The colour underneath comes
+ * from `classNameStyle` (`--gem-fill`); over it lies the stone itself: a gloss
+ * on the upper half that breaks at a facet line, and the lower half falling
+ * into shadow, the way a skill gem catches light. A dark edge keeps the letters
+ * off the panel and a faint glow of the class colour sits behind them.
+ */
+.gem-name {
+  background:
+    linear-gradient(180deg,
+      rgb(255 255 255 / 0.62) 0%, rgb(255 255 255 / 0.18) 47%,
+      rgb(0 0 0 / 0.08) 53%, rgb(0 0 0 / 0.42) 100%),
+    var(--gem-fill);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter:
+    drop-shadow(0 1px 0 rgb(0 0 0 / 0.85))
+    drop-shadow(0 0 12px color-mix(in srgb, var(--gem-glow) 30%, transparent));
+}

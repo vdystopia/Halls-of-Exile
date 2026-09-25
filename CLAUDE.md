@@ -406,6 +406,14 @@ and its payload is stored in `characters.source_payload` for the same reason.
   says the same thing twice and spends the widest line on the page doing it. A character with
   no ascendancy is called by its class and nothing is said about the absence — under level 68
   there is nothing missing to remark on.
+- **The character header's left side is name, level · class, and the skill — nothing else.**
+  The skill shows only as a named gem with its picture, so record prose (`mainSkill`, "chaos
+  dot") never gets a tag there; /played sits on the right under the league dates, and the bandit
+  moved to the passive tree summary. The name is coloured by its class's starting attributes
+  (`src/lib/games/class-colors.ts`, per game): str red, dex green, int blue — one attribute runs
+  light to dark, a hybrid runs one colour into the other, Scion runs all three. `.gem-name` in
+  `globals.css` puts a gem's gloss and facet over it. A class the map lacks keeps the gold. Path
+  of Exile 2's attributes (Huntress dex, Druid int/str) come from memory, not a source.
 - **How a league was played is a fact about the character, not the league.** Every league opens
   as several parallel leagues — Settlers, Hardcore Settlers, SSF Settlers — so the catalogue
   holds one row and `characters.league_modifiers` holds which of them a character played in, as
