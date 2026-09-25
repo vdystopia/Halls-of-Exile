@@ -416,12 +416,16 @@ and its payload is stored in `characters.source_payload` for the same reason.
   of Exile 2's attributes (Huntress dex, Druid int/str) come from memory, not a source.
 - **The player page's metrics are computed in `src/lib/metrics.ts`, per game.** Classes roll up
   into ascendancies (characters, leagues, /played, average and highest level, 90+, most-built
-  skill); builds are grouped by skill and ranked two ways, by character count (the default) or by /played, each breaking ties with the other;  only picks which server-rendered grid to show. Witch and Ranger are
-  classes in both games and skills share names across them, so nothing is summed across games.
-  A /played total covers only characters that have one, and the table marks a partial total
-  with `*` and says how many it covers. The skill for grouping is `buildSkill`: the recorded gem,
-  else the record's words when they are exactly a gem name, else the words as written; "Unknown"
-  is not a skill. The class list is `<details>`, so it needs no client code. Every section of the page is a `Section` (also `<details>`) and starts closed; the league index opens when reached through its own show-all link, which lives in the body because a click in a summary toggles it.
+  skill). Builds are grouped by skill and ranked two ways, by character count (the default) or
+  by /played, each breaking ties with the other; `BuildRanking` only picks which
+  server-rendered grid to show. Witch and Ranger are classes in both games and skills share
+  names across them, so nothing is summed across games. A /played total covers only characters
+  that have one, and the table marks a partial total with `*` and says how many it covers. The
+  skill for grouping is `buildSkill`: the recorded gem, else the record's words when they are
+  exactly a gem name, else the words as written; "Unknown" is not a skill. The class list is
+  `<details>`, so it needs no client code. Every section of the page is a `Section` (also
+  `<details>`) and starts closed. The league index opens when reached through its own show-all
+  link, which lives in the section body because a click in a summary also toggles it.
 - **How a league was played is a fact about the character, not the league.** Every league opens
   as several parallel leagues — Settlers, Hardcore Settlers, SSF Settlers — so the catalogue
   holds one row and `characters.league_modifiers` holds which of them a character played in, as
