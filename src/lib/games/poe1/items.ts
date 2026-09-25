@@ -323,8 +323,10 @@ export function attributeRequirementPercent(item: ParsedItem): number {
 }
 
 /**
- * The equipment paper doll, laid out on an 8-column grid of square cells the
- * way Path of Exile's character panel (and Path of Building's) arranges it.
+ * The equipment paper doll, laid out on a 6-column grid of square cells: the
+ * two hands level and the same size either side of the helmet, both rings side
+ * by side under the main hand, the amulet under the off hand, and the flasks
+ * along the bottom.
  */
 export type DollCell = {
   slot: string;
@@ -344,17 +346,19 @@ export type DollCell = {
   row: string;
 };
 
+export const DOLL_COLUMNS = 6;
+
 export const PAPER_DOLL: DollCell[] = [
-  { slot: "Weapon 1", label: "Main Hand", shape: "weapon", column: "1 / span 2", row: "1 / span 4" },
-  { slot: "Helmet", label: "Helmet", shape: "helmet", column: "4 / span 2", row: "1 / span 2" },
-  { slot: "Weapon 2", label: "Off Hand", shape: "offhand", column: "7 / span 2", row: "1 / span 3" },
-  { slot: "Amulet", label: "Amulet", shape: "amulet", column: "6", row: "3" },
-  { slot: "Body Armour", label: "Body Armour", shape: "body", column: "4 / span 2", row: "3 / span 3" },
-  { slot: "Ring 1", label: "Left Ring", shape: "ring", column: "3", row: "4" },
-  { slot: "Ring 2", label: "Right Ring", shape: "ring", column: "6", row: "4" },
-  { slot: "Gloves", label: "Gloves", shape: "gloves", column: "2 / span 2", row: "5 / span 2" },
-  { slot: "Belt", label: "Belt", shape: "belt", column: "4 / span 2", row: "6" },
-  { slot: "Boots", label: "Boots", shape: "boots", column: "6 / span 2", row: "5 / span 2" },
+  { slot: "Weapon 1", label: "Main Hand", shape: "weapon", column: "1 / span 2", row: "1 / span 3" },
+  { slot: "Helmet", label: "Helmet", shape: "helmet", column: "3 / span 2", row: "1 / span 2" },
+  { slot: "Weapon 2", label: "Off Hand", shape: "offhand", column: "5 / span 2", row: "1 / span 3" },
+  { slot: "Body Armour", label: "Body Armour", shape: "body", column: "3 / span 2", row: "3 / span 3" },
+  { slot: "Ring 1", label: "Left Ring", shape: "ring", column: "1", row: "4" },
+  { slot: "Ring 2", label: "Right Ring", shape: "ring", column: "2", row: "4" },
+  { slot: "Amulet", label: "Amulet", shape: "amulet", column: "5", row: "4" },
+  { slot: "Gloves", label: "Gloves", shape: "gloves", column: "1 / span 2", row: "5 / span 2" },
+  { slot: "Belt", label: "Belt", shape: "belt", column: "3 / span 2", row: "6" },
+  { slot: "Boots", label: "Boots", shape: "boots", column: "5 / span 2", row: "5 / span 2" },
 ];
 
 export const FLASK_SLOTS = ["Flask 1", "Flask 2", "Flask 3", "Flask 4", "Flask 5"];

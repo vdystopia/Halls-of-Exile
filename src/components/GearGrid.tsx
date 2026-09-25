@@ -1,11 +1,11 @@
 import { findItemArt } from "@/lib/games/poe1/item-art";
 import { buildTooltip } from "@/lib/games/poe1/tooltip";
-import { FLASK_SLOTS, PAPER_DOLL } from "@/lib/games/poe1/items";
+import { DOLL_COLUMNS, FLASK_SLOTS, PAPER_DOLL } from "@/lib/games/poe1/items";
 import type { BuildData, ParsedItem } from "@/lib/types";
 import { GearSlot } from "./gear/GearSlot";
 
 /** One square of the paper doll. Tiles are sized from this. */
-const CELL = "clamp(34px, 5.4vw, 58px)";
+const CELL = "clamp(44px, 7.2vw, 76px)";
 const GAP = "6px";
 
 export function GearGrid({ build }: { build: BuildData }) {
@@ -38,7 +38,7 @@ export function GearGrid({ build }: { build: BuildData }) {
       <div
         className="mx-auto grid w-fit"
         style={{
-          gridTemplateColumns: `repeat(8, ${CELL})`,
+          gridTemplateColumns: `repeat(${DOLL_COLUMNS}, ${CELL})`,
           gridAutoRows: CELL,
           gap: GAP,
         }}
@@ -62,7 +62,7 @@ export function GearGrid({ build }: { build: BuildData }) {
             tooltip={tooltipFor(at(slot))}
             shape="flask"
             label={slot}
-            style={{ gridColumn: String(index + 2), gridRow: "7 / span 2" }}
+            style={{ gridColumn: String(index + 1), gridRow: "7 / span 2" }}
           />
         ))}
       </div>
