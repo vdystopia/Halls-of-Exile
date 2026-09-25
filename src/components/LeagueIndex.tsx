@@ -149,12 +149,12 @@ function SortButton({
       type="button"
       onClick={() => onSort(column)}
       aria-label={`Sort by ${label}${state}`}
-      className={`flex items-center gap-1 text-[11px] tracking-[0.18em] uppercase transition-colors ${
+      className={`flex items-center gap-1 text-[13px] tracking-[0.18em] uppercase whitespace-nowrap transition-colors ${
         active ? "text-gold" : "text-muted hover:text-parchment/80"
       } ${className}`}
     >
       {label}
-      <span aria-hidden className="font-mono text-[9px] leading-none">
+      <span aria-hidden className="font-mono text-[10px] leading-none">
         {active ? (sort.direction === "asc" ? "▲" : "▼") : "⇅"}
       </span>
     </button>
@@ -248,7 +248,7 @@ export function LeagueIndex({
   return (
     <div className="panel">
       <div className="flex flex-wrap items-start gap-4 border-b border-line px-4 py-3">
-        <div className="w-14 shrink-0 space-y-1">
+        <div className="w-16 shrink-0 space-y-1">
           <SortButton label="Game" column="game" sort={sort} onSort={onSort} />
           <FilterMenu label="game" options={gameOptions} selected={games} onChange={setGames} />
         </div>
@@ -265,7 +265,7 @@ export function LeagueIndex({
             <FilterMenu label="league" options={nameOptions} selected={names} onChange={setNames} />
           </div>
         </div>
-        <div className="w-28 shrink-0">
+        <div className="w-32 shrink-0">
           <SortButton label="Characters" column="characters" sort={sort} onSort={onSort} />
         </div>
         <div className="w-20 shrink-0">
@@ -289,7 +289,7 @@ export function LeagueIndex({
                 empty ? "opacity-55" : ""
               }`}
             >
-              <span className="w-14 shrink-0 font-display text-lg text-gold/70 tabular-nums">
+              <span className="w-16 shrink-0 font-display text-lg text-gold/70 tabular-nums">
                 {gameNumber(league.game)}
               </span>
               {/* The patch has a column of its own now, so the name beside it
@@ -308,7 +308,7 @@ export function LeagueIndex({
                   {league.endDateEstimated ? " · end date tentative" : ""}
                 </span>
               </span>
-              <span className="w-28 shrink-0 text-sm text-muted">
+              <span className="w-32 shrink-0 text-sm text-muted">
                 {league.characterCount > 0
                   ? `${league.characterCount} character${league.characterCount === 1 ? "" : "s"}`
                   : "no characters"}

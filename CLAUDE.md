@@ -179,7 +179,15 @@ and its payload is stored in `characters.source_payload` for the same reason.
   count needs about 160px, and in a narrower column the two were pushed apart until the count
   sat outside the table. The column header already says it, so `label={false}` there; the meter
   also carries `min-w-0`, without which a flex child refuses to shrink below its content and
-  overflows rather than fitting.
+  overflows rather than fitting. A league with **no challenges keeps the meter's shape**: "No
+  Challenges" where the count goes and a bar of dark stone (`.challenge-stone-bar`) where the
+  progress goes, so the column's rhythm doesn't break. **Every challenge done is radiant**:
+  a white-hot band sweeps across the count and the bar on one 3.2s clock, the bar breathes a
+  glow, and a ✦ twinkles beside the count. It's all in `globals.css` under `.challenge-radiant-*`,
+  and still under `prefers-reduced-motion`. The track carries the glow on itself because the
+  normal track's `overflow-hidden` would clip it. League index headers are 13px, and the Game
+  and Characters columns were widened in both header and rows to fit them; measure `scrollWidth`
+  against the cell if a label changes.
 - **Migrations must survive a hot reload.** The connection is cached on globalThis so it
   outlives dev-server reloads, so `connection()` re-runs `migrate()` and the catalogue sync
   once per module evaluation. Without that, pulling a schema change left a running dev
