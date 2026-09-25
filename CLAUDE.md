@@ -379,8 +379,8 @@ and its payload is stored in `characters.source_payload` for the same reason.
   are names in both games and different classes in each, so art is looked up through
   `src/lib/games/ascendancy.ts` by game and never by name alone. The wiki's files are small, so
   the header portrait is slightly soft on a high-DPI screen.
-  **A third picture, the avatar, is for the compact banner.** The player page's Most played list
-  draws `CharacterBanner`, the character header compressed: at 96px the wide painting is mostly
+  **A third picture, the avatar, is for the compact banner.** The player page's character lists
+  (Most played, Level 100, Pinned & most recent) draw `CharacterBanner`, the character header compressed: at 96px the wide painting is mostly
   background, so it draws Path of Exile 1's `File:<Ascendancy> avatar.png` (135x105, a close crop
   of the face; `npm run ascendancy:art -- --game poe1-avatar`, into `public/ascendancy/avatar/` and
   `poe1/ascendancy-avatars.json`, committed and tested). Path of Exile 2's wiki redirects
