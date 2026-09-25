@@ -17,7 +17,8 @@
     "ascendancy:art": "tsx scripts/fetch-ascendancy-art.ts",
     "tree:svg": "tsx scripts/build-tree-svg.ts",
     "clusters:index": "tsx scripts/build-cluster-index.ts",
-    "art:fetch": "tsx scripts/fetch-item-art.ts"
+    "art:fetch": "tsx scripts/fetch-item-art.ts",
+    "leagues:art": "tsx scripts/fetch-league-art.ts"
   },
   "dependencies": {
     "@types/better-sqlite3": "^9.6.0",

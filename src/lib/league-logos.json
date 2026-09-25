@@ -1,0 +1,379 @@
+{
+  "poe1/1.0": {
+    "src": "/leagues/path-of-exile-logo.webp",
+    "width": 277,
+    "height": 222,
+    "file": "Path of Exile logo.png",
+    "generic": true
+  },
+  "poe1/1.1": {
+    "src": "/leagues/sacrifice-of-the-vaal-logo.webp",
+    "width": 262,
+    "height": 222,
+    "file": "Sacrifice of the Vaal logo.png"
+  },
+  "poe1/1.2": {
+    "src": "/leagues/forsaken-masters-logo.webp",
+    "width": 273,
+    "height": 222,
+    "file": "Forsaken Masters logo.png"
+  },
+  "poe1/1.3": {
+    "src": "/leagues/path-of-exile-logo.webp",
+    "width": 277,
+    "height": 222,
+    "file": "Path of Exile logo.png",
+    "generic": true
+  },
+  "poe1/2.0": {
+    "src": "/leagues/the-awakening-logo.webp",
+    "width": 285,
+    "height": 222,
+    "file": "The Awakening logo.png"
+  },
+  "poe1/2.1": {
+    "src": "/leagues/path-of-exile-logo.webp",
+    "width": 277,
+    "height": 222,
+    "file": "Path of Exile logo.png",
+    "generic": true
+  },
+  "poe1/2.2": {
+    "src": "/leagues/ascendancy-logo.webp",
+    "width": 292,
+    "height": 222,
+    "file": "Ascendancy logo.png"
+  },
+  "poe1/2.3": {
+    "src": "/leagues/path-of-exile-logo.webp",
+    "width": 277,
+    "height": 222,
+    "file": "Path of Exile logo.png",
+    "generic": true
+  },
+  "poe1/2.4": {
+    "src": "/leagues/atlas-of-worlds-logo.webp",
+    "width": 284,
+    "height": 222,
+    "file": "Atlas of Worlds logo.png"
+  },
+  "poe1/2.5": {
+    "src": "/leagues/breach-logo.webp",
+    "width": 423,
+    "height": 222,
+    "file": "Breach logo.png"
+  },
+  "poe1/2.6": {
+    "src": "/leagues/path-of-exile-logo.webp",
+    "width": 277,
+    "height": 222,
+    "file": "Path of Exile logo.png",
+    "generic": true
+  },
+  "poe1/3.0": {
+    "src": "/leagues/the-fall-of-oriath-logo.webp",
+    "width": 290,
+    "height": 222,
+    "file": "The Fall of Oriath logo.png"
+  },
+  "poe1/3.1": {
+    "src": "/leagues/war-for-the-atlas-logo.webp",
+    "width": 291,
+    "height": 222,
+    "file": "War for the Atlas logo.png"
+  },
+  "poe1/3.2": {
+    "src": "/leagues/bestiary-logo.webp",
+    "width": 381,
+    "height": 212,
+    "file": "Bestiary logo.png"
+  },
+  "poe1/3.3": {
+    "src": "/leagues/incursion-logo.webp",
+    "width": 430,
+    "height": 182,
+    "file": "Incursion logo.png"
+  },
+  "poe1/3.4": {
+    "src": "/leagues/delve-logo.webp",
+    "width": 290,
+    "height": 222,
+    "file": "Delve logo.png"
+  },
+  "poe1/3.5": {
+    "src": "/leagues/betrayal-logo.webp",
+    "width": 290,
+    "height": 222,
+    "file": "Betrayal logo.png"
+  },
+  "poe1/3.6": {
+    "src": "/leagues/synthesis-logo.webp",
+    "width": 291,
+    "height": 222,
+    "file": "Synthesis logo.png"
+  },
+  "poe1/3.7": {
+    "src": "/leagues/legion-league-logo.webp",
+    "width": 290,
+    "height": 222,
+    "file": "Legion league logo.png"
+  },
+  "poe1/3.8": {
+    "src": "/leagues/blight-logo.webp",
+    "width": 289,
+    "height": 222,
+    "file": "Blight logo.png"
+  },
+  "poe1/3.9": {
+    "src": "/leagues/conquerors-of-the-atlas-logo.webp",
+    "width": 288,
+    "height": 222,
+    "file": "Conquerors of the Atlas logo.png"
+  },
+  "poe1/3.10": {
+    "src": "/leagues/delirium-logo.webp",
+    "width": 289,
+    "height": 222,
+    "file": "Delirium logo.png"
+  },
+  "poe1/3.11": {
+    "src": "/leagues/harvest-logo.webp",
+    "width": 289,
+    "height": 222,
+    "file": "Harvest logo.png"
+  },
+  "poe1/3.12": {
+    "src": "/leagues/heist-logo.webp",
+    "width": 289,
+    "height": 222,
+    "file": "Heist logo.png"
+  },
+  "poe1/3.13": {
+    "src": "/leagues/echoes-of-the-atlas-logo.webp",
+    "width": 289,
+    "height": 222,
+    "file": "Echoes of the Atlas logo.png"
+  },
+  "poe1/3.14": {
+    "src": "/leagues/ultimatum-logo.webp",
+    "width": 289,
+    "height": 222,
+    "file": "Ultimatum logo.png"
+  },
+  "poe1/3.15": {
+    "src": "/leagues/expedition-league-logo.webp",
+    "width": 289,
+    "height": 222,
+    "file": "Expedition league logo.png"
+  },
+  "poe1/3.16": {
+    "src": "/leagues/scourge-logo.webp",
+    "width": 290,
+    "height": 222,
+    "file": "Scourge logo.png"
+  },
+  "poe1/3.17": {
+    "src": "/leagues/siege-expansion-logo.webp",
+    "width": 288,
+    "height": 222,
+    "file": "Siege Expansion logo.png"
+  },
+  "poe1/3.18": {
+    "src": "/leagues/sentinel-league-logo.webp",
+    "width": 289,
+    "height": 222,
+    "file": "Sentinel league logo.png"
+  },
+  "poe1/3.19": {
+    "src": "/leagues/lake-of-kalandra-logo.webp",
+    "width": 288,
+    "height": 222,
+    "file": "Lake of Kalandra logo.png"
+  },
+  "poe1/3.20": {
+    "src": "/leagues/the-forbidden-sanctum-logo.webp",
+    "width": 288,
+    "height": 222,
+    "file": "The Forbidden Sanctum logo.png"
+  },
+  "poe1/3.21": {
+    "src": "/leagues/crucible-logo.webp",
+    "width": 289,
+    "height": 222,
+    "file": "Crucible logo.png"
+  },
+  "poe1/3.22": {
+    "src": "/leagues/trial-of-the-ancestors-logo.webp",
+    "width": 290,
+    "height": 222,
+    "file": "Trial of the Ancestors logo.png"
+  },
+  "poe1/3.23": {
+    "src": "/leagues/affliction-logo.webp",
+    "width": 289,
+    "height": 222,
+    "file": "Affliction logo.png"
+  },
+  "poe1/3.24": {
+    "src": "/leagues/necropolis-logo.webp",
+    "width": 289,
+    "height": 222,
+    "file": "Necropolis logo.png"
+  },
+  "poe1/3.25": {
+    "src": "/leagues/settlers-of-kalguur-logo.webp",
+    "width": 290,
+    "height": 222,
+    "file": "Settlers of Kalguur logo.png"
+  },
+  "poe1/3.26": {
+    "src": "/leagues/secrets-expansion-logo.webp",
+    "width": 283,
+    "height": 222,
+    "file": "Secrets Expansion logo.png"
+  },
+  "poe1/3.27": {
+    "src": "/leagues/keepers-expansion-logo.webp",
+    "width": 289,
+    "height": 222,
+    "file": "Keepers Expansion logo.png"
+  },
+  "poe1/3.28": {
+    "src": "/leagues/mirage-expansion-logo.webp",
+    "width": 289,
+    "height": 222,
+    "file": "Mirage Expansion logo.png"
+  },
+  "poe1/3.29": {
+    "src": "/leagues/curse-of-the-allflame-expansion-logo.webp",
+    "width": 286,
+    "height": 222,
+    "file": "Curse of the Allflame Expansion logo.png"
+  },
+  "poe2/beta-1": {
+    "src": "/leagues/path-of-exile-2-logo.webp",
+    "width": 276,
+    "height": 222,
+    "file": "Path of Exile 2 logo.png",
+    "generic": true
+  },
+  "poe2/beta-2": {
+    "src": "/leagues/path-of-exile-2-logo.webp",
+    "width": 276,
+    "height": 222,
+    "file": "Path of Exile 2 logo.png",
+    "generic": true
+  },
+  "poe2/0.1": {
+    "src": "/leagues/path-of-exile-2-logo.webp",
+    "width": 276,
+    "height": 222,
+    "file": "Path of Exile 2 logo.png",
+    "generic": true
+  },
+  "poe2/0.2": {
+    "src": "/leagues/dawn-of-the-hunt-logo.webp",
+    "width": 264,
+    "height": 222,
+    "file": "Dawn of the Hunt logo.png"
+  },
+  "poe2/0.3": {
+    "src": "/leagues/the-third-edict-logo.webp",
+    "width": 264,
+    "height": 222,
+    "file": "The Third Edict logo.png"
+  },
+  "poe2/0.4": {
+    "src": "/leagues/the-last-of-the-druids-logo.webp",
+    "width": 263,
+    "height": 222,
+    "file": "The Last of the Druids logo.png"
+  },
+  "poe2/0.5": {
+    "src": "/leagues/return-of-the-ancients-logo.webp",
+    "width": 253,
+    "height": 222,
+    "file": "Return of the Ancients logo.png"
+  },
+  "poe2/0.5.5": {
+    "src": "/leagues/forbidden-rites-league-banner.webp",
+    "width": 900,
+    "height": 222,
+    "file": "Forbidden Rites league banner.png"
+  },
+  "poe1/endless-delve-2021": {
+    "src": "/leagues/path-of-exile-logo.webp",
+    "width": 277,
+    "height": 222,
+    "file": "Path of Exile logo.png",
+    "generic": true
+  },
+  "poe1/endless-heist-2021": {
+    "src": "/leagues/path-of-exile-logo.webp",
+    "width": 277,
+    "height": 222,
+    "file": "Path of Exile logo.png",
+    "generic": true
+  },
+  "poe1/runic-strife-gauntlet": {
+    "src": "/leagues/path-of-exile-logo.webp",
+    "width": 277,
+    "height": 222,
+    "file": "Path of Exile logo.png",
+    "generic": true
+  },
+  "poe1/necro-settlers": {
+    "src": "/leagues/path-of-exile-logo.webp",
+    "width": 277,
+    "height": 222,
+    "file": "Path of Exile logo.png",
+    "generic": true
+  },
+  "poe1/legacy-of-phrecia": {
+    "src": "/leagues/legacy-of-phrecia-event-logo.webp",
+    "width": 395,
+    "height": 222,
+    "file": "Legacy of Phrecia event logo.jpg"
+  },
+  "poe1/real-fake-doryani": {
+    "src": "/leagues/path-of-exile-logo.webp",
+    "width": 277,
+    "height": 222,
+    "file": "Path of Exile logo.png",
+    "generic": true
+  },
+  "poe1/merciless-gauntlet": {
+    "src": "/leagues/path-of-exile-logo.webp",
+    "width": 277,
+    "height": 222,
+    "file": "Path of Exile logo.png",
+    "generic": true
+  },
+  "poe1/legacy-of-phrecia-2": {
+    "src": "/leagues/legacy-of-phrecia-event-logo.webp",
+    "width": 395,
+    "height": 222,
+    "file": "Legacy of Phrecia event logo.jpg"
+  },
+  "poe1/rapture-gauntlet": {
+    "src": "/leagues/path-of-exile-logo.webp",
+    "width": 277,
+    "height": 222,
+    "file": "Path of Exile logo.png",
+    "generic": true
+  },
+  "poe1/return-of-the-ancestors": {
+    "src": "/leagues/path-of-exile-logo.webp",
+    "width": 277,
+    "height": 222,
+    "file": "Path of Exile logo.png",
+    "generic": true
+  },
+  "poe1/unspecified": {
+    "src": "/leagues/path-of-exile-logo.webp",
+    "width": 277,
+    "height": 222,
+    "file": "Path of Exile logo.png",
+    "generic": true
+  }
+}

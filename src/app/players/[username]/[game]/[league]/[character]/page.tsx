@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AscendancyPortrait } from "@/components/AscendancyPortrait";
+import { LeagueLogo } from "@/components/LeagueLogo";
 import { CharacterAdmin } from "@/components/CharacterAdmin";
 import { CopyButton } from "@/components/CopyButton";
 import { GearGrid } from "@/components/GearGrid";
@@ -20,6 +21,9 @@ import { TREE_DATA } from "@/lib/games/poe1/tree-data";
 import { DEFENCE_PANELS, humanizeStatKey, OFFENCE_PANELS } from "@/lib/games/poe1/stats";
 
 export const dynamic = "force-dynamic";
+
+/** The header's picture height: the portrait at left and the league logo at right share it. */
+const PORTRAIT_HEIGHT = 111;
 
 type Props = { params: Promise<{ username: string; game: string; league: string; character: string }> };
 
@@ -87,7 +91,7 @@ export default async function CharacterPage({ params }: Props) {
                 Height is set and the width follows each picture's own shape —
                 240px for Path of Exile's 530x245 painting — so nothing is
                 cropped and no character is stretched. */}
-            <AscendancyPortrait game={league.game} ascendancy={character.ascendancy} height={111} />
+            <AscendancyPortrait game={league.game} ascendancy={character.ascendancy} height={PORTRAIT_HEIGHT} />
             <div>
               <div className="flex flex-wrap items-baseline gap-3">
                 <h1 className="display text-3xl">{character.name}</h1>
@@ -118,30 +122,35 @@ export default async function CharacterPage({ params }: Props) {
               </div>
             </div>
           </div>
-          <div className="flex flex-col items-end gap-2 text-right">
-            <span className="tag">{leagueTitle(league)}</span>
-            {/* Which variant of that league it was played in. One league is
-                several parallel leagues, and only the character knows which. */}
-            {character.leagueModifiers.length ? (
-              <div className="flex flex-wrap justify-end gap-2">
-                {character.leagueModifiers.map((modifier) => (
-                  <span key={modifier} className="tag" title={leagueModifierTitle(modifier)}>
-                    {leagueModifierLabel(modifier)}
-                  </span>
-                ))}
-              </div>
-            ) : null}
-            <p className="text-xs text-muted">
-              {leagueWindow(league.startDate, league.endDate, Boolean(league.endDateEstimated))}
-            </p>
-            <div className="flex flex-wrap justify-end gap-2">
-              {character.pobUrl ? (
-                <a href={character.pobUrl} target="_blank" rel="noreferrer" className="btn px-3 py-1.5 text-xs">
-                  Source ↗
-                </a>
+          {/* The league's logo closes the header on the right, at the
+              portrait's height, so the two pictures bracket it top and bottom. */}
+          <div className="flex flex-wrap items-start justify-end gap-6">
+            <div className="flex flex-col items-end gap-2 text-right">
+              <span className="tag">{leagueTitle(league)}</span>
+              {/* Which variant of that league it was played in. One league is
+                  several parallel leagues, and only the character knows which. */}
+              {character.leagueModifiers.length ? (
+                <div className="flex flex-wrap justify-end gap-2">
+                  {character.leagueModifiers.map((modifier) => (
+                    <span key={modifier} className="tag" title={leagueModifierTitle(modifier)}>
+                      {leagueModifierLabel(modifier)}
+                    </span>
+                  ))}
+                </div>
               ) : null}
-              {character.pobCode ? <CopyButton value={character.pobCode} /> : null}
+              <p className="text-xs text-muted">
+                {leagueWindow(league.startDate, league.endDate, Boolean(league.endDateEstimated))}
+              </p>
+              <div className="flex flex-wrap justify-end gap-2">
+                {character.pobUrl ? (
+                  <a href={character.pobUrl} target="_blank" rel="noreferrer" className="btn px-3 py-1.5 text-xs">
+                    Source ↗
+                  </a>
+                ) : null}
+                {character.pobCode ? <CopyButton value={character.pobCode} /> : null}
+              </div>
             </div>
+            <LeagueLogo league={league} height={PORTRAIT_HEIGHT} />
           </div>
         </div>
       </header>

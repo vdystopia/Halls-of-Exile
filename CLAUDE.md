@@ -380,6 +380,27 @@ and its payload is stored in `characters.source_payload` for the same reason.
   `src/lib/games/ascendancy.ts` by game and never by name alone. The wiki's files are small, so
   the header portrait is slightly soft on a high-DPI screen. `<Name>_official_art.jpg` exists
   there at full size if that ever matters, but it is full-body art and would need cropping.
+- **Every league has a logo, and the header is bracketed by two pictures.** The character page
+  header draws the portrait on the left and the league's logo on the right at one height
+  (`PORTRAIT_HEIGHT`, 111px), so the two pictures share a top and a bottom edge; each one's width
+  follows its own shape. `npm run leagues:art` fetches the logos from poewiki.net and
+  poe2wiki.net into `public/leagues/` and writes `src/lib/league-logos.json`, keyed
+  `game/slug`. **The choice of file is hand-made in the script (`PICKS`)**, because the wiki's
+  names can't be derived and some are traps: "Domination league logo" is a screenshot, and
+  Torment's, Talisman's and Legacy's are in-game art. The preference is the transparent
+  544x394 "Path of Exile over the league's name" series, then the expansion's logo from that
+  series, then the game's own logo marked `generic`. That last one covers 17 rows, mostly
+  events, plus 1.0, Prophecy and the Path of Exile 2 betas and Early Access. Sacrifice of the
+  Vaal and Forsaken Masters are real logos with baked-in backgrounds. Transparent margins
+  are trimmed so the drawn art reaches the height it is given, and files are capped at 222px
+  tall (1.2 MB for the set, committed). The wikis sit behind Cloudflare, which answers a burst
+  with a challenge page, so the script batches titles fifty to a query, spaces its downloads,
+  and reports a challenge as one. A new catalogue row fails `tests/league-logos.test.ts` until
+  it has a logo.
+- **The archive header's total /played is days to two places, then whole hours**:
+  `245.88d (5901h)` from `formatPlayedTotal`. A character's own /played keeps `formatPlayed`.
+  The stat columns are content-width (`sm:grid-cols-[repeat(4,auto)]`), so a wider figure
+  pushes the others left instead of spreading all four.
 - **A character is called by its ascendancy, or its class where it has none.** `classLine`
   returns one name, never two: an ascendancy already names its class, so "Occultist · Witch"
   says the same thing twice and spends the widest line on the page doing it. A character with
