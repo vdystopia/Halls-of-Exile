@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddCharacterForm } from "@/components/AddCharacterForm";
 import { leagueTitle, leagueWindow } from "@/lib/format";
-import { skillNames } from "@/lib/games/poe1/gems";
+import { skillNamesFor } from "@/lib/games/skills";
 import { getLeague, getUser } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -35,7 +35,7 @@ export default async function NewCharacterPage({ params }: Props) {
         username={user.username}
         game={league.game}
         league={league.slug}
-        skills={skillNames()}
+        skills={skillNamesFor(league.game)}
       />
     </div>
   );

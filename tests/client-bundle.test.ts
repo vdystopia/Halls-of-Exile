@@ -102,10 +102,10 @@ test("the skill name list never reaches the browser", () => {
  * and `gems.ts` now also exports `skillNames`, which a form is the obvious
  * thing to want to import directly.
  */
-test("the gem module never reaches the browser", () => {
+test("neither game's gem module, nor the helper over them, reaches the browser", () => {
   // Either separator: a pattern matching only "/" never fires on Windows paths,
   // and this one silently passed there until the cluster guard exposed it.
-  const offenders = [...clientGraph()].filter((file) => /poe1[\\/]gems\.ts$/.test(file));
+  const offenders = [...clientGraph()].filter((file) => /poe[12][\\/]gems\.ts$|games[\\/]skills\.ts$/.test(file));
   assert.deepEqual(offenders.map((file) => path.relative(process.cwd(), file)), []);
 });
 

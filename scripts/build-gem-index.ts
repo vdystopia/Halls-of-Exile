@@ -18,8 +18,9 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import renames from "../src/lib/games/poe1/gem-renames.json";
 
-const SOURCE = "https://raw.githubusercontent.com/lvlvllvlvllvlvl/RePoE/master/RePoE/data/gems.json";
+const SOURCE = "https://repoe-fork.github.io/gems.json";
 const OUTPUT = path.join(process.cwd(), "src", "lib", "games", "poe1", "gem-colors.json");
 const SKILLS_OUTPUT = path.join(process.cwd(), "src", "lib", "games", "poe1", "skill-names.json");
 
@@ -67,6 +68,19 @@ async function main() {
     const id = gem.base_item?.id;
     const name = gem.base_item?.display_name ?? gem.display_name;
     if (id?.startsWith("Metadata/Items/Gems/SkillGem") && name && !INTERNAL.test(name)) skills.add(name);
+  }
+
+  /**
+   * A gem the game renamed keeps its old name here too: the archive spans every
+   * version, and a character from before the rename carries the old one. The
+   * data only knows the current name, so `gem-renames.json` maps old to new by
+   * hand; add a pair when a refresh reports a name gone.
+   */
+  for (const [former, current] of Object.entries(renames as Record<string, string>)) {
+    for (const suffix of ["", " Support"]) {
+      const value = colors[current + suffix] ?? colors[current];
+      if (value && !colors[former + suffix]) colors[former + suffix] = value;
+    }
   }
 
   const sorted: Record<string, string> = {};

@@ -4,7 +4,7 @@ import { LeagueLogo } from "@/components/LeagueLogo";
 import { SkillIcon } from "@/components/SkillIcon";
 import { classLine, formatPlayed } from "@/lib/format";
 import { classNameStyle } from "@/lib/games/class-colors";
-import { skillArt } from "@/lib/games/skills";
+import { buildSkill, skillArt } from "@/lib/games/skills";
 import type { GameId } from "@/lib/games/types";
 import type { Character } from "@/lib/types";
 
@@ -29,8 +29,8 @@ export function CharacterBanner({
   href: string;
 }) {
   const { game } = character;
-  const art = skillArt(game, character.skillGem ?? character.mainSkill);
-  const skill = character.skillGem ?? art?.name ?? null;
+  const skill = buildSkill(game, character.skillGem, character.mainSkill);
+  const art = skill ? skillArt(game, skill) : null;
   const nameStyle = classNameStyle(game, character.className);
   const played = formatPlayed(character.playedMinutes);
 

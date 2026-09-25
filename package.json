@@ -13,6 +13,7 @@
     "art:index": "tsx scripts/build-item-art-index.ts",
     "gems:index": "tsx scripts/build-gem-index.ts",
     "gems:art": "tsx scripts/build-gem-art-index.ts",
+    "gems:poe2": "tsx scripts/build-poe2-gem-index.ts",
     "ascendancy:index": "tsx scripts/build-ascendancy-index.ts",
     "ascendancy:art": "tsx scripts/fetch-ascendancy-art.ts",
     "tree:svg": "tsx scripts/build-tree-svg.ts",

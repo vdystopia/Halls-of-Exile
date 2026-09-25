@@ -14,7 +14,7 @@ import { classNameStyle } from "@/lib/games/class-colors";
 import { classLine, formatPlayed, leagueTitle, leagueWindow } from "@/lib/format";
 import { leagueModifierLabel, leagueModifierTitle } from "@/lib/league-modifiers";
 import { getCharacter, getLeague, getUser } from "@/lib/queries";
-import { gemArt, skillNames } from "@/lib/games/poe1/gems";
+import { buildSkill, skillArt, skillNamesFor } from "@/lib/games/skills";
 import { clusterLayout, drawnAllocation } from "@/lib/games/poe1/clusters";
 import { chosenMasteries } from "@/lib/games/poe1/masteries";
 import { treeAsset } from "@/lib/games/poe1/tree";
@@ -50,11 +50,11 @@ export default async function CharacterPage({ params }: Props) {
   const hasStats = Object.keys(stats).length > 0;
   const played = formatPlayed(character.playedMinutes);
   // Resolved here, on the server, because the gem art index must not be shipped
-  // to the browser. The record's prose is offered as a fallback, but only an
-  // exact gem name resolves, so prose draws nothing rather than a wrong gem.
-  const skill = character.skillGem ?? character.mainSkill;
-  const skillArt = gemArt(skill);
-  const skillName = character.skillGem ?? skillArt?.name ?? null;
+  // to the browser. `buildSkill` only returns a gem this game's index can draw,
+  // so the skill is shown with its picture or not at all — the rule the player
+  // page's builds and banners follow too.
+  const skillName = buildSkill(league.game, character.skillGem, character.mainSkill);
+  const art = skillName ? skillArt(league.game, skillName) : null;
   const nameStyle = classNameStyle(league.game, character.className);
   // Which generated tree this build is drawn on, resolved here because the
   // index of what has been generated is server-side data.
@@ -114,7 +114,7 @@ export default async function CharacterPage({ params }: Props) {
               </p>
               {skillName ? (
                 <div className="mt-3 flex items-center gap-2">
-                  <SkillIcon src={skillArt?.src} name={skillName} frames={skillArt?.frames} size={28} />
+                  <SkillIcon src={art?.src} name={skillName} frames={art?.frames} size={28} />
                   <span className="tag border-rarity-gem/60 text-rarity-gem">{skillName}</span>
                 </div>
               ) : null}
@@ -348,7 +348,7 @@ export default async function CharacterPage({ params }: Props) {
         level={character.level}
         skillGem={character.skillGem}
         leagueModifiers={character.leagueModifiers}
-        skills={skillNames()}
+        skills={skillNamesFor(league.game)}
         notes={character.notes}
         played={played}
         isFavorite={character.isFavorite === 1}

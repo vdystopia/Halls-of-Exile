@@ -471,6 +471,21 @@ and its payload is stored in `characters.source_payload` for the same reason.
   recorded `skill_gem`. **The unattended caller passes no `skillFor`**, so `/api/import/poe`
   keeps the old order: fill a blank, never touch an answer. An empty field is not a request to
   clear one.
+- **A skill is shown with its gem or not at all, and the gem data comes from the live export.**
+  Every index here is built from `repoe-fork.github.io` (Path of Exile 1 at the root, Path of
+  Exile 2 under `/poe2/`), never from the RePoE GitHub repository's `master` branch: that
+  branch stopped at 2024-12-15, and a skill added since — Kinetic Fusillade — was in nobody's
+  index. The page then showed the character's own words for it as a build card with no gem.
+  `buildSkill` in `src/lib/games/skills.ts` now returns only a skill its game's index can draw
+  (the recorded gem, or notes that are exactly a gem's name), and the character header, the
+  banners and the build rankings all go through it. When a real gem goes missing, refresh the
+  index (`npm run gems:index`, `gems:art`, `gems:poe2`, then `art:fetch`) rather than loosening
+  that check; `tests/gems.test.ts` fails if an offered skill has no art. A gem the game
+  renamed keeps its old name through `poe1/gem-renames.json` (Dark Pact → Dark Bargain, Lesser
+  Multiple Projectiles → Multiple Projectiles), because the data only knows the current name
+  and the archive spans every version. Path of Exile 2's gems are its own index in
+  `poe2/gems.ts`: 108px single-frame pictures from the export's `Art/`, and a skill name
+  shared with Path of Exile 1 ("Spark") never resolves to the other game's gem.
 - **There are two sources for a build, and they know different things.** A Path of Building
   export is an engine's opinion: it computes life, resistances and damage, and writes none of
   the game's own numbers into an item. An export from the game's character endpoints is the

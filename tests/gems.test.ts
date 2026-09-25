@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { gemArt, gemColor, orderGems } from "../src/lib/games/poe1/gems";
+import { gemArt, gemColor, orderGems, skillNames } from "../src/lib/games/poe1/gems";
+import { buildSkill, skillArt, skillNamesFor } from "../src/lib/games/skills";
 
 const gem = (name: string, gemId?: string, support = false) => ({
   name,
@@ -82,4 +83,46 @@ test("a transfigured gem inherits the base gem's frames", () => {
   assert.ok(transfigured);
   assert.equal(transfigured.src, base.src);
   assert.equal(transfigured.frames, base.frames);
+});
+
+/**
+ * The skill list and the art index come from the same refresh, and a skill the
+ * form offers that the art index cannot draw is exactly how Kinetic Fusillade
+ * reached the player page as a card without a gem: the snapshot both were cut
+ * from was two years old, and neither knew it.
+ */
+test("every skill offered has gem art", () => {
+  const missing = skillNames().filter((name) => !gemArt(name));
+  assert.deepEqual(missing, []);
+  assert.ok(gemArt("Kinetic Fusillade"), "the current data has Kinetic Fusillade");
+});
+
+test("a renamed gem still resolves under its old name", () => {
+  assert.equal(gemArt("Dark Pact")?.src, gemArt("Dark Bargain")?.src);
+  assert.equal(gemArt("Lesser Multiple Projectiles")?.src, gemArt("Multiple Projectiles")?.src);
+});
+
+test("a build is a gem the index can draw, never prose", () => {
+  assert.equal(buildSkill("poe1", "Kinetic Fusillade", null), "Kinetic Fusillade");
+  assert.equal(buildSkill("poe1", null, "tectonic slam"), "Tectonic Slam");
+  assert.equal(buildSkill("poe1", null, "poison srs"), null);
+  assert.equal(buildSkill("poe1", "Not A Real Gem", null), null);
+  assert.equal(buildSkill("poe1", null, "Unknown"), null);
+});
+
+/**
+ * Path of Exile 2 has its own index, from its own export: every skill the form
+ * offers has a picture, and a name both games use resolves to each game's own.
+ */
+test("every Path of Exile 2 skill has gem art, and shared names stay apart", () => {
+  const missing = skillNamesFor("poe2").filter((name) => !skillArt("poe2", name));
+  assert.deepEqual(missing, []);
+  assert.ok(skillNamesFor("poe2").length > 200);
+  const poe1 = skillArt("poe1", "Spark");
+  const poe2 = skillArt("poe2", "Spark");
+  assert.ok(poe1 && poe2);
+  assert.notEqual(poe1.src, poe2.src);
+  assert.match(poe2.src, /^\/items\/poe2\//);
+  assert.equal(poe2.frames, 1);
+  assert.equal(buildSkill("poe2", null, "companion / Zekoa the monkey masher"), null);
 });

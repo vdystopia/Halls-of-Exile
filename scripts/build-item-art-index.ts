@@ -29,9 +29,9 @@ import path from "node:path";
 import overrides from "../src/lib/games/poe1/art-overrides.json";
 
 const BASE_SOURCE =
-  "https://raw.githubusercontent.com/lvlvllvlvllvlvl/RePoE/master/RePoE/data/base_items.json";
+  "https://repoe-fork.github.io/base_items.json";
 const UNIQUE_SOURCE =
-  "https://raw.githubusercontent.com/lvlvllvlvllvlvl/RePoE/master/RePoE/data/uniques.json";
+  "https://repoe-fork.github.io/uniques.json";
 const OUTPUT = path.join(process.cwd(), "src", "lib", "games", "poe1", "item-art-index.json");
 
 /** Only things that can sit in an equipment slot are worth indexing. */

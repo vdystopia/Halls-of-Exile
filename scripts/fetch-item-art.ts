@@ -9,6 +9,10 @@
  * scripts/build-item-art-index.ts. A base item's art path on the game's image
  * CDN is the same path RePoE records, so no scraping or guessing is involved.
  *
+ * Path of Exile 2's gem art is not on that CDN at the path its data records,
+ * so it comes from the repoe-fork export that the index was built from, as
+ * WebP, into public/items/poe2/ (see scripts/build-poe2-gem-index.ts).
+ *
  * The site renders placeholder silhouettes for anything missing, so running this
  * is optional — but public/ is copied into the Docker image, so whatever is on
  * disk when the image is built is what the container serves. Fetch before
@@ -18,6 +22,7 @@ import fs from "node:fs";
 import path from "node:path";
 import index from "../src/lib/games/poe1/item-art-index.json";
 import gemArt from "../src/lib/games/poe1/gem-art-index.json";
+import poe2GemArt from "../src/lib/games/poe2/gem-art-index.json";
 import ascendancy from "../src/lib/games/poe1/ascendancy-icons.json";
 
 // The literal type of a 2000-entry JSON file is too much for the compiler to
@@ -28,6 +33,7 @@ const catalogue = index as unknown as {
 };
 
 const DEFAULT_BASE_URL = "https://web.poecdn.com/image";
+const POE2_ART_URL = "https://repoe-fork.github.io/poe2";
 const OUTPUT_ROOT = path.join(process.cwd(), "public", "items");
 const CONCURRENCY = 8;
 const ATTEMPTS = 3;
@@ -46,14 +52,28 @@ const baseUrl = option("base-url", DEFAULT_BASE_URL).replace(/\/$/, "");
 const force = flag("force");
 const dryRun = flag("dry-run");
 
-async function download(artPath: string): Promise<"saved" | "skipped" | "failed"> {
-  const destination = path.join(OUTPUT_ROOT, `${artPath}.png`);
+/** One picture: where it comes from and where it lands under public/items/. */
+type Job = { label: string; url: string; destination: string };
+
+const poe1Job = (artPath: string): Job => ({
+  label: artPath,
+  url: `${baseUrl}/${artPath}.png?scale=1`,
+  destination: path.join(OUTPUT_ROOT, `${artPath}.png`),
+});
+
+const poe2Job = (artPath: string): Job => ({
+  label: `poe2/${artPath}`,
+  url: `${POE2_ART_URL}/${artPath}.webp`,
+  destination: path.join(OUTPUT_ROOT, "poe2", `${artPath}.webp`),
+});
+
+async function download({ url, destination }: Job): Promise<"saved" | "skipped" | "failed"> {
   if (!force && fs.existsSync(destination) && fs.statSync(destination).size > 0) return "skipped";
   if (dryRun) return "saved";
 
   for (let attempt = 1; attempt <= ATTEMPTS; attempt += 1) {
     try {
-      const response = await fetch(`${baseUrl}/${artPath}.png?scale=1`);
+      const response = await fetch(url);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const body = Buffer.from(await response.arrayBuffer());
       if (body.length === 0) throw new Error("empty body");
@@ -101,14 +121,17 @@ async function main() {
   const entries = [...Object.values(catalogue.bases), ...Object.values(catalogue.uniques)];
   // Gem art sits under the same Art/2DItems root and is served by the same CDN,
   // so it lands beside the equipment art and needs no second output tree.
-  const paths = [
+  const poe1Paths = [
     ...new Set([
       ...entries.map((entry) => entry.art),
       ...Object.values(gemArt.art as Record<string, string>),
     ]),
   ];
+  const poe2Paths = [...new Set(Object.values(poe2GemArt.art as Record<string, string>))];
+  const paths = [...poe1Paths.map(poe1Job), ...poe2Paths.map(poe2Job)];
   process.stdout.write(
-    `${dryRun ? "would fetch" : "fetching"} ${paths.length} images from ${baseUrl}\n`,
+    `${dryRun ? "would fetch" : "fetching"} ${poe1Paths.length} images from ${baseUrl} ` +
+      `and ${poe2Paths.length} from ${POE2_ART_URL}\n`,
   );
 
   const tally = { saved: 0, skipped: 0, failed: 0 };
@@ -117,10 +140,10 @@ async function main() {
 
   async function worker() {
     while (cursor < paths.length) {
-      const artPath = paths[cursor++];
-      const result = await download(artPath);
+      const job = paths[cursor++];
+      const result = await download(job);
       tally[result] += 1;
-      if (result === "failed") failures.push(artPath);
+      if (result === "failed") failures.push(job.label);
       const done = tally.saved + tally.skipped + tally.failed;
       if (done % 100 === 0) process.stdout.write(`  ${done}/${paths.length}\n`);
     }
