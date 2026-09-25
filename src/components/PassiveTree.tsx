@@ -319,7 +319,7 @@ export function PassiveTree({
         {/* What the two extra colours mean, shown only when the tree uses them. */}
         {weaponSets && (weaponSets[1].length || weaponSets[2].length) ? (
           <span className="flex gap-3 text-[11px] text-muted">
-            {([1, 2] as const).map((set) => (
+            {([1, 2] as const).filter((set) => weaponSets?.[set]?.length).map((set) => (
               <span key={set} className="flex items-center gap-1">
                 <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: WEAPON_SET_COLOR[set] }} />
                 weapon set {set}

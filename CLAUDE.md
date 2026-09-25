@@ -539,8 +539,8 @@ and its payload is stored in `characters.source_payload` for the same reason.
   `poe2/tree-data/<ver>.json` maps each to its parent, so the tooltip names the option taken
   (Point Blank, not Projectile Proximity Specialisation). "+5 to any Attribute" tooltips name the
   attribute chosen, and each weapon set's passives are coloured (orange, blue) with a legend.
-  Every version PoB2 ships, 0.1 to 0.5, is generated (`VERSIONS` in the script); 0.2 to 0.5 are
-  each checked by a fixture code saved on it, and 0.1 still lacks one. **The tree version is the
+  Every version PoB2 ships, 0.1 to 0.5, is generated (`VERSIONS` in the script), each
+  checked by a fixture code saved on it. **The tree version is the
   `<Spec treeVersion>`, never `<Build targetVersion>`**, which PoB2 writes as `0_1` on every save:
   a 0.1 character imported into PoB2 today carries its 0.5 allocation and is drawn on 0.5. PoB2's
   own character import uses its latest tree, so most codes are the newest version, but a save

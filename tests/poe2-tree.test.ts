@@ -148,8 +148,18 @@ test("the tree version is the spec's, not the build's targetVersion", async () =
   assert.deepEqual((build.trees[0].nodes ?? []).filter((id) => !circles().has(String(id))), []);
 });
 
-test("0.1 is generated from Path of Building 2's 0.1 tree data", () => {
+/** A level 87 Infernalist saved during 0.1: 120 passives, 7 of them gone from the 0.5 tree. */
+test("a 0.1 build is drawn on the 0.1 tree, every passive placed", async () => {
+  const { parsePob2 } = await import("../src/lib/games/poe2/pob");
+  const { treeAsset } = await import("../src/lib/games/poe2/tree");
+  const code = fs.readFileSync(path.join(process.cwd(), "tests", "fixtures", "poe2-pob-0.1-tree.txt"), "utf8").trim();
+  const build = parsePob2(code);
+  const [tree] = build.trees;
+  assert.equal(build.ascendClassName, "Infernalist");
+  assert.equal(tree.treeVersion, "0.1");
+  assert.deepEqual(treeAsset(tree.treeVersion), { src: "/trees/poe2/0.1.svg", version: "0.1", exact: true });
   const svg = fs.readFileSync(path.join(process.cwd(), "public", "trees", "poe2", "0.1.svg"), "utf8");
-  assert.ok([...svg.matchAll(/<circle id="n\d+"/g)].length > 2500);
+  const drawn = new Set([...svg.matchAll(/<circle id="n(\d+)"/g)].map((match) => Number(match[1])));
+  assert.deepEqual((tree.nodes ?? []).filter((id) => !drawn.has(id)), []);
   assert.match(svg, /asc-Infernalist/);
 });
