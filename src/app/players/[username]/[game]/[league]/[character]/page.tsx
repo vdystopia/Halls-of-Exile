@@ -48,6 +48,7 @@ export default async function CharacterPage({ params }: Props) {
   const stats = build.stats ?? {};
   const tree = build.trees?.[build.activeTree] ?? build.trees?.[0];
   const hasStats = Object.keys(stats).length > 0;
+  const hasLeftColumn = hasStats || Boolean(build.passives);
   const played = formatPlayed(character.playedMinutes);
   // Resolved here, on the server, because the gem art index must not be shipped
   // to the browser. `buildSkill` only returns a gem this game's index can draw,
@@ -165,21 +166,26 @@ export default async function CharacterPage({ params }: Props) {
         </div>
       ) : null}
 
+      {/* The left column holds stats, or the passives an export names. A source
+          with neither — Path of Exile 2's site, which serves no tree — leaves it
+          out, and the gear takes its width rather than sitting beside a gap. */}
       <div className="grid gap-4 lg:grid-cols-12">
-        <div className="space-y-4 lg:col-span-3">
-          {hasStats ? (
-            <>
-              <StatColumn title="Defence" panels={DEFENCE_PANELS} stats={stats} />
-              <ResistanceBar stats={stats} />
-              <AttributeStrip stats={stats} />
-            </>
-          ) : null}
-          {/* The game's own export computes nothing, so a character read from it
-              has no stats to show and this column carries its passives instead. */}
-          {!hasStats && build.passives ? <PassivePanel passives={build.passives} /> : null}
-        </div>
+        {hasLeftColumn ? (
+          <div className="space-y-4 lg:col-span-3">
+            {hasStats ? (
+              <>
+                <StatColumn title="Defence" panels={DEFENCE_PANELS} stats={stats} />
+                <ResistanceBar stats={stats} />
+                <AttributeStrip stats={stats} />
+              </>
+            ) : null}
+            {/* The game's own export computes nothing, so a character read from it
+                has no stats to show and this column carries its passives instead. */}
+            {!hasStats && build.passives ? <PassivePanel passives={build.passives} /> : null}
+          </div>
+        ) : null}
 
-        <div className="space-y-4 lg:col-span-6">
+        <div className={`space-y-4 ${hasLeftColumn ? "lg:col-span-6" : "lg:col-span-9"}`}>
           <section className="panel">
             <div className="panel-header">
               <h2 className="panel-title">Gear</h2>
@@ -187,7 +193,7 @@ export default async function CharacterPage({ params }: Props) {
             </div>
             <div className="p-4">
               {build.items.length ? (
-                <GearGrid build={build} />
+                <GearGrid build={build} game={league.game} />
               ) : (
                 <p className="py-8 text-center text-sm text-muted">No gear recorded.</p>
               )}
@@ -214,7 +220,7 @@ export default async function CharacterPage({ params }: Props) {
               <h2 className="panel-title">Skills</h2>
               <span className="text-xs text-muted">{build.skillGroups.length} groups</span>
             </div>
-            <SkillGroups groups={build.skillGroups} />
+            <SkillGroups groups={build.skillGroups} game={league.game} />
           </section>
 
           {tree ? (

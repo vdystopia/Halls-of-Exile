@@ -1,4 +1,5 @@
-import type { GemArt } from "../poe1/gems";
+import type { Gem } from "../../types";
+import type { GemArt, GemColor } from "../poe1/gems";
 import index from "./gem-art-index.json";
 import skills from "./skill-names.json";
 
@@ -29,4 +30,16 @@ export function canonicalSkill(text?: string | null): string | null {
 
 export function skillNames(): string[] {
   return SKILLS;
+}
+
+const COLORS = index.colors as Record<string, string>;
+
+/**
+ * A gem's colour from Path of Exile 2's own index — never Path of Exile 1's, whose
+ * gem of the same name can be a different attribute. A skill an item grants is
+ * not a gem anyone can cut, so it is not in the index and reads as uncoloured.
+ */
+export function gemColor(gem: Pick<Gem, "name" | "gemId" | "color">): GemColor | null {
+  const found = gem.color ?? (gem.gemId ? COLORS[gem.gemId] : undefined) ?? COLORS[gem.name.trim()];
+  return found === "r" || found === "g" || found === "b" || found === "w" ? found : null;
 }

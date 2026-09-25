@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ImportExportForm } from "@/components/ImportExportForm";
-import { skillNames } from "@/lib/games/poe1/gems";
+import { skillNamesFor } from "@/lib/games/skills";
 import { getUser, listAllLeagues } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -18,9 +18,9 @@ export default async function ImportPage({ params }: Props) {
   const user = getUser(username);
   if (!user) notFound();
 
-  // Path of Exile 2 has no equivalent export: the script behind this page reads
-  // the first game's character endpoints only.
-  const leagues = listAllLeagues().filter((league) => league.game === "poe1");
+  // Both games: the uploaded file says which it is from, and the form offers
+  // that game's leagues and skills once it has read it.
+  const leagues = listAllLeagues();
 
   return (
     <div className="space-y-6">
@@ -40,13 +40,18 @@ export default async function ImportPage({ params }: Props) {
           reads the account and writes one JSON file, which is what this page takes.
         </p>
         <p className="mt-3 max-w-2xl text-xs text-muted">
-          Nothing computed comes with it. Life, resistances and damage are Path of Building&rsquo;s arithmetic,
+          Path of Exile 2 works the same way from its own export, which carries gear but no passive tree or skill
+          gems: pathofexile2.com does not serve them. Nothing computed comes with either. Life, resistances and damage are Path of Building&rsquo;s arithmetic,
           not the game&rsquo;s, so a character imported this way shows no stat panels until a build code is
           added to it.
         </p>
       </header>
 
-      <ImportExportForm username={user.username} leagues={leagues} skills={skillNames()} />
+      <ImportExportForm
+        username={user.username}
+        leagues={leagues}
+        skills={{ poe1: skillNamesFor("poe1"), poe2: skillNamesFor("poe2") }}
+      />
     </div>
   );
 }

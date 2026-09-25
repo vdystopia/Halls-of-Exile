@@ -23,8 +23,8 @@ async function setup(username: string, account: string | null) {
 }
 
 async function fixture() {
-  const { readPoeExport } = await import("../src/lib/games/poe1/poe-api");
-  return readPoeExport(fs.readFileSync(FIXTURE, "utf8"));
+  const { readAccountExport } = await import("../src/lib/games/exports");
+  return readAccountExport(fs.readFileSync(FIXTURE, "utf8"));
 }
 
 test("an export finds its player by the account it names", async () => {

@@ -5,13 +5,14 @@ import path from "node:path";
 import { db } from "./db";
 import { leagueTitle } from "./format";
 import {
-  buildFromPoeExport,
-  POE_API_VERSION,
+  buildFromExport,
+  exportVersion,
   PoeExportError,
-  readPoeExport,
-  storedPayload,
-  type PoeExport,
-} from "./games/poe1/poe-api";
+  readAccountExport,
+  storedPayloadFor,
+  type AccountExport,
+} from "./games/exports";
+import type { GameId } from "./games/types";
 import { getLeague } from "./queries";
 
 /**
@@ -70,7 +71,11 @@ export type ImportRow = {
 };
 
 export type ImportPlan = {
+  /** Which game the export is from; rows only ever match that game's characters. */
+  game: GameId;
   account: string;
+  /** Characters in the file that could not be read, named so the page can say so. */
+  skippedCharacters: string[];
   generatedAt: string | null;
   rows: ImportRow[];
   /** The staged upload this plan was read from; see `stageExport`. */
@@ -104,16 +109,21 @@ type MatchRow = {
 
 export type ImportUser = { id: number; username: string };
 
-function matchesFor(userId: number, name: string): MatchRow[] {
+/**
+ * Archived characters with this name, in this game only. Names are unique per
+ * realm, not across games, and a Path of Exile 2 export must never fill or skip
+ * a Path of Exile 1 character that happens to share a name.
+ */
+function matchesFor(userId: number, game: GameId, name: string): MatchRow[] {
   return db
     .prepare(
       `SELECT c.id, c.slug, c.name, c.class_name, c.ascendancy, c.main_skill, c.skill_gem, l.game, l.slug AS league,
               (c.pob_code IS NOT NULL OR c.source_payload IS NOT NULL) AS imported
          FROM characters c JOIN leagues l ON l.id = c.league_id
-        WHERE c.user_id = ? AND c.name = ? COLLATE NOCASE
+        WHERE c.user_id = ? AND l.game = ? AND c.name = ? COLLATE NOCASE
         ORDER BY l.sort_order`,
     )
-    .all(userId, name) as MatchRow[];
+    .all(userId, game, name) as MatchRow[];
 }
 
 /**
@@ -153,12 +163,12 @@ export function stageExport(body: string): string {
   return token;
 }
 
-export function readStaged(token: string): PoeExport {
+export function readStaged(token: string): AccountExport {
   // The token names a file, so it must not be able to name any other one.
   if (!/^[0-9a-f-]{36}$/.test(token)) throw new PoeExportError("That upload is no longer here — choose it again.");
   const file = path.join(STAGE_DIR, `${token}.json`);
   if (!fs.existsSync(file)) throw new PoeExportError("That upload is no longer here — choose it again.");
-  return readPoeExport(fs.readFileSync(file, "utf8"));
+  return readAccountExport(fs.readFileSync(file, "utf8"));
 }
 
 /**
@@ -197,9 +207,9 @@ export function rememberAccount(userId: number, account: string): void {
   db.prepare(`UPDATE users SET poe_account = ? WHERE id = ?`).run(name, userId);
 }
 
-export function planFor(userId: number, exported: PoeExport, token: string): ImportPlan {
+export function planFor(userId: number, exported: AccountExport, token: string): ImportPlan {
   const rows: ImportRow[] = exported.characters.map((character) => {
-    const found = matchesFor(userId, character.name);
+    const found = matchesFor(userId, exported.game, character.name);
     const single = found.length === 1 ? found[0] : null;
     const league = single ? getLeague(single.game, single.league) : null;
     return {
@@ -236,7 +246,14 @@ export function planFor(userId: number, exported: PoeExport, token: string): Imp
       skillGuessed: !single?.skill_gem && Boolean(character.mainSkill),
     };
   });
-  return { account: exported.account, generatedAt: exported.generatedAt, rows, token };
+  return {
+    game: exported.game,
+    account: exported.account,
+    skippedCharacters: exported.skippedCharacters,
+    generatedAt: exported.generatedAt,
+    rows,
+    token,
+  };
 }
 
 function slugify(value: string): string {
@@ -280,7 +297,7 @@ function uniqueSlug(userId: number, leagueId: number, base: string): string {
  */
 export function applyImport(
   user: ImportUser,
-  exported: PoeExport,
+  exported: AccountExport,
   options: {
     include: (name: string) => boolean;
     leagueFor: (name: string) => string | null;
@@ -323,10 +340,11 @@ export function applyImport(
   const run = db.transaction(() => {
     for (const character of exported.characters) {
       if (!options.include(character.name)) continue;
-      const build = buildFromPoeExport(character, exported);
-      const payload = JSON.stringify(storedPayload(character, exported));
+      const build = buildFromExport(character, exported);
+      const payload = JSON.stringify(storedPayloadFor(character, exported));
       const data = JSON.stringify(build);
-      const found = matchesFor(user.id, character.name);
+      const version = exportVersion(build.source);
+      const found = matchesFor(user.id, exported.game, character.name);
 
       if (found.length === 1) {
         const existing = found[0];
@@ -359,7 +377,7 @@ export function applyImport(
           chosen ?? known(existing.skill_gem) ?? build.mainSkill ?? null,
           data,
           payload,
-          POE_API_VERSION,
+          version,
           existing.id,
         );
         imported += 1;
@@ -371,7 +389,7 @@ export function applyImport(
 
       const slug = options.leagueFor(character.name);
       if (!slug) continue;
-      const league = getLeague("poe1", slug);
+      const league = getLeague(exported.game, slug);
       if (!league) continue;
       insert.run(
         user.id,
@@ -385,7 +403,7 @@ export function applyImport(
         options.skillFor?.(character.name) ?? build.mainSkill ?? null,
         data,
         payload,
-        POE_API_VERSION,
+        version,
       );
       created += 1;
       imported += 1;

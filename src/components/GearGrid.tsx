@@ -1,6 +1,5 @@
-import { findItemArt } from "@/lib/games/poe1/item-art";
-import { buildTooltip } from "@/lib/games/poe1/tooltip";
-import { DOLL_COLUMNS, FLASK_SLOTS, PAPER_DOLL } from "@/lib/games/poe1/items";
+import { gearFor } from "@/lib/games/gear";
+import type { GameId } from "@/lib/games/types";
 import type { BuildData, ParsedItem } from "@/lib/types";
 import { GearSlot } from "./gear/GearSlot";
 
@@ -8,7 +7,10 @@ import { GearSlot } from "./gear/GearSlot";
 const CELL = "clamp(44px, 7.2vw, 76px)";
 const GAP = "6px";
 
-export function GearGrid({ build }: { build: BuildData }) {
+export function GearGrid({ build, game }: { build: BuildData; game: GameId }) {
+  // The doll, the art and the tooltip are the character's own game's: the two
+  // games share base names and not the pictures or numbers behind them.
+  const { doll: PAPER_DOLL, columns: DOLL_COLUMNS, flaskSlots: FLASK_SLOTS, art, tooltip } = gearFor(game);
   const byId = new Map<number, ParsedItem>(build.items.map((item) => [item.id, item]));
   const at = (slot: string) => {
     const id = build.slots[slot];
@@ -16,8 +18,8 @@ export function GearGrid({ build }: { build: BuildData }) {
   };
   // Both resolved on the server, so neither the art catalogue nor the block and
   // requirement arithmetic that reads it reaches the browser.
-  const artFor = (item?: ParsedItem) => (item ? findItemArt(item) : null);
-  const tooltipFor = (item?: ParsedItem) => (item ? buildTooltip(item) : undefined);
+  const artFor = (item?: ParsedItem) => (item ? art(item) : null);
+  const tooltipFor = (item?: ParsedItem) => (item ? tooltip(item) : undefined);
 
   // Path of Building keeps every item a build has ever held in one list, so an
   // item is only shown if the build actually uses it: equipped in a slot, or

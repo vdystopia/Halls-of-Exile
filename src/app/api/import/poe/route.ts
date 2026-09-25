@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { PoeExportError, readPoeExport } from "@/lib/games/poe1/poe-api";
+import { PoeExportError, readAccountExport } from "@/lib/games/exports";
 import { applyImport, playerForAccount, rememberAccount, type ImportUser } from "@/lib/import";
 import { getUser } from "@/lib/queries";
 
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 
   let exported;
   try {
-    exported = readPoeExport(body);
+    exported = readAccountExport(body);
   } catch (error) {
     const message = error instanceof PoeExportError ? error.message : "Could not read that export.";
     return NextResponse.json({ status: "error", error: message }, { status: 400 });

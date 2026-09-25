@@ -73,10 +73,14 @@ export function GearSlot({
 
   const remote = item?.iconUrl && item.iconUrl !== art?.src ? item.iconUrl : null;
   // The game's own picture is already composited, so it is one frame where a
-  // local flask sheet is three.
-  const fallback = art && remote ? { ...art, src: remote, frames: 1 } : null;
-  const shown = artStep === 0 ? art : artStep === 1 ? fallback : null;
-  const onBroken = () => setArtStep((step) => (step === 0 && fallback ? 1 : 2));
+  // local flask sheet is three. It stands in when the local picture fails, and
+  // outright when there is no local one at all — every Path of Exile 2 item,
+  // and anything the catalogue does not know. Its size comes from the item.
+  const fallback = remote
+    ? { ...(art ?? { width: item?.size?.[0] ?? 1, height: item?.size?.[1] ?? 1 }), src: remote, frames: 1 }
+    : null;
+  const shown = artStep === 0 ? (art ?? fallback) : artStep === 1 ? fallback : null;
+  const onBroken = () => setArtStep((step) => (step === 0 && art && fallback ? 1 : 2));
 
   return (
     <>

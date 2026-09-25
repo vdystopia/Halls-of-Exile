@@ -4,7 +4,9 @@ import path from "node:path";
 import { ACCOUNT_SEED } from "./accounts";
 import { LEAGUE_SEED } from "./leagues";
 import { PARSER_VERSION, parsePob } from "./games/poe1/pob";
-import { POE_API_VERSION, rebuildFromStoredExport, type StoredPoeExport } from "./games/poe1/poe-api";
+import { exportVersion, isExportSource, rebuildFromStored } from "./games/exports";
+import { POE_API_VERSION } from "./games/poe1/poe-api";
+import { POE2_SITE_VERSION } from "./games/poe2/site-export";
 
 const DEFAULT_PATH = path.join(process.cwd(), "data", "archive.db");
 
@@ -253,7 +255,9 @@ function reparseStaleBuilds(db: Database.Database) {
          FROM characters
         WHERE parser_version < ? OR api_version < ?`,
     )
-    .all(PARSER_VERSION, POE_API_VERSION) as {
+    // Each export mapper has its own version (see `exportVersion`), so rows are
+    // fetched against the higher of the two and each is checked against its own.
+    .all(PARSER_VERSION, Math.max(POE_API_VERSION, POE2_SITE_VERSION)) as {
     id: number;
     pob_code: string | null;
     source_payload: string | null;
@@ -274,7 +278,8 @@ function reparseStaleBuilds(db: Database.Database) {
       // from Path of Building, then filled in from the game. Whichever produced
       // the build it is showing is the one allowed to rewrite it; the other is
       // only brought up to date so it stops being re-read every boot.
-      const fromApi = row.source === "poe-api";
+      const fromApi = isExportSource(row.source);
+      const apiTarget = exportVersion(row.source);
       if (row.parser_version < PARSER_VERSION) {
         if (!row.pob_code || fromApi) markPob.run(PARSER_VERSION, row.id);
         else {
@@ -285,14 +290,13 @@ function reparseStaleBuilds(db: Database.Database) {
           }
         }
       }
-      if (row.api_version < POE_API_VERSION) {
-        if (!row.source_payload || !fromApi) markApi.run(POE_API_VERSION, row.id);
+      if (row.api_version < apiTarget) {
+        if (!row.source_payload || !fromApi) markApi.run(apiTarget, row.id);
         else {
           try {
-            const stored = JSON.parse(row.source_payload) as StoredPoeExport;
-            storeApi.run(JSON.stringify(rebuildFromStoredExport(stored)), POE_API_VERSION, row.id);
+            storeApi.run(JSON.stringify(rebuildFromStored(JSON.parse(row.source_payload))), apiTarget, row.id);
           } catch {
-            markApi.run(POE_API_VERSION, row.id);
+            markApi.run(apiTarget, row.id);
           }
         }
       }

@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { importPoeExportAction, previewPoeExportAction, type ImportState } from "@/lib/actions";
+import type { GameId } from "@/lib/games/types";
 import type { ImportRow } from "@/lib/import";
 import type { League } from "@/lib/types";
 import { FormError } from "./FormError";
@@ -37,15 +38,18 @@ export function ImportExportForm({
   skills,
 }: {
   username: string;
+  /** Both games' leagues; a plan offers only its own game's. */
   leagues: League[];
-  /** Every active skill gem, read on the server. See `SkillSelect`. */
-  skills: string[];
+  /** Every active skill gem per game, read on the server. See `SkillSelect`. */
+  skills: Record<GameId, string[]>;
 }) {
   const [preview, previewAction] = useActionState(previewPoeExportAction, INITIAL);
   const [result, importAction] = useActionState(importPoeExportAction, INITIAL);
   // Whichever ran last is what the page is showing.
   const state = result.plan || result.error ? result : preview;
   const plan = state.plan;
+  const game: GameId = plan?.game ?? "poe1";
+  const gameLeagues = leagues.filter((league) => league.game === game);
 
   const counts = {
     fill: plan?.rows.filter((row) => row.action === "update" && !row.finalised).length ?? 0,
@@ -56,7 +60,7 @@ export function ImportExportForm({
 
   return (
     <form className="space-y-4">
-      <SkillOptions options={skills} />
+      <SkillOptions options={skills[game]} />
       <input type="hidden" name="username" value={username} />
 
       <div className="panel space-y-3 p-4">
@@ -75,9 +79,12 @@ export function ImportExportForm({
             server, and that name is what the import submits. */}
         {plan ? <input type="hidden" name="token" value={plan.token} /> : null}
         <p className="text-xs text-muted">
-          The JSON that <code className="font-mono">poe-char-export</code> writes — gear, socketed gems and the
-          passive tree for every character on one account. Read it on a machine that can reach pathofexile.com;
-          this page only reads the file.
+          Either game&rsquo;s export. For Path of Exile, the JSON <code className="font-mono">poe-char-export</code>{" "}
+          writes — gear, socketed gems and the passive tree for every character on one account. For Path of Exile
+          2, the JSON <code className="font-mono">poe2-char-export.js</code> saves from your own characters page
+          on pathofexile2.com — gear, both weapon sets, charms, runes and the skills items grant, but no passive
+          tree and no skill gems, which that site does not serve. The file says which game it is from; this page
+          only reads it.
         </p>
         <div className="flex flex-wrap gap-2 pt-1">
           <SubmitButton formAction={previewAction} pendingLabel="Reading…" className="btn">
@@ -101,12 +108,20 @@ export function ImportExportForm({
       {plan ? (
         <section className="panel">
           <div className="panel-header">
-            <h2 className="panel-title">{plan.account}</h2>
+            <h2 className="panel-title">
+              {plan.account} · {game === "poe2" ? "Path of Exile 2" : "Path of Exile"}
+            </h2>
             <span className="text-xs text-muted">
               {counts.fill} to fill in · {counts.archived} already archived · {counts.create} not in the archive
               {counts.ambiguous ? ` · ${counts.ambiguous} ambiguous` : ""}
             </span>
           </div>
+          {plan.skippedCharacters.length ? (
+            <p className="border-b border-line px-4 py-2.5 text-xs text-life">
+              Not in this file, because their gear could not be read when it was exported:{" "}
+              {plan.skippedCharacters.join(", ")}. Export again to include them.
+            </p>
+          ) : null}
           <ul className="divide-y divide-line">
             {plan.rows.map((row) => (
               <li key={rowKey(row)} className="flex flex-wrap items-center gap-3 px-4 py-2.5 text-sm">
@@ -156,7 +171,7 @@ export function ImportExportForm({
                       className="input px-2 py-1 text-xs"
                     >
                       <option value="">Do not import</option>
-                      {leagues.map((league) => (
+                      {gameLeagues.map((league) => (
                         <option key={league.slug} value={league.slug}>
                           {league.patch ?? "###"} {league.name}
                         </option>

@@ -60,7 +60,10 @@ src/lib/leagues.ts            the league catalogue itself
 src/lib/games/index.ts        the game registry; GameModule is in games/types.ts
 src/lib/games/poe1/           everything Path of Exile 1 specific: pob, poe-api, items,
                               stats, tooltip, item art, gem colours, ascendancy emblems
-src/lib/games/poe2/           Path of Exile 2: classes so far, see its README
+src/lib/games/poe2/           Path of Exile 2: classes, gems, the site-export mapper,
+                              paper doll and tooltip; see its README
+src/lib/games/exports.ts      reads either game's account export and picks its mapper
+src/lib/games/gear.ts         per-game paper doll, item art, tooltip and gem colour
 src/lib/queries.ts            reads
 src/lib/actions.ts            writes — server actions only
 src/lib/import.ts             applying an account export, shared by the upload
@@ -70,6 +73,8 @@ tools/poe-char-export/        the collector: reads an account off the game's own
                               character endpoints and writes the JSON the import
                               page takes. Vendored as handed over, not built or
                               linted here.
+tools/poe2-char-export/       the Path of Exile 2 equivalent: a browser snippet
+                              run on the logged-in pathofexile2.com characters page
 ```
 
 Data flow: a PoB share code is base64+deflate over XML. `parsePob` turns it into a
@@ -208,7 +213,8 @@ and its payload is stored in `characters.source_payload` for the same reason.
   reads the catalogue for block and requirements, and calling it from the client component shipped
   the whole thing to the browser for two weeks. `ItemTooltip` takes finished sections as a prop and
   `tests/client-bundle.test.ts` walks the client import graph to keep it that way. `GearSlot` falls back to the picture the
-  game itself serves when the local one is missing, and to a silhouette when there is no remote
+  game itself serves when the local one is missing — or outright when there is no local one,
+  which is every Path of Exile 2 item — and to a silhouette when there is no remote
   one either — via a ref as well as `onError`, because the tag is server-rendered and a 404
   fires before React attaches the handler. Only an item read from the game's own endpoints names
   a remote picture, and that one is already composited, so a flask fetched that way is one frame
@@ -471,6 +477,33 @@ and its payload is stored in `characters.source_payload` for the same reason.
   recorded `skill_gem`. **The unattended caller passes no `skillFor`**, so `/api/import/poe`
   keeps the old order: fill a blank, never touch an answer. An empty field is not a request to
   clear one.
+- **Path of Exile 2 characters come from the logged-in site, and it serves gear only.**
+  pathofexile2.com has no public profile; `/internal-api/my-account/characters?realm=poe2` and
+  `/character/<id>?realm=poe2` need the session cookie *and* `Authorization: DPoP
+  <localStorage.__POESESSION>`, so the export is a browser snippet
+  (`tools/poe2-char-export/`), not something `collect.ps1` can run. The file carries
+  `"game": "poe2"`; `readAccountExport` routes it to `poe2/site-export.ts`, and everything after
+  reading is the shared import (never overwrite, league chosen by hand, match by name **within
+  the export's game** — names are unique per realm, not across games). Items arrive in the
+  official API's Item shape: mods are objects whose `flags` become tags, text carries
+  `[Tag|Display]` markup that `plainText` strips, property values are templated into names as
+  `{0}`, flasks and charms share the "Flask" inventory (x 0–1 flasks, 2–4 charms), `Weapon2` and
+  `Offhand2` are the second weapon set, rune mods are tagged `enchant, rune`, and a skill an item
+  grants is a skill group with its supports. The class is an ascendancy id whose number is not
+  list order (`Monk3` is Acolyte of Chayula) — `ASCENDANCY_IDS`, from the site's tree data.
+  The site has **no passive tree, no skill-slot gems, no weapon-set passives and no tree jewels**;
+  those need a Path of Building 2 share code, because only the official OAuth API serves them
+  and GGG is not registering new applications. The build's source is `poe2-site` with its own
+  `POE2_SITE_VERSION`; `exportVersion` gives the replay each mapper's own version, since both
+  share `api_version`. Origin is `certain` only while the character is still in a running league
+  (strip SSF/HC prefixes, match the catalogue name), graded from the last login otherwise.
+  Gear never touches Path of Exile 1's catalogue: `gearFor(game)` gives Path of Exile 2 no local
+  art, its own tooltip that derives nothing, and its own gem colours, because the games share
+  base and gem names (Ruby Ring, Spark) and not the numbers behind them. The site's tree data is
+  public but unversioned; `npm run tree:poe2:snapshot` keeps a gzipped copy per change in
+  `scripts/data/poe2-trees/`, for drawing trees later. **When the Path of Building 2 reader
+  lands, `reparseStaleBuilds` must stop sending a Path of Exile 2 share code through the Path of
+  Exile 1 parser** — it keys on `pob_code` and `PARSER_VERSION` alone today.
 - **A skill is shown with its gem or not at all, and the gem data comes from the live export.**
   Every index here is built from `repoe-fork.github.io` (Path of Exile 1 at the root, Path of
   Exile 2 under `/poe2/`), never from the RePoE GitHub repository's `master` branch: that

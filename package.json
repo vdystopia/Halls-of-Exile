@@ -17,6 +17,7 @@
     "ascendancy:index": "tsx scripts/build-ascendancy-index.ts",
     "ascendancy:art": "tsx scripts/fetch-ascendancy-art.ts",
     "tree:svg": "tsx scripts/build-tree-svg.ts",
+    "tree:poe2:snapshot": "tsx scripts/snapshot-poe2-tree.ts",
     "clusters:index": "tsx scripts/build-cluster-index.ts",
     "art:fetch": "tsx scripts/fetch-item-art.ts",
     "leagues:art": "tsx scripts/fetch-league-art.ts"

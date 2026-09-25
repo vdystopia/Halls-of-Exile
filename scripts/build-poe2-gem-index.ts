@@ -19,6 +19,10 @@
  * the inventory — a single 108x108 frame, unlike Path of Exile 1's layered
  * strips.
  *
+ * Each gem's colour — its attribute, r/g/b/w — is kept beside its picture, so a
+ * Path of Exile 2 gem is never coloured by looking its name up in Path of Exile
+ * 1's index.
+ *
  * Skills and spirit gems are both offered as what a character was built
  * around: in this game a spirit gem is often exactly that (a companion, a
  * minion, an aura build). Supports are indexed for art only.
@@ -32,6 +36,7 @@ const SKILLS_OUTPUT = path.join(process.cwd(), "src", "lib", "games", "poe2", "s
 
 type SkillGem = {
   gem_type?: string;
+  color?: string;
   crafting_types?: unknown;
   base_item?: { id?: string; display_name?: string; release_state?: string } | null;
 };
@@ -56,6 +61,7 @@ async function main() {
     bases[id] ?? bases[id.replace("/Gem/", "/Gems/")] ?? bases[id.replace("/Gems/", "/Gem/")] ?? baseByName.get(name);
 
   const art: Record<string, string> = {};
+  const colors: Record<string, string> = {};
   const skills = new Set<string>();
   let unmatched = 0;
   for (const gem of Object.values(gems)) {
@@ -71,12 +77,14 @@ async function main() {
     const artPath = dds.replace(/\.dds$/, "");
     for (const key of [id, name, name.replace(/ Support$/, "")]) {
       if (!art[key]) art[key] = artPath;
+      if (gem.color && /^[rgbw]$/.test(gem.color) && !colors[key]) colors[key] = gem.color;
     }
     if (gem.gem_type === "active" || gem.gem_type === "spirit") skills.add(name);
   }
 
   const sorted = Object.fromEntries(Object.keys(art).sort().map((key) => [key, art[key]]));
-  fs.writeFileSync(ART_OUTPUT, `${JSON.stringify({ art: sorted }, null, 0)}\n`);
+  const sortedColors = Object.fromEntries(Object.keys(colors).sort().map((key) => [key, colors[key]]));
+  fs.writeFileSync(ART_OUTPUT, `${JSON.stringify({ art: sorted, colors: sortedColors }, null, 0)}\n`);
   const names = [...skills].sort((a, b) => a.localeCompare(b));
   fs.writeFileSync(SKILLS_OUTPUT, `${JSON.stringify(names, null, 0)}\n`);
   process.stdout.write(

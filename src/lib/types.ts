@@ -241,7 +241,7 @@ export type PassiveDetail = {
 };
 
 export type BuildData = {
-  source: "pob" | "manual" | "poe-api";
+  source: "pob" | "manual" | "poe-api" | "poe2-site";
   pobVersion?: string;
   className?: string;
   ascendClassName?: string;

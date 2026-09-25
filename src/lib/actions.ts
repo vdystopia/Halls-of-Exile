@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "./db";
 import { emptyBuild, fetchPobCode, isPobUrl, parsePob, PARSER_VERSION, PobError } from "./games/poe1/pob";
-import { PoeExportError, readPoeExport, type PoeExport } from "./games/poe1/poe-api";
+import { PoeExportError, readAccountExport, type AccountExport } from "./games/exports";
 import {
   applyImport,
   planFor,
@@ -412,11 +412,11 @@ export async function addLeagueAction(_prev: ActionState, formData: FormData): P
 export type ImportState = ActionState & { plan?: ImportPlan; imported?: number; created?: number };
 
 /** The upload itself, or the staged copy of one already looked at. */
-async function readUpload(formData: FormData): Promise<{ exported: PoeExport; token: string }> {
+async function readUpload(formData: FormData): Promise<{ exported: AccountExport; token: string }> {
   const file = formData.get("export");
   if (file instanceof File && file.size > 0) {
     const body = await file.text();
-    const exported = readPoeExport(body);
+    const exported = readAccountExport(body);
     return { exported, token: stageExport(body) };
   }
   const token = text(formData, "token");
@@ -440,7 +440,7 @@ export async function importPoeExportAction(_prev: ImportState, formData: FormDa
   const user = getUser(username);
   if (!user) return { error: "Unknown player." };
 
-  let exported: PoeExport;
+  let exported: AccountExport;
   let token: string;
   try {
     ({ exported, token } = await readUpload(formData));

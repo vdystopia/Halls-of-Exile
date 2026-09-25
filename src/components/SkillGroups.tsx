@@ -1,4 +1,6 @@
-import { GEM_COLOR_CLASS, gemColor, orderGems } from "@/lib/games/poe1/gems";
+import { GEM_COLOR_CLASS, gearFor } from "@/lib/games/gear";
+import { orderGems } from "@/lib/games/poe1/gems";
+import type { GameId } from "@/lib/games/types";
 import type { Gem, SkillGroup } from "@/lib/types";
 
 function gemLine(level: number | null, quality: number | null) {
@@ -8,9 +10,12 @@ function gemLine(level: number | null, quality: number | null) {
   return parts.join(" · ");
 }
 
-/** The gem's own colour, falling back to the generic gem teal when unknown. */
-function nameClass(gem: Gem) {
-  const color = gemColor(gem);
+/**
+ * The gem's own colour, from its own game's index, falling back to the generic
+ * gem teal when unknown.
+ */
+function nameClass(gem: Gem, game: GameId) {
+  const color = gearFor(game).gemColor(gem);
   return color ? GEM_COLOR_CLASS[color] : "text-rarity-gem";
 }
 
@@ -27,7 +32,7 @@ function groupTitle(group: SkillGroup): string | null {
   return isGemName ? null : label;
 }
 
-export function SkillGroups({ groups }: { groups: SkillGroup[] }) {
+export function SkillGroups({ groups, game }: { groups: SkillGroup[]; game: GameId }) {
   if (!groups.length) {
     return <p className="px-4 py-3 text-sm text-muted">No gem setup recorded for this character.</p>;
   }
@@ -55,7 +60,7 @@ export function SkillGroups({ groups }: { groups: SkillGroup[] }) {
                   key={gemIndex}
                   className={`flex items-baseline justify-between gap-3 ${gem.enabled ? "" : "line-through opacity-50"}`}
                 >
-                  <span className={gem.support ? `pl-4 ${nameClass(gem)}` : `font-semibold ${nameClass(gem)}`}>
+                  <span className={gem.support ? `pl-4 ${nameClass(gem, game)}` : `font-semibold ${nameClass(gem, game)}`}>
                     {gem.name}
                   </span>
                   <span className="shrink-0 text-xs tabular-nums text-muted">{gemLine(gem.level, gem.quality)}</span>
