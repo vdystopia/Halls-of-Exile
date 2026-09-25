@@ -5,6 +5,7 @@ import {
   compareNumbers,
   comparePatches,
   formatPlayed,
+  formatPlayedTotal,
   isLeagueRunning,
   leagueDuration,
   leagueLabel,
@@ -325,4 +326,13 @@ test("numbers sort with the unknown last, either way round", () => {
   assert.deepEqual([...levels].sort((a, b) => compareNumbers(a, b, -1)), [96, 84, null]);
   // Zero is a value, not an absence, and stays in the ordering.
   assert.deepEqual([0, null, 3].sort((a, b) => compareNumbers(a, b, 1)), [0, 3, null]);
+});
+
+/** The archive header's /played: days to two decimals, then the whole hours. */
+test("a player's total /played reads as days to two places and whole hours", () => {
+  // 245 days 21 hours, the figure the header showed as "245d 21h".
+  assert.deepEqual(formatPlayedTotal(245 * 1440 + 21 * 60), { days: "245.88d", hours: "5901h" });
+  assert.deepEqual(formatPlayedTotal(90), { days: "0.06d", hours: "2h" });
+  assert.equal(formatPlayedTotal(0), null);
+  assert.equal(formatPlayedTotal(null), null);
 });

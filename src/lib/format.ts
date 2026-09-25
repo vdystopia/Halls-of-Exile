@@ -141,6 +141,16 @@ export function formatPlayed(minutes: number | null | undefined): string | null 
 }
 
 /**
+ * A player's whole /played, for the archive header: days to two decimals and
+ * the same span in whole hours, because at hundreds of days "245d 21h" hides
+ * the scale and the hours are the figure people compare. Both are rounded.
+ */
+export function formatPlayedTotal(minutes: number | null | undefined): { days: string; hours: string } | null {
+  if (!minutes || minutes <= 0) return null;
+  return { days: `${(minutes / (24 * 60)).toFixed(2)}d`, hours: `${Math.round(minutes / 60)}h` };
+}
+
+/**
  * Order two patch numbers the way the game numbers them, not the way strings
  * sort. Lexically "3.16" comes before "3.9", which is backwards — Path of Exile
  * ran 3.9, then 3.10, and on to 3.16 — so each dotted part is compared as a

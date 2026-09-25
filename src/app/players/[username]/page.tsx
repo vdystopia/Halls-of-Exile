@@ -4,7 +4,7 @@ import { AddLeagueForm } from "@/components/AddLeagueForm";
 import { CharacterCard } from "@/components/CharacterCard";
 import { LeagueIndex } from "@/components/LeagueIndex";
 import { PlayerAdmin } from "@/components/PlayerAdmin";
-import { formatPlayed } from "@/lib/format";
+import { formatPlayedTotal } from "@/lib/format";
 import { getUser, getUserTotals, listLeaguesForUser, listRecentCharacters } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +31,7 @@ export default async function PlayerPage({ params, searchParams }: Props) {
   const played = leagues.filter((league) => league.characterCount > 0 || league.challengesCompleted !== null);
   const showAll = all === "1" || played.length === 0;
   const visible = showAll ? leagues : played;
+  const total = formatPlayedTotal(totals.playedMinutes);
 
   return (
     <div className="space-y-8">
@@ -42,12 +43,24 @@ export default async function PlayerPage({ params, searchParams }: Props) {
             <p className="mt-1 text-sm text-aubergine">{user.firstName}</p>
             {user.tagline ? <p className="mt-3 max-w-xl text-sm text-parchment/75 italic">“{user.tagline}”</p> : null}
           </div>
-          <dl className="grid grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-4">
+          {/* Columns as wide as their contents, not four equal shares: the /played
+              figure is the widest, and equal columns spread every stat apart to
+              match it instead of letting the others close up to the left. */}
+          <dl className="grid grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-[repeat(4,auto)]">
             {[
               { label: "Characters", value: totals.characters },
               { label: "Leagues played", value: totals.leagues },
               { label: "Highest level", value: totals.highestLevel ?? "—" },
-              { label: "Total /played", value: formatPlayed(totals.playedMinutes) ?? "—" },
+              {
+                label: "Total /played",
+                value: total ? (
+                  <>
+                    {total.days} <span className="text-muted">({total.hours})</span>
+                  </>
+                ) : (
+                  "—"
+                ),
+              },
             ].map((stat) => (
               <div key={stat.label} className="text-right">
                 <dt className="eyebrow">{stat.label}</dt>
