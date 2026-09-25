@@ -37,7 +37,16 @@ function importsOf(file: string): string[] {
   return [...source.matchAll(/^import\s+(?!type\s)([\s\S]*?)from\s+"([^"]+)"/gm)].map((match) => match[2]);
 }
 
-/** Every file a "use client" module drags into the browser bundle. */
+/**
+ * Every file a "use client" module drags into the browser bundle.
+ *
+ * The walk stops at a "use server" module. A client component that imports a
+ * server action gets a reference to it, not its code — Next never bundles that
+ * module's imports for the browser — so following them reports files that are
+ * not there. It did: `PlayerAdmin` imports `actions.ts`, whose imports reach the
+ * whole parser, and a guard added for the cluster layout failed on that path
+ * while the built client chunks held none of its code or data.
+ */
 function clientGraph(): Set<string> {
   const seen = new Set<string>();
   const queue = walk(SRC).filter((file) => /^["']use client["']/.test(fs.readFileSync(file, "utf8")));
@@ -45,6 +54,7 @@ function clientGraph(): Set<string> {
     const file = queue.pop() as string;
     if (seen.has(file)) continue;
     seen.add(file);
+    if (/^["']use server["']/.test(fs.readFileSync(file, "utf8"))) continue;
     for (const specifier of importsOf(file)) {
       const resolved = resolve(file, specifier);
       if (resolved && !seen.has(resolved)) queue.push(resolved);
@@ -93,7 +103,9 @@ test("the skill name list never reaches the browser", () => {
  * thing to want to import directly.
  */
 test("the gem module never reaches the browser", () => {
-  const offenders = [...clientGraph()].filter((file) => /poe1[\/]gems\.ts$/.test(file));
+  // Either separator: a pattern matching only "/" never fires on Windows paths,
+  // and this one silently passed there until the cluster guard exposed it.
+  const offenders = [...clientGraph()].filter((file) => /poe1[\\/]gems\.ts$/.test(file));
   assert.deepEqual(offenders.map((file) => path.relative(process.cwd(), file)), []);
 });
 
@@ -105,7 +117,7 @@ test("the gem module never reaches the browser", () => {
  */
 test("the cluster layout and its data never reach the browser", () => {
   const offenders = [...clientGraph()].filter((file) =>
-    /poe1[\/](clusters\.ts|cluster-jewels\.json|tree-data[\/].*)$/.test(file),
+    /poe1[\\/](clusters\.ts|cluster-jewels\.json|tree-data[\\/].*)$/.test(file),
   );
   assert.deepEqual(offenders.map((file) => path.relative(process.cwd(), file)), []);
 });
