@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddCharacterForm } from "@/components/AddCharacterForm";
 import { leagueTitle, leagueWindow } from "@/lib/format";
+import { ascendanciesFor } from "@/lib/games/classes";
 import { skillNamesFor } from "@/lib/games/skills";
 import { getLeague, getUser } from "@/lib/queries";
 
@@ -36,6 +37,7 @@ export default async function NewCharacterPage({ params }: Props) {
         game={league.game}
         league={league.slug}
         skills={skillNamesFor(league.game)}
+        ascendancies={ascendanciesFor(league.game)}
       />
     </div>
   );

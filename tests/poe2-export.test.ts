@@ -160,8 +160,11 @@ test("Path of Exile 2 gear never borrows Path of Exile 1's art or arithmetic", a
   const { build: psevdo } = await build("PsevdoCrvb");
   const ring = psevdo.items.find((item) => item.base === "Ruby Ring");
   assert.ok(ring, "the fixture has a Ruby Ring, a base both games have");
-  assert.equal(gearFor("poe2").art(ring), null);
-  assert.ok(gearFor("poe1").art(ring), "Path of Exile 1 would have drawn it");
+  const poe2Art = gearFor("poe2").art(ring);
+  const poe1Art = gearFor("poe1").art(ring);
+  assert.match(poe2Art?.src ?? "", /^\/items\/poe2\//, "drawn from Path of Exile 2's own index");
+  assert.ok(poe1Art, "Path of Exile 1 has a Ruby Ring too");
+  assert.notEqual(poe2Art?.src, poe1Art.src);
   const sections = gearFor("poe2").tooltip(ring);
   assert.ok(!sections.some((section) => section.lines.some((line) => /Block/i.test(line.text))));
   assert.deepEqual(gearFor("poe2").doll.length, gearFor("poe1").doll.length);

@@ -279,9 +279,9 @@ function reparseStaleBuilds(db: Database.Database) {
 
   const run = db.transaction(() => {
     for (const row of stale) {
-      // Path of Exile 2 combines its sources rather than letting the last one
-      // win (see `composePoe2Build`), so a stale version on either side
-      // rebuilds from both, against that game's own versions. It never reaches
+      // Path of Exile 2 takes its code over its export whichever was applied
+      // last (see `composePoe2Build`), so a stale version on either side
+      // rebuilds from the sources the row has, against that game's own versions. It never reaches
       // the Path of Exile 1 parser below, which would misread its code.
       if (row.game === "poe2") {
         const codeStale = Boolean(row.pob_code) && row.parser_version < POE2_PARSER_VERSION;

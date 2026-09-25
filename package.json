@@ -11,6 +11,7 @@
     "seed:demo": "tsx scripts/seed-demo.ts",
     "test": "node --import tsx --test tests/*.test.ts",
     "art:index": "tsx scripts/build-item-art-index.ts",
+    "art:poe2": "tsx scripts/build-poe2-item-art-index.ts",
     "gems:index": "tsx scripts/build-gem-index.ts",
     "gems:art": "tsx scripts/build-gem-art-index.ts",
     "gems:poe2": "tsx scripts/build-poe2-gem-index.ts",

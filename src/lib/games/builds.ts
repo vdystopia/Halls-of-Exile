@@ -1,4 +1,4 @@
-import type { BuildData, ParsedItem } from "../types";
+import type { BuildData } from "../types";
 import { decodePobCode, parsePob, PARSER_VERSION, PobError } from "./poe1/pob";
 import { codeGame, parsePob2, POE2_PARSER_VERSION } from "./poe2/pob";
 import { rebuildFromStoredPoe2, type StoredPoe2Export } from "./poe2/site-export";
@@ -31,49 +31,26 @@ export function parserVersionFor(game: GameId): number {
 }
 
 /**
- * One Path of Exile 2 build from whichever of its two sources a character has.
+ * One Path of Exile 2 build from the sources a character has: the Path of
+ * Building 2 code when there is one, in full, and the site's export only when
+ * there is not.
  *
- * They know different things, and neither is complete:
- *
- *   - The site's export has the gear as the game shows it — its own figures,
- *     requirements and pictures — and the skills items grant. No tree, no
- *     skill-slot gems, no stats.
- *   - A Path of Building 2 code has the passive tree with both weapon sets, the
- *     skill gems, the jewels in the tree, config, notes and its engine's stats,
- *     and gear as Path of Building's text, without pictures or the game's own
- *     requirement figures.
- *
- * So with both, the gear is the site's and everything else the code's; the tree
- * jewels come from the code, because the site does not list them, and are given
- * ids clear of the site's items so the two lists cannot collide. With one, it
- * is that one. Each source replacing only what it owns is what lets either be
- * refreshed without undoing the other.
+ * The code is the complete source — passive tree with both weapon sets, skill
+ * gems, tree jewels, gear, config, notes and its engine's stats — so a code
+ * alone is enough to archive a character, and when both exist the code replaces
+ * everything the export brought. The export's payload is still kept on the row:
+ * it is the one record of the game's own figures and last login, and a
+ * character whose code is later removed falls back to it.
  */
 export function composePoe2Build(pobCode: string | null, sitePayload: StoredPoe2Export | null): BuildData | null {
-  const pob = pobCode ? parsePob2(pobCode) : null;
-  const site = sitePayload ? rebuildFromStoredPoe2(sitePayload) : null;
-  if (!pob || !site) return pob ?? site;
-
-  const JEWEL_OFFSET = 100000;
-  const pobItems = new Map(pob.items.map((item) => [item.id, item]));
-  const jewels: ParsedItem[] = (pob.treeJewels ?? [])
-    .map((id) => pobItems.get(id))
-    .filter((item): item is ParsedItem => Boolean(item))
-    .map((item) => ({ ...item, id: item.id + JEWEL_OFFSET }));
-
-  return {
-    ...pob,
-    items: [...site.items, ...jewels],
-    slots: site.slots,
-    treeJewels: jewels.map((item) => item.id),
-    origin: site.origin,
-  };
+  if (pobCode) return parsePob2(pobCode);
+  return sitePayload ? rebuildFromStoredPoe2(sitePayload) : null;
 }
 
 /**
  * The build a character should hold, from the sources it has. Path of Exile 1
  * keeps its rule — whichever source was applied last is the build — and Path of
- * Exile 2 combines both (see `composePoe2Build`). Null when there is nothing to
+ * Exile 2 takes its code over its export (see `composePoe2Build`). Null when there is nothing to
  * build from.
  */
 export function composeBuild(

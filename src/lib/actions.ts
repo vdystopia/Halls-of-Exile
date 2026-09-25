@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "./db";
-import { composeBuild, parseCodeFor, parserVersionFor } from "./games/builds";
+import { parseCodeFor, parserVersionFor } from "./games/builds";
 import { emptyBuild, fetchPobCode, isPobUrl, PobError } from "./games/poe1/pob";
 import type { GameId } from "./games/types";
 import { PoeExportError, readAccountExport, type AccountExport } from "./games/exports";
@@ -206,15 +206,9 @@ export async function updateCharacterAction(_prev: ActionState, formData: FormDa
       url = isPobUrl(input) ? input : null;
       code = url ? await fetchPobCode(url) : input;
       data = parseCodeFor(league.game, code);
-      // A Path of Exile 2 character that also holds the site's export keeps its
-      // gear from there: the code brings the tree, skills and stats, and each
-      // source replaces only what it owns. Path of Exile 1 is unchanged.
-      data =
-        composeBuild(league.game, {
-          pobCode: code,
-          sitePayload: existing.source_payload ? JSON.parse(existing.source_payload) : null,
-          fallback: data,
-        }) ?? data;
+      // A code is the whole build in both games. For Path of Exile 2 that means
+      // it replaces everything the site's export brought, gear included; the
+      // export's payload stays on the row underneath (see `composePoe2Build`).
     } catch (error) {
       return { error: error instanceof Error ? error.message : "Could not read that build." };
     }

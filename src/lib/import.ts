@@ -372,9 +372,9 @@ export function applyImport(
         // said so. Without one this falls back to the old order — what is
         // there, then the guess — so an unattended import still only fills.
         const chosen = options.skillFor?.(character.name) ?? null;
-        // A Path of Exile 2 character that already holds a Path of Building 2
-        // code keeps its tree, skills and stats from it; the export brings the
-        // gear. Path of Exile 1 keeps its rule: the export is the build.
+        // A Path of Exile 2 character that holds a Path of Building 2 code keeps
+        // the code's build whole: the code outranks the export, which is only
+        // stored underneath. Path of Exile 1 keeps its rule: the export is the build.
         const composed =
           composeBuild(exported.game, { pobCode: existing.pob_code, sitePayload: stored, fallback: build }) ?? build;
         update.run(

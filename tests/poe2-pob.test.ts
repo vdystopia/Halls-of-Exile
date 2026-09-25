@@ -120,35 +120,46 @@ test("items read Path of Building 2's vocabulary: runes, tags and header keys", 
 });
 
 /**
- * The two sources know different things, so a character with both keeps the
- * site's gear — the game's own figures and pictures — and everything else from
- * the code. The tree jewels come from the code, clear of the site's item ids.
+ * A code is the whole build, so a character can be archived from a code alone.
+ * Where the site's export is also on the row, the code replaces everything it
+ * brought — gear included — and the export is only the fallback for a
+ * character with no code.
  */
-test("a code and the site's export combine without either undoing the other", async () => {
+test("a code replaces everything the site's export brought", async () => {
   const { composePoe2Build } = await import("../src/lib/games/builds");
+  const { parsePob2 } = await import("../src/lib/games/poe2/pob");
   const { readAccountExport, storedPayloadFor } = await import("../src/lib/games/exports");
   const exported = readAccountExport(fs.readFileSync(path.join(process.cwd(), "tests", "fixtures", "poe2-export.json"), "utf8"));
   const stored = JSON.parse(JSON.stringify(storedPayloadFor(exported.characters[0], exported)));
 
-  const site = composePoe2Build(null, stored);
-  const pob = composePoe2Build(CODE, null);
-  const both = composePoe2Build(CODE, stored);
-  assert.ok(site && pob && both);
-
-  assert.equal(both.source, "pob");
-  assert.deepEqual(both.trees, pob.trees);
-  assert.deepEqual(both.skillGroups, pob.skillGroups);
-  assert.deepEqual(both.stats, pob.stats);
-  assert.deepEqual(both.slots, site.slots);
-  assert.deepEqual(both.origin, site.origin);
-  const siteIds = new Set(site.items.map((item) => item.id));
-  assert.equal(both.items.length, site.items.length + 2);
-  assert.equal(both.treeJewels?.length, 2);
-  for (const id of both.treeJewels ?? []) {
-    assert.ok(!siteIds.has(id), "a tree jewel's id cannot collide with an equipped item's");
-    assert.ok(both.items.some((item) => item.id === id));
-  }
+  assert.deepEqual(composePoe2Build(CODE, stored), parsePob2(CODE));
+  assert.deepEqual(composePoe2Build(CODE, null), parsePob2(CODE));
+  assert.equal(composePoe2Build(null, stored)?.source, "poe2-site");
   assert.equal(composePoe2Build(null, null), null);
+});
+
+/**
+ * With a code alone there is no picture the game named, so gear is drawn from
+ * Path of Exile 2's own art index — never Path of Exile 1's.
+ */
+test("gear from a code alone finds Path of Exile 2 pictures", async () => {
+  const { gearFor } = await import("../src/lib/games/gear");
+  const { parsePob2 } = await import("../src/lib/games/poe2/pob");
+  const build = parsePob2(CODE);
+  const art = gearFor("poe2").art;
+  const missing = Object.values(build.slots)
+    .map((id) => build.items.find((item) => item.id === id)!)
+    .filter((item) => !art(item))
+    .map((item) => `${item.slot}: ${item.name} (${item.base})`);
+  assert.deepEqual(missing, []);
+  const yoke = build.items.find((item) => item.name === "Yoke of Suffering");
+  assert.match(art(yoke!)?.src ?? "", /^\/items\/poe2\/.*YokeOfSuffering\.webp$/, "a unique is drawn by its own name");
+  const flask = build.items.find((item) => item.slot === "Flask 1");
+  assert.match(art(flask!)?.src ?? "", /FlaskLife/, "a magic flask by the base inside its name");
+  assert.equal(art(flask!)?.frames, 1);
+  for (const id of build.treeJewels ?? []) {
+    assert.ok(art(build.items.find((item) => item.id === id)!), "tree jewels have pictures too");
+  }
 });
 
 /** Each game's code is current against its own parser's version. */

@@ -6,6 +6,7 @@ import { DEFENCE_PANELS as POE1_DEFENCE, OFFENCE_PANELS as POE1_OFFENCE, type St
 import { buildTooltip as poe1Tooltip, type TooltipSection } from "./poe1/tooltip";
 import { treeAsset as poe1TreeAsset } from "./poe1/tree";
 import { gemColor as poe2GemColor } from "./poe2/gems";
+import { findItemArt as poe2Art } from "./poe2/item-art";
 import { DOLL_COLUMNS as POE2_COLUMNS, FLASK_SLOTS as POE2_FLASKS, PAPER_DOLL as POE2_DOLL } from "./poe2/items";
 import { DEFENCE_PANELS as POE2_DEFENCE, OFFENCE_PANELS as POE2_OFFENCE } from "./poe2/stats";
 import { buildTooltip as poe2Tooltip } from "./poe2/tooltip";
@@ -16,9 +17,8 @@ import type { GameId } from "./types";
  * Exile 1 art catalogue and tooltip read indexes that must stay out of the
  * browser, so a page resolves everything here and hands finished pieces down.
  *
- * Path of Exile 2 has no local item art — its items name the picture the game
- * serves, which `GearSlot` falls back to — and it never looks anything up in
- * Path of Exile 1's catalogue: the two games share base and gem names and not
+ * Path of Exile 2 has its own item art index (`npm run art:poe2`), and never
+ * looks anything up in Path of Exile 1's catalogue: the two games share base and gem names and not
  * the numbers, pictures or colours behind them.
  */
 type Gear = {
@@ -56,7 +56,7 @@ const GEAR: Record<GameId, Gear> = {
     doll: POE2_DOLL,
     columns: POE2_COLUMNS,
     flaskSlots: POE2_FLASKS,
-    art: () => null,
+    art: poe2Art,
     tooltip: poe2Tooltip,
     gemColor: poe2GemColor,
     defencePanels: POE2_DEFENCE,

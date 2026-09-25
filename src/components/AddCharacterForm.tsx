@@ -3,7 +3,6 @@
 import { useActionState, useState } from "react";
 import { addCharacterAction, type ActionState } from "@/lib/actions";
 import { LEAGUE_MODIFIERS } from "@/lib/league-modifiers";
-import { ASCENDANCIES, CLASSES } from "@/lib/leagues";
 import { FormError } from "./FormError";
 import { SkillOptions, SkillSelect } from "./SkillSelect";
 import { SubmitButton } from "./SubmitButton";
@@ -15,16 +14,20 @@ export function AddCharacterForm({
   game,
   league,
   skills,
+  ascendancies,
 }: {
   username: string;
   game: string;
   league: string;
   /** Every active skill gem, read on the server. See `SkillSelect`. */
   skills: string[];
+  /** This game's classes and their ascendancies: the two games share class names and not ascendancies. */
+  ascendancies: Record<string, string[]>;
 }) {
   const [state, formAction] = useActionState(addCharacterAction, INITIAL);
   const [mode, setMode] = useState<"pob" | "manual">("pob");
-  const [className, setClassName] = useState<string>("Witch");
+  const classes = Object.keys(ascendancies);
+  const [className, setClassName] = useState<string>(classes.includes("Witch") ? "Witch" : classes[0]);
 
   return (
     <form action={formAction} className="space-y-6">
@@ -78,7 +81,7 @@ export function AddCharacterForm({
               value={className}
               onChange={(event) => setClassName(event.target.value)}
             >
-              {CLASSES.map((option) => (
+              {classes.map((option) => (
                 <option key={option} value={option}>
                   {option}
                 </option>
@@ -91,7 +94,7 @@ export function AddCharacterForm({
             </label>
             <select id="ascendancy" name="ascendancy" className="input" defaultValue="">
               <option value="">None</option>
-              {(ASCENDANCIES[className] ?? []).map((option) => (
+              {(ascendancies[className] ?? []).map((option) => (
                 <option key={option} value={option}>
                   {option}
                 </option>
@@ -137,7 +140,9 @@ export function AddCharacterForm({
           <label className="label" htmlFor="name">
             Character name
           </label>
-          <input id="name" name="name" className="input" required={mode === "manual"} />
+          {/* Required either way: a share code does not carry the character's
+              name, and falling back to its main skill named characters "Snipe". */}
+          <input id="name" name="name" className="input" required />
           {mode === "pob" ? (
             <p className="mt-1 text-xs text-muted">
               Optional — the main skill is used if you leave it blank. Level comes from the import.

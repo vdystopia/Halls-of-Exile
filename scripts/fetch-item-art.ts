@@ -9,7 +9,7 @@
  * scripts/build-item-art-index.ts. A base item's art path on the game's image
  * CDN is the same path RePoE records, so no scraping or guessing is involved.
  *
- * Path of Exile 2's gem art is not on that CDN at the path its data records,
+ * Path of Exile 2's gem and item art is not on that CDN at the path its data records,
  * so it comes from the repoe-fork export that the index was built from, as
  * WebP, into public/items/poe2/ (see scripts/build-poe2-gem-index.ts).
  *
@@ -23,6 +23,7 @@ import path from "node:path";
 import index from "../src/lib/games/poe1/item-art-index.json";
 import gemArt from "../src/lib/games/poe1/gem-art-index.json";
 import poe2GemArt from "../src/lib/games/poe2/gem-art-index.json";
+import poe2ItemArt from "../src/lib/games/poe2/item-art-index.json";
 import ascendancy from "../src/lib/games/poe1/ascendancy-icons.json";
 
 // The literal type of a 2000-entry JSON file is too much for the compiler to
@@ -127,7 +128,11 @@ async function main() {
       ...Object.values(gemArt.art as Record<string, string>),
     ]),
   ];
-  const poe2Paths = [...new Set(Object.values(poe2GemArt.art as Record<string, string>))];
+  const poe2Items = [
+    ...Object.values(poe2ItemArt.bases as Record<string, { art: string }>),
+    ...Object.values(poe2ItemArt.uniques as Record<string, { art: string }>),
+  ].map((entry) => entry.art);
+  const poe2Paths = [...new Set([...Object.values(poe2GemArt.art as Record<string, string>), ...poe2Items])];
   const paths = [...poe1Paths.map(poe1Job), ...poe2Paths.map(poe2Job)];
   process.stdout.write(
     `${dryRun ? "would fetch" : "fetching"} ${poe1Paths.length} images from ${baseUrl} ` +

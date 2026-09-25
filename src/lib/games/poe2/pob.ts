@@ -61,8 +61,10 @@ function idList(value: unknown): number[] {
  * other game's characters alone.
  *
  * 1 — the first parser.
+ * 2 — a code is the whole build: it no longer takes its gear from the site's
+ *     export when both are on the row (see `composePoe2Build`).
  */
-export const POE2_PARSER_VERSION = 1;
+export const POE2_PARSER_VERSION = 2;
 
 /** Which game a decoded share code is for, by its root element. */
 export function codeGame(xml: string): "poe1" | "poe2" | null {
