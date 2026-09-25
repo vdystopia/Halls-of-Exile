@@ -64,8 +64,8 @@ test("each game only ever falls back to its own tree", async () => {
   const { treeAsset: poe2 } = await import("../src/lib/games/poe2/tree");
   const { treeAsset: poe1 } = await import("../src/lib/games/poe1/tree");
   assert.deepEqual(poe2("0.5"), { src: "/trees/poe2/0.5.svg", version: "0.5", exact: true });
-  assert.equal(poe2("0.2")?.exact, false);
-  assert.match(poe2("0.2")?.src ?? "", /^\/trees\/poe2\//);
+  assert.equal(poe2("0.1")?.exact, false);
+  assert.match(poe2("0.1")?.src ?? "", /^\/trees\/poe2\//);
   assert.doesNotMatch(poe1("0.5")?.src ?? "", /poe2/);
 });
 
@@ -116,4 +116,20 @@ test("a 0.3 build is drawn on the 0.3 tree, weapon sets included", async () => {
   const drawn = new Set([...svg.matchAll(/<circle id="n(\d+)"/g)].map((match) => Number(match[1])));
   assert.deepEqual((tree.nodes ?? []).filter((id) => !drawn.has(id)), []);
   assert.match(svg, /asc-Warbringer/);
+});
+
+/** A level 92 Smith of Kitava saved on tree 0.2. */
+test("a 0.2 build is drawn on the 0.2 tree, every passive placed", async () => {
+  const { parsePob2 } = await import("../src/lib/games/poe2/pob");
+  const { treeAsset } = await import("../src/lib/games/poe2/tree");
+  const code = fs.readFileSync(path.join(process.cwd(), "tests", "fixtures", "poe2-pob-0.2.txt"), "utf8").trim();
+  const build = parsePob2(code);
+  const [tree] = build.trees;
+  assert.equal(build.ascendClassName, "Smith of Kitava");
+  assert.equal(tree.treeVersion, "0.2");
+  assert.deepEqual(treeAsset(tree.treeVersion), { src: "/trees/poe2/0.2.svg", version: "0.2", exact: true });
+  const svg = fs.readFileSync(path.join(process.cwd(), "public", "trees", "poe2", "0.2.svg"), "utf8");
+  const drawn = new Set([...svg.matchAll(/<circle id="n(\d+)"/g)].map((match) => Number(match[1])));
+  assert.deepEqual((tree.nodes ?? []).filter((id) => !drawn.has(id)), []);
+  assert.match(svg, /asc-Smith_of_Kitava/);
 });

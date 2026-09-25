@@ -47,7 +47,7 @@ import zlib from "node:zlib";
 import { arcPath, NODE_RADIUS, type NodeKind } from "../src/lib/games/poe1/tree-geometry";
 
 /** The versions the archive has builds for. A code from another is drawn on the newest until it is added here. */
-const VERSIONS = ["0.3", "0.4", "0.5"];
+const VERSIONS = ["0.2", "0.3", "0.4", "0.5"];
 
 const REPO = "PathOfBuildingCommunity/PathOfBuilding-PoE2";
 const BRANCH = "dev";
