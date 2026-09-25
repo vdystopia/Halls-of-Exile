@@ -64,8 +64,8 @@ test("each game only ever falls back to its own tree", async () => {
   const { treeAsset: poe2 } = await import("../src/lib/games/poe2/tree");
   const { treeAsset: poe1 } = await import("../src/lib/games/poe1/tree");
   assert.deepEqual(poe2("0.5"), { src: "/trees/poe2/0.5.svg", version: "0.5", exact: true });
-  assert.equal(poe2("0.3")?.exact, false);
-  assert.match(poe2("0.3")?.src ?? "", /^\/trees\/poe2\//);
+  assert.equal(poe2("0.2")?.exact, false);
+  assert.match(poe2("0.2")?.src ?? "", /^\/trees\/poe2\//);
   assert.doesNotMatch(poe1("0.5")?.src ?? "", /poe2/);
 });
 
