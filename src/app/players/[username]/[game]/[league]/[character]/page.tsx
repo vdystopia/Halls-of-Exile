@@ -101,9 +101,14 @@ export default async function CharacterPage({ params }: Props) {
             {/* Name, level and class, the skill: nothing else. Prose from the
                 record ("chaos dot") and build details belong elsewhere; only a
                 named gem is shown here, and only with its picture. */}
-            <div>
+            {/* `min-w-0` and a name that may break anywhere: a 22-letter name
+                with no spaces ran 4px past a phone's edge. */}
+            <div className="min-w-0">
               <div className="flex flex-wrap items-baseline gap-3">
-                <h1 className={`display text-3xl ${nameStyle ? "gem-name" : ""}`} style={nameStyle}>
+                <h1
+                  className={`display min-w-0 text-3xl [overflow-wrap:anywhere] ${nameStyle ? "gem-name" : ""}`}
+                  style={nameStyle}
+                >
                   {character.name}
                 </h1>
                 {character.isFavorite ? <span className="text-lg text-gold">★</span> : null}

@@ -13,13 +13,21 @@ export function LeagueRecordForm({
   league,
   challengesCompleted,
   challengeTotal,
+  catalogueTotal,
   notes,
 }: {
   username: string;
   game: string;
   league: string;
   challengesCompleted: number | null;
+  /** This player's own override of the league's total, if one was saved. */
   challengeTotal: number | null;
+  /**
+   * The catalogue's total, shown as the placeholder. Pre-filling the field with
+   * it made the first save store it as an override, so a later correction to
+   * the catalogue never showed for that player.
+   */
+  catalogueTotal: number | null;
   notes: string | null;
 }) {
   const [state, formAction] = useActionState(saveLeagueRecordAction, INITIAL);
@@ -60,6 +68,7 @@ export function LeagueRecordForm({
               min={1}
               className="input"
               defaultValue={challengeTotal ?? undefined}
+              placeholder={catalogueTotal !== null ? `${catalogueTotal} (the league's)` : "not recorded"}
             />
           </div>
         </div>

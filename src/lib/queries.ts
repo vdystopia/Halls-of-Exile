@@ -288,6 +288,7 @@ export function getUserTotals(userId: number) {
               COUNT(DISTINCT league_id)    AS leagues,
               MAX(level)                   AS highest_level,
               SUM(COALESCE(played_minutes, 0)) AS played_minutes,
+              SUM(CASE WHEN played_minutes > 0 THEN 1 ELSE 0 END) AS played_recorded,
               SUM(CASE WHEN level >= 90 THEN 1 ELSE 0 END) AS level_90s
        FROM characters WHERE user_id = ?`,
     )
@@ -297,6 +298,8 @@ export function getUserTotals(userId: number) {
     leagues: row.leagues as number,
     highestLevel: row.highest_level as number | null,
     playedMinutes: (row.played_minutes as number) ?? 0,
+    /** How many characters have a /played, so the total can say what it covers. */
+    playedRecorded: (row.played_recorded as number) ?? 0,
     level90s: (row.level_90s as number) ?? 0,
   };
 }

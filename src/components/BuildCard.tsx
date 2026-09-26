@@ -27,7 +27,19 @@ export function BuildCard({ build, art, rank }: { build: Rollup; art: GemArt | n
       </div>
       <dl className="mt-4 flex gap-5 border-t border-line pt-3">
         {[
-          { label: "/played", value: played ?? "—" },
+          {
+            label: "/played",
+            // A partial total is marked, as in the class table.
+            value:
+              played && build.playedRecorded < build.characters ? (
+                <span title={`recorded for ${build.playedRecorded} of ${build.characters} characters`}>
+                  {played}
+                  <span className="text-muted">*</span>
+                </span>
+              ) : (
+                (played ?? "—")
+              ),
+          },
           { label: build.characters === 1 ? "Character" : "Characters", value: build.characters },
           { label: "Avg level", value: build.averageLevel === null ? "—" : build.averageLevel.toFixed(0) },
         ].map((stat) => (

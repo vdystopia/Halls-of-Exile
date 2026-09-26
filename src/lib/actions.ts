@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { db } from "./db";
 import { parseCodeFor, parserVersionFor } from "./games/builds";
 import { emptyBuild, fetchPobCode, isPobUrl, PobError } from "./games/poe1/pob";
-import type { GameId } from "./games/types";
+import { isGameId, type GameId } from "./games/types";
 import { exportVersion, PoeExportError, readAccountExport, rebuildFromStored, type AccountExport } from "./games/exports";
 import { ascendanciesFor } from "./games/classes";
 import {
@@ -18,6 +18,7 @@ import {
 import { parsePlayed } from "./format";
 import { formatLeagueModifiers } from "./league-modifiers";
 import { findNamesake, getLeague, getUser } from "./queries";
+import { resyncLeagueOrder } from "./db";
 import type { BuildData } from "./types";
 import { usernameProblem } from "./usernames";
 
@@ -481,7 +482,10 @@ export async function saveLeagueRecordAction(_prev: ActionState, formData: FormD
   if (!user || !league) return { error: "Unknown player or league." };
 
   const completed = integer(formData, "challengesCompleted");
-  const total = integer(formData, "challengeTotal");
+  // The same figure as the catalogue's is not an override: stored, it would
+  // freeze today's total for this player against any later correction.
+  const typedTotal = integer(formData, "challengeTotal");
+  const total = typedTotal === league.challengeTotal ? null : typedTotal;
   const notes = text(formData, "notes") || null;
 
   if (completed !== null && completed < 0) return { error: "Challenges completed cannot be negative." };
@@ -506,35 +510,123 @@ export async function saveLeagueRecordAction(_prev: ActionState, formData: FormD
   return { ok: true };
 }
 
-export async function addLeagueAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const game = text(formData, "game") || "poe1";
-  const patch = text(formData, "patch");
+/** The fields a hand-added league takes, checked the same way for adding and editing. */
+function leagueFields(
+  formData: FormData,
+  game: GameId,
+  slug: string | null,
+): { error: string } | {
+  name: string;
+  startDate: string | null;
+  endDate: string | null;
+  endDateEstimated: 0 | 1;
+  challengeTotal: number | null;
+} {
   const name = text(formData, "name");
   const startDate = text(formData, "startDate") || null;
   const endDate = text(formData, "endDate") || null;
-  const challengeTotal = integer(formData, "challengeTotal") ?? 40;
+  // Blank is unknown. Defaulting to 40 put a count nobody gave on every league
+  // added, and a meter measuring against it.
+  const challengeTotal = integer(formData, "challengeTotal");
   const endDateEstimated = formData.get("endDateEstimated") ? 1 : 0;
+  if (!name) return { error: "League name is required." };
+  if (startDate && endDate && endDate < startDate) return { error: "The league cannot end before it starts." };
+  if (challengeTotal !== null && challengeTotal <= 0) return { error: "Challenge total must be positive." };
+  // Only a game's newest league may carry an estimated end date: every older
+  // one has ended, and its end is a fact.
+  if (endDateEstimated) {
+    const newest = db
+      .prepare(`SELECT MAX(start_date) AS value FROM leagues WHERE game = ? AND slug IS NOT ?`)
+      .get(game, slug) as { value: string | null };
+    if (!startDate || (newest.value && startDate <= newest.value)) {
+      return { error: "Only the game's newest league can have an estimated end date." };
+    }
+  }
+  return { name, startDate, endDate, endDateEstimated, challengeTotal };
+}
+
+export async function addLeagueAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const game = text(formData, "game");
+  const patch = text(formData, "patch");
   const returnTo = text(formData, "returnTo");
 
-  if (!/^\d+(\.\d+)*[a-z]?$/i.test(patch)) return { error: "Patch should look like 3.29 or 3.25.3." };
-  if (!name) return { error: "League name is required." };
+  // Checked, because every page that shows the league looks its game up.
+  if (!isGameId(game)) return { error: "Choose Path of Exile or Path of Exile 2." };
+  if (!/^\d+(\.\d+)*[a-z]?$/i.test(patch)) return { error: "Patch should look like 3.29 or 0.5.5." };
   // A hand-added league is keyed on its patch within its game, the same way the
-  // catalogue is keyed on (game, slug).
+  // catalogue is keyed on (game, slug). When the catalogue later gains that
+  // patch, the sync adopts this row as the official one.
   if (db.prepare(`SELECT 1 FROM leagues WHERE game = ? AND slug = ?`).get(game, patch)) {
     return { error: `Patch ${patch} is already in the archive.` };
   }
+  const fields = leagueFields(formData, game, null);
+  if ("error" in fields) return fields;
 
-  const maxOrder = (db.prepare(`SELECT MAX(sort_order) AS value FROM leagues`).get() as { value: number | null })
-    .value;
   db.prepare(
     `INSERT INTO leagues
        (game, slug, patch, name, expansion, start_date, end_date, end_date_estimated, challenge_total,
         is_custom, sort_order)
-     VALUES (?, ?, ?, ?, NULL, ?, ?, ?, ?, 1, ?)`,
-  ).run(game, patch, patch, name, startDate, endDate, endDateEstimated, challengeTotal, (maxOrder ?? 0) + 10);
+     VALUES (?, ?, ?, ?, NULL, ?, ?, ?, ?, 1, 0)`,
+  ).run(game, patch, patch, fields.name, fields.startDate, fields.endDate, fields.endDateEstimated, fields.challengeTotal);
+  // Placed among the others by date, as the boot-time sync does.
+  resyncLeagueOrder();
 
   revalidatePath(returnTo || "/players");
   return { ok: true };
+}
+
+/** A hand-added league's own facts. The catalogue's rows are code-owned and never edited here. */
+export async function updateLeagueAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const game = text(formData, "game");
+  const slug = text(formData, "slug");
+  const returnTo = text(formData, "returnTo");
+  if (!isGameId(game)) return { error: "Unknown game." };
+  const row = db.prepare(`SELECT id, is_custom FROM leagues WHERE game = ? AND slug = ?`).get(game, slug) as
+    | { id: number; is_custom: number }
+    | undefined;
+  if (!row) return { error: "That league is not in the archive." };
+  if (!row.is_custom) return { error: "The catalogue's leagues are fixed in code and cannot be edited here." };
+  const fields = leagueFields(formData, game, slug);
+  if ("error" in fields) return fields;
+
+  db.prepare(
+    `UPDATE leagues SET name = ?, start_date = ?, end_date = ?, end_date_estimated = ?, challenge_total = ?
+      WHERE id = ?`,
+  ).run(fields.name, fields.startDate, fields.endDate, fields.endDateEstimated, fields.challengeTotal, row.id);
+  resyncLeagueOrder();
+
+  revalidatePath(returnTo || "/players");
+  return { ok: true };
+}
+
+/**
+ * Removing a hand-added league. Only an empty one: a league holding characters
+ * or anyone's league record would take them with it, so those have to be moved
+ * or deleted first, by name.
+ */
+export async function deleteLeagueAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const game = text(formData, "game");
+  const slug = text(formData, "slug");
+  const returnTo = text(formData, "returnTo") || "/players";
+  const row = db.prepare(`SELECT id, is_custom FROM leagues WHERE game = ? AND slug = ?`).get(game, slug) as
+    | { id: number; is_custom: number }
+    | undefined;
+  if (!row) return { error: "That league is not in the archive." };
+  if (!row.is_custom) return { error: "The catalogue's leagues are fixed in code and cannot be deleted here." };
+  const held = db
+    .prepare(
+      `SELECT (SELECT COUNT(*) FROM characters WHERE league_id = ?) AS characters,
+              (SELECT COUNT(*) FROM league_records WHERE league_id = ?) AS records`,
+    )
+    .get(row.id, row.id) as { characters: number; records: number };
+  if (held.characters || held.records) {
+    return {
+      error: `This league still holds ${held.characters} character(s) and ${held.records} league record(s). Move or delete them first.`,
+    };
+  }
+  db.prepare(`DELETE FROM leagues WHERE id = ?`).run(row.id);
+  revalidatePath("/players");
+  redirect(returnTo);
 }
 
 /**

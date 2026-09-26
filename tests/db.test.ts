@@ -455,3 +455,88 @@ test("Path of Exile 2 rows are re-derived against their own versions", async () 
   assert.equal(site.source, "poe2-site");
   assert.ok(site.items.length > 0, "rebuilt from the export despite the unreadable code");
 });
+
+/**
+ * The league record form was pre-filled with the league's own challenge total,
+ * so every save stored it as this player's override and froze it against later
+ * corrections. A stored total equal to the league's is cleared at boot.
+ */
+test("a player's challenge total equal to the league's is not kept as an override", async () => {
+  const { db, ensureSchema } = await import("../src/lib/db");
+  const user = db
+    .prepare(`INSERT INTO users (username, first_name) VALUES ('total-tester', 'Test')`)
+    .run().lastInsertRowid as number;
+  const league = db
+    .prepare(`SELECT id, challenge_total FROM leagues WHERE challenge_total IS NOT NULL LIMIT 1`)
+    .get() as { id: number; challenge_total: number };
+  const other = db
+    .prepare(`SELECT id, challenge_total FROM leagues WHERE challenge_total IS NOT NULL AND id <> ? LIMIT 1`)
+    .get(league.id) as { id: number; challenge_total: number };
+  const insert = db.prepare(
+    `INSERT INTO league_records (user_id, league_id, challenges_completed, challenge_total) VALUES (?, ?, 3, ?)`,
+  );
+  insert.run(user, league.id, league.challenge_total);
+  insert.run(user, other.id, other.challenge_total + 1);
+
+  ensureSchema(db);
+
+  const totals = db
+    .prepare(`SELECT league_id, challenge_total FROM league_records WHERE user_id = ? ORDER BY league_id`)
+    .all(user) as { league_id: number; challenge_total: number | null }[];
+  const byLeague = new Map(totals.map((row) => [row.league_id, row.challenge_total]));
+  assert.equal(byLeague.get(league.id), null, "the league's own figure is not an override");
+  assert.equal(byLeague.get(other.id), other.challenge_total + 1, "a real override stays");
+});
+
+/**
+ * A league added by hand that the catalogue later gains is the same league:
+ * the catalogue's row takes it over, keeping its id and everything filed under
+ * it. Hand-added leagues are ordered by their dates like every other row,
+ * instead of pinned above everything as the newest.
+ */
+test("the catalogue adopts a hand-added league it gains, and orders hand-added ones by date", async () => {
+  const { db, ensureSchema } = await import("../src/lib/db");
+  const { LEAGUE_SEED } = await import("../src/lib/leagues");
+  const seed = LEAGUE_SEED.find((row) => row.game === "poe1" && row.slug === "3.20")!;
+  const row = db.prepare(`SELECT id FROM leagues WHERE game = 'poe1' AND slug = '3.20'`).get() as { id: number };
+  db.prepare(`DELETE FROM characters WHERE league_id = ?`).run(row.id);
+  db.prepare(`DELETE FROM league_records WHERE league_id = ?`).run(row.id);
+  db.prepare(`DELETE FROM leagues WHERE id = ?`).run(row.id);
+  // What someone adding 3.20 by hand, before the catalogue had it, would have left.
+  const custom = db
+    .prepare(
+      `INSERT INTO leagues (game, slug, patch, name, start_date, is_custom, sort_order)
+       VALUES ('poe1', '3.20', '3.20', 'Typed By Hand', '2022-12-09', 1, 99999)`,
+    )
+    .run().lastInsertRowid as number;
+  const user = db
+    .prepare(`INSERT INTO users (username, first_name) VALUES ('adopt-tester', 'Test')`)
+    .run().lastInsertRowid as number;
+  db.prepare(
+    `INSERT INTO characters (user_id, league_id, slug, name, class_name, data, parser_version)
+     VALUES (?, ?, 'kept', 'Kept', 'Witch', '{}', 0)`,
+  ).run(user, custom);
+  // And a genuinely hand-added Path of Exile 2 league from early 2025.
+  db.prepare(
+    `INSERT INTO leagues (game, slug, patch, name, start_date, is_custom, sort_order)
+     VALUES ('poe2', '0.1.9', '0.1.9', 'Private Race', '2025-02-01', 1, 99999)`,
+  ).run();
+
+  ensureSchema(db);
+
+  const adopted = db.prepare(`SELECT id, name, is_custom FROM leagues WHERE game = 'poe1' AND slug = '3.20'`).get() as {
+    id: number;
+    name: string;
+    is_custom: number;
+  };
+  assert.deepEqual(adopted, { id: custom, name: seed.name, is_custom: 0 });
+  const kept = db.prepare(`SELECT league_id FROM characters WHERE user_id = ?`).get(user) as { league_id: number };
+  assert.equal(kept.league_id, custom, "its character is still filed under it");
+
+  const order = (game: string, slug: string) =>
+    (db.prepare(`SELECT sort_order FROM leagues WHERE game = ? AND slug = ?`).get(game, slug) as { sort_order: number })
+      .sort_order;
+  assert.ok(order("poe2", "0.1.9") > order("poe2", "0.1"), "after 0.1, which began in December 2024");
+  assert.ok(order("poe2", "0.1.9") < order("poe2", "0.2"), "and before 0.2");
+  db.prepare(`DELETE FROM leagues WHERE game = 'poe2' AND slug = '0.1.9'`).run();
+});

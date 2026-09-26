@@ -102,9 +102,18 @@ export default async function PlayerPage({ params, searchParams }: Props) {
               {
                 label: "Total /played",
                 value: total ? (
-                  <>
+                  // Summed over the characters that have a /played; the rest add
+                  // nothing, so a partial total says so, as the class table does.
+                  <span
+                    title={
+                      totals.playedRecorded < totals.characters
+                        ? `recorded for ${totals.playedRecorded} of ${totals.characters} characters`
+                        : "recorded for every character"
+                    }
+                  >
                     {total.days} <span className="text-muted">({total.hours})</span>
-                  </>
+                    {totals.playedRecorded < totals.characters ? <span className="text-muted">*</span> : null}
+                  </span>
                 ) : (
                   "—"
                 ),

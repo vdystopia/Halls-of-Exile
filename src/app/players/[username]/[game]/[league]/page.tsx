@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChallengeMeter } from "@/components/ChallengeMeter";
 import { CharacterCard } from "@/components/CharacterCard";
+import { AddLeagueForm } from "@/components/AddLeagueForm";
 import { LeagueRecordForm } from "@/components/LeagueRecordForm";
 import { isLeagueRunning, leagueDuration, leagueTitle, leagueWindow } from "@/lib/format";
 import { getCharacterCountByClass } from "@/lib/insights";
@@ -133,9 +134,27 @@ export default async function LeaguePage({ params }: Props) {
         game={league.game}
         league={league.slug}
         challengesCompleted={progress?.challengesCompleted ?? null}
-        challengeTotal={total}
+        challengeTotal={progress?.challengeTotal ?? null}
+        catalogueTotal={league.challengeTotal}
         notes={progress?.notes ?? null}
       />
+
+      {/* Only a league added by hand is edited here; the catalogue's are code-owned. */}
+      {league.isCustom ? (
+        <AddLeagueForm
+          returnTo={`/players/${user.username}/${league.game}/${league.slug}`}
+          league={{
+            game: league.game,
+            slug: league.slug,
+            patch: league.patch,
+            name: league.name,
+            startDate: league.startDate,
+            endDate: league.endDate,
+            endDateEstimated: league.endDateEstimated === 1,
+            challengeTotal: league.challengeTotal,
+          }}
+        />
+      ) : null}
     </div>
   );
 }

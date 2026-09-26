@@ -106,7 +106,13 @@ and its payload is stored in `characters.source_payload` for the same reason.
   fixed code, and fetches nothing. If even that is unwanted, it is the thing to change.
 - **The league catalogue is code-owned.** Rows with `is_custom = 0` are re-synced from
   `LEAGUE_SEED` on every boot, so editing a built-in league in the database is pointless.
-  User-added leagues (`is_custom = 1`) are never touched by the sync. A row dropped from the
+  User-added leagues (`is_custom = 1`) are never touched by the sync, with one exception: when
+  the catalogue gains a league someone added by hand (same game and slug, which for a hand-added
+  league is its patch), the catalogue's row takes that one over, id and characters and all —
+  skipping it left the official league missing for good. Hand-added leagues are placed among the
+  rest by date, and one can be edited or deleted from its own page (deleting only once nothing is
+  filed under it); adding one checks the game, leaves an unknown challenge total blank, and allows
+  an estimated end date only on what would be the game's newest league. A row dropped from the
   seed is deleted on the next boot unless a character or league record is filed under it, so a
   stale catalogue row cannot outlive the code that created it. Every seed row carries
   its `game`, and the key is `(game, slug)`. The key widened twice: `patch` broke when Path of
@@ -176,8 +182,12 @@ and its payload is stored in `characters.source_payload` for the same reason.
 - **The league index sorts and filters in the browser.** `LeagueIndex` is a client component
   because three multi-selects and a sort direction are not worth a round trip or a URL that has
   to carry them. Game, patch and league each sort and each filter; ticking nothing means "all",
-  and the options are built from the rows actually present so a filter can never offer a value
-  that empties the table. Two things that are easy to get wrong and are pinned by tests:
+  and each filter offers only the values the *other* filters leave (`facetValues` in
+  `league-filter.ts`), so no combination can empty the table — built from every row, Path of
+  Exile 2 with 3.25 left nothing. A value already ticked stays offered, to be unticked. The
+  league record form leaves the challenge total blank with the league's own as a placeholder:
+  pre-filled, every save stored it as an override and froze it against later corrections, and
+  `clearRedundantTotals` clears any stored total equal to the league's at boot. Two things that are easy to get wrong and are pinned by tests:
   patches sort as **version numbers** (`3.9` before `3.16`, which string order reverses), and
   the sort direction is passed *into* the comparators rather than negating them, so a row with
   no patch or no known dates stays at the bottom either way round instead of floating to the

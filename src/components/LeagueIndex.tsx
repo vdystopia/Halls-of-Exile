@@ -11,6 +11,7 @@ import {
   leagueLabel,
   leagueWindow,
 } from "@/lib/format";
+import { facetValues, passes } from "@/lib/league-filter";
 import type { LeagueWithProgress } from "@/lib/types";
 import { ChallengeMeter } from "./ChallengeMeter";
 
@@ -182,15 +183,16 @@ export function LeagueIndex({
   const [patches, setPatches] = useState<Set<string>>(new Set());
   const [names, setNames] = useState<Set<string>>(new Set());
 
-  // Built from what is actually in the table, so a filter can never offer a
-  // value that would empty it.
-  const gameOptions = [...new Set(leagues.map((league) => league.game))]
+  // Each filter offers only what the other two leave in the table, so no
+  // combination can empty it (see `facetValues`).
+  const filters = { games, patches, names };
+  const gameOptions = facetValues(leagues, filters, "games")
     .sort()
     .map((game) => ({ value: game, label: `Path of Exile ${gameNumber(game)}` }));
-  const patchOptions = [...new Set(leagues.map((league) => league.patch ?? ""))]
+  const patchOptions = facetValues(leagues, filters, "patches")
     .sort((a, b) => comparePatches(a || null, b || null))
     .map((patch) => ({ value: patch, label: patch || "###" }));
-  const nameOptions = [...new Set(leagues.map((league) => leagueLabel(league)))]
+  const nameOptions = facetValues(leagues, filters, "names")
     .sort((a, b) => a.localeCompare(b))
     .map((name) => ({ value: name, label: name }));
 
@@ -203,9 +205,7 @@ export function LeagueIndex({
   };
 
   const shown = leagues
-    .filter((league) => !games.size || games.has(league.game))
-    .filter((league) => !patches.size || patches.has(league.patch ?? ""))
-    .filter((league) => !names.size || names.has(leagueLabel(league)))
+    .filter((league) => passes(league, filters))
     .slice()
     .sort((a, b) => {
       // The direction is handed to the comparators rather than applied over the

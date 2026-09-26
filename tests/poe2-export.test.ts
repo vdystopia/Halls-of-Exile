@@ -295,3 +295,15 @@ test("a character with nothing equipped is left out of the import, and named", a
   assert.equal(exported.characters.length, whole.characters.length - 1);
   assert.deepEqual(whole.emptyCharacters, []);
 });
+
+/** A rare's name is random, and must not be searched for a base: it could name another item. */
+test("a Path of Exile 2 rare is drawn by its base, never by its name", async () => {
+  const { findItemArt } = await import("../src/lib/games/poe2/item-art");
+  const base = "Ruby Ring";
+  const byBase = findItemArt({ name: "Doom Loop", base, rarity: "RARE" });
+  assert.ok(byBase, "the base resolves");
+  // An unknown base with a name that happens to hold a real base's name.
+  assert.equal(findItemArt({ name: "Ruby Ring Grip", base: "Not A Base", rarity: "RARE" }), null);
+  // A magic item's name is its base with affixes, and is searched.
+  assert.equal(findItemArt({ name: "Glinting Ruby Ring of the Fox", base: "Not A Base", rarity: "MAGIC" })?.src, byBase?.src);
+});

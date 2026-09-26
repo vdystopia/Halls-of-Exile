@@ -10,6 +10,7 @@ import { composePoe2Build } from "./games/builds";
 import { POE2_PARSER_VERSION } from "./games/poe2/pob";
 import { POE2_SITE_VERSION, type StoredPoe2Export } from "./games/poe2/site-export";
 import type { BuildData } from "./types";
+import type { GameId } from "./games/types";
 
 const DEFAULT_PATH = path.join(process.cwd(), "data", "archive.db");
 
@@ -366,10 +367,12 @@ function syncLeagueCatalogue(db: Database.Database) {
       end_date_estimated = excluded.end_date_estimated,
       dates_uncertain    = excluded.dates_uncertain,
       challenge_total    = excluded.challenge_total,
-      sort_order         = excluded.sort_order
-    WHERE leagues.is_custom = 0
+      is_custom          = 0
   `);
-  const ordered = orderLeagueSeed(LEAGUE_SEED);
+  // A league someone added by hand that the catalogue has since gained — same
+  // game, same slug, which for a hand-added league is its patch — is the same
+  // league. The catalogue's row takes it over, characters and all: skipping it,
+  // as this used to, left the official league silently missing for good.
 
   // A row dropped from the seed leaves the archive too, as long as nothing is
   // filed under it — the catalogue is code-owned, so a stale row would otherwise
@@ -385,7 +388,7 @@ function syncLeagueCatalogue(db: Database.Database) {
 
   const run = db.transaction(() => {
     prune.run(JSON.stringify(LEAGUE_SEED.map((league) => `${league.game}/${league.slug}`)));
-    ordered.forEach((league, index) => {
+    for (const league of LEAGUE_SEED) {
       insert.run({
         game: league.game,
         slug: league.slug,
@@ -399,11 +402,61 @@ function syncLeagueCatalogue(db: Database.Database) {
         endDateEstimated: league.endDateEstimated ? 1 : 0,
         datesUncertain: league.datesUncertain ? 1 : 0,
         challengeTotal: league.challengeTotal,
-        sortOrder: (index + 1) * 10,
+        sortOrder: 0,
       });
-    });
+    }
+    orderLeagues(db);
   });
   run();
+}
+
+/**
+ * Display order by date across both games and every row, hand-added ones
+ * included: those used to be given the highest number when added, and stayed
+ * pinned above everything as the newest league whatever their dates said.
+ */
+function orderLeagues(db: Database.Database) {
+  const custom = (
+    db.prepare(`SELECT game, slug, patch, name, start_date FROM leagues WHERE is_custom = 1`).all() as {
+      game: GameId;
+      slug: string;
+      patch: string | null;
+      name: string;
+      start_date: string | null;
+    }[]
+  ).map((row) => ({
+    game: row.game,
+    slug: row.slug,
+    patch: row.patch,
+    name: row.name,
+    startDate: row.start_date,
+    endDate: null,
+    challengeTotal: null,
+  }));
+  const setOrder = db.prepare(`UPDATE leagues SET sort_order = ? WHERE game = ? AND slug = ?`);
+  orderLeagueSeed([...LEAGUE_SEED, ...custom]).forEach((league, index) => {
+    setOrder.run((index + 1) * 10, league.game, league.slug);
+  });
+}
+
+/** Re-number the display order after a hand-added league is added or edited. */
+export function resyncLeagueOrder(): void {
+  orderLeagues(connection());
+}
+
+/**
+ * A player's challenge total equal to the league's is not an override. The form
+ * used to be pre-filled with the league's figure, so every save stored it and
+ * froze it against later corrections to the catalogue. Run after the catalogue
+ * sync, so it compares against the current figures; an override that happens to
+ * match changes nothing when cleared.
+ */
+function clearRedundantTotals(db: Database.Database) {
+  db.prepare(
+    `UPDATE league_records SET challenge_total = NULL
+      WHERE challenge_total IS NOT NULL
+        AND challenge_total = (SELECT challenge_total FROM leagues WHERE leagues.id = league_records.league_id)`,
+  ).run();
 }
 
 function create(): Database.Database {
@@ -422,6 +475,7 @@ function create(): Database.Database {
   connection.exec(SCHEMA);
   migrate(connection);
   syncLeagueCatalogue(connection);
+  clearRedundantTotals(connection);
   return connection;
 }
 
@@ -443,6 +497,7 @@ let schemaChecked = false;
 export function ensureSchema(instance: Database.Database): void {
   migrate(instance);
   syncLeagueCatalogue(instance);
+  clearRedundantTotals(instance);
   schemaChecked = true;
 }
 

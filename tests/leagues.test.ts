@@ -366,3 +366,27 @@ test("the catalogue orders by when each league ran, across both games", () => {
   const dated = ordered.filter((row) => row.startDate).map((row) => row.startDate!);
   assert.deepEqual(dated, [...dated].sort());
 });
+
+/**
+ * Each filter offers only what the others leave, so no combination of offered
+ * values can empty the index. Offering every value let Path of Exile 2 with
+ * 3.25 leave nothing. A value already ticked stays offered, to be unticked.
+ */
+test("the league index's filters can never empty the table", async () => {
+  const { facetValues, passes } = await import("../src/lib/league-filter");
+  const rows = LEAGUE_SEED;
+  const none = { games: new Set<string>(), patches: new Set<string>(), names: new Set<string>() };
+  const poe2 = { ...none, games: new Set(["poe2"]) };
+  const patches = facetValues(rows, poe2, "patches");
+  assert.ok(!patches.includes("3.25"), "a Path of Exile 1 patch is not offered with Path of Exile 2 ticked");
+  assert.ok(patches.includes("0.3"));
+  // Every patch offered, with the game ticked, leaves at least one row.
+  for (const patch of patches) {
+    const filters = { ...poe2, patches: new Set([patch]) };
+    assert.ok(rows.some((row) => passes(row, filters)), `${patch} emptied the table`);
+  }
+  // Ticked first, the patch narrows the games instead, and stays offered itself.
+  const ticked = { ...none, patches: new Set(["3.25"]) };
+  assert.deepEqual(facetValues(rows, ticked, "games"), ["poe1"]);
+  assert.ok(facetValues(rows, { ...ticked, games: new Set(["poe1"]) }, "patches").includes("3.25"));
+});
