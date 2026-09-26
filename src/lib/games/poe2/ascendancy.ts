@@ -1,7 +1,21 @@
 import type { AscendancyIcon, AscendancyPortrait } from "../poe1/ascendancy";
 import portraitIndex from "./ascendancy-portraits.json";
+import classIndex from "./class-portraits.json";
 
 const PORTRAITS = portraitIndex.portraits as Record<string, { slug: string; width: number; height: number }>;
+const CLASS_PORTRAITS = classIndex.portraits as Record<string, { slug: string; width: number; height: number }>;
+
+/**
+ * The base class's own portrait, "<Class> portrait.png" on the Path of Exile 2
+ * Wiki, the same shape as its ascendancy portraits, fetched by
+ * `npm run ascendancy:art -- --game poe2-class` into public/ascendancy/poe2/class/.
+ * It is what a character with no ascendancy is drawn with.
+ */
+export function classPortrait(className?: string | null): AscendancyPortrait | null {
+  const entry = className ? CLASS_PORTRAITS[className.trim()] : undefined;
+  if (!entry) return null;
+  return { src: `/ascendancy/poe2/class/${entry.slug}.webp`, width: entry.width, height: entry.height };
+}
 
 /**
  * The ascendancy's portrait from the Path of Exile 2 Wiki, fetched by
@@ -13,10 +27,15 @@ const PORTRAITS = portraitIndex.portraits as Record<string, { slug: string; widt
  *
  * Deadeye and Pathfinder are names in both games and different classes in each,
  * so this is looked up through the character's game and never by name alone.
+ *
+ * A character with no ascendancy is drawn as its class, when the class is
+ * known. A base class passed as the ascendancy is still nothing: the class
+ * argument is where a class goes.
  */
-export function ascendancyPortrait(ascendancy?: string | null): AscendancyPortrait | null {
-  const entry = ascendancy ? PORTRAITS[ascendancy.trim()] : undefined;
-  if (!entry) return null;
+export function ascendancyPortrait(ascendancy?: string | null, className?: string | null): AscendancyPortrait | null {
+  const name = ascendancy?.trim();
+  const entry = name ? PORTRAITS[name] : undefined;
+  if (!entry) return name ? null : classPortrait(className);
   return { src: `/ascendancy/poe2/${entry.slug}.webp`, width: entry.width, height: entry.height };
 }
 
@@ -26,8 +45,8 @@ export function ascendancyPortrait(ascendancy?: string | null): AscendancyPortra
  * icon is the portrait, cropped to the square in its middle. The portraits are
  * framed on the face, so the centre square is the face.
  */
-export function ascendancyIcon(ascendancy?: string | null): AscendancyIcon | null {
-  const portrait = ascendancyPortrait(ascendancy);
+export function ascendancyIcon(ascendancy?: string | null, className?: string | null): AscendancyIcon | null {
+  const portrait = ascendancyPortrait(ascendancy, className);
   if (!portrait) return null;
   const side = Math.min(portrait.width, portrait.height);
   return {

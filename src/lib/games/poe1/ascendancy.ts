@@ -46,14 +46,25 @@ const CLASS_PORTRAITS = classIndex.portraits as Record<string, { slug: string; w
  * The base class's own picture, "<Class> character class.png" on the wiki: a
  * 137x105 close crop of the face, the same shape as an avatar, fetched by
  * `npm run ascendancy:art -- --game poe1-class` into public/ascendancy/class/.
- * Only an alternate ascendancy reaches it; a base class named on its own is
- * still not an ascendancy and resolves to nothing.
  */
-function classPortrait(ascendancy: string): AscendancyPortrait | null {
-  const className = ALTERNATE_ASCENDANCIES[ascendancy];
-  const entry = className ? CLASS_PORTRAITS[className] : undefined;
+export function classPortrait(className?: string | null): AscendancyPortrait | null {
+  const entry = className ? CLASS_PORTRAITS[className.trim()] : undefined;
   if (!entry) return null;
   return { src: `/ascendancy/class/${entry.slug}.webp`, width: entry.width, height: entry.height };
+}
+
+/**
+ * The picture for a character the ascendancy art does not cover: an event
+ * ascendancy is its class's picture, and so is a character with no ascendancy
+ * at all — under level 68, or a record that names only the class — when the
+ * class is known. The ascendancy is asked first: it names its class, and the
+ * class column can be wrong (the owner's record has a Surfcaster filed as a
+ * Ranger). A base class passed as the ascendancy is still nothing: it is not
+ * an ascendancy, and the class argument is where a class goes.
+ */
+function fallbackPortrait(ascendancy: string | undefined, className?: string | null): AscendancyPortrait | null {
+  const alternate = ascendancy ? ALTERNATE_ASCENDANCIES[ascendancy] : undefined;
+  return classPortrait(alternate ?? (ascendancy ? null : className));
 }
 
 /** Where the emblem sits on the sheet, and how big the sheet is. */
@@ -78,13 +89,13 @@ const ICONS = index.icons as Record<string, { x: number; y: number; w: number; h
  * with no ascendancy — anything under level 68, or one that never took one —
  * has no emblem to show, and neither does a name the tree does not carry.
  */
-export function ascendancyIcon(ascendancy?: string | null): AscendancyIcon | null {
+export function ascendancyIcon(ascendancy?: string | null, className?: string | null): AscendancyIcon | null {
   const name = ascendancy?.trim();
   const box = name ? ICONS[name] : undefined;
   if (box) return { src: ASCENDANCY_SHEET, ...box, sheetWidth: index.sheetWidth, sheetHeight: index.sheetHeight };
-  // An event ascendancy has no emblem on the sheet, so its card shows the
-  // centre square of its class's picture, as a Path of Exile 2 card does.
-  const portrait = name ? classPortrait(name) : null;
+  // An event ascendancy, or none, has no emblem on the sheet, so the card
+  // shows the centre square of the class's picture, as a Path of Exile 2 card does.
+  const portrait = fallbackPortrait(name, className);
   if (!portrait) return null;
   const side = Math.min(portrait.width, portrait.height);
   return {
@@ -127,10 +138,10 @@ const PORTRAITS = portraitIndex.portraits as Record<string, { slug: string; widt
  * Warden was Raider, and which name a build carries depends on the version of
  * Path of Building that exported it. Both resolve to the one file.
  */
-export function ascendancyPortrait(ascendancy?: string | null): AscendancyPortrait | null {
+export function ascendancyPortrait(ascendancy?: string | null, className?: string | null): AscendancyPortrait | null {
   const name = ascendancy?.trim();
   const entry = name ? PORTRAITS[name] : undefined;
-  if (!entry) return name ? classPortrait(name) : null;
+  if (!entry) return fallbackPortrait(name, className);
   return { src: `/ascendancy/${entry.slug}.webp`, width: entry.width, height: entry.height };
 }
 
@@ -141,10 +152,10 @@ const AVATARS = avatarIndex.portraits as Record<string, { slug: string; width: n
  * character banner where the wide portrait would be mostly background at that
  * size. Indexed under both of a renamed ascendancy's names, like the others.
  */
-export function ascendancyAvatar(ascendancy?: string | null): AscendancyPortrait | null {
+export function ascendancyAvatar(ascendancy?: string | null, className?: string | null): AscendancyPortrait | null {
   const name = ascendancy?.trim();
   const entry = name ? AVATARS[name] : undefined;
   // The class picture is already a close crop of the face, so it is the avatar too.
-  if (!entry) return name ? classPortrait(name) : null;
+  if (!entry) return fallbackPortrait(name, className);
   return { src: `/ascendancy/avatar/${entry.slug}.webp`, width: entry.width, height: entry.height };
 }

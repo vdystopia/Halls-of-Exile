@@ -90,7 +90,12 @@ export default async function CharacterPage({ params }: Props) {
                 Height is set and the width follows each picture's own shape —
                 240px for Path of Exile's 530x245 painting — so nothing is
                 cropped and no character is stretched. */}
-            <AscendancyPortrait game={league.game} ascendancy={character.ascendancy} height={PORTRAIT_HEIGHT} />
+            <AscendancyPortrait
+              game={league.game}
+              ascendancy={character.ascendancy}
+              characterClass={character.className}
+              height={PORTRAIT_HEIGHT}
+            />
             {/* Name, level and class, the skill: nothing else. Prose from the
                 record ("chaos dot") and build details belong elsewhere; only a
                 named gem is shown here, and only with its picture. */}

@@ -38,7 +38,7 @@ export function CharacterBanner({
       href={href}
       className="panel group flex flex-wrap items-center gap-x-5 gap-y-3 p-3 transition-colors hover:border-gold/60"
     >
-      <AscendancyPortrait game={game} ascendancy={character.ascendancy} height={HEIGHT} variant="avatar" />
+      <AscendancyPortrait game={game} ascendancy={character.ascendancy} characterClass={character.className} height={HEIGHT} variant="avatar" />
       <div className="min-w-[11rem] flex-1">
         <div className="flex items-baseline gap-2">
           <h3 className={`display truncate text-2xl ${nameStyle ? "gem-name" : ""}`} style={nameStyle}>

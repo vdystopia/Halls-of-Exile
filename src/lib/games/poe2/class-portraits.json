@@ -1,0 +1,44 @@
+{
+  "portraits": {
+    "Druid": {
+      "slug": "druid",
+      "width": 184,
+      "height": 144
+    },
+    "Huntress": {
+      "slug": "huntress",
+      "width": 184,
+      "height": 144
+    },
+    "Mercenary": {
+      "slug": "mercenary",
+      "width": 182,
+      "height": 141
+    },
+    "Monk": {
+      "slug": "monk",
+      "width": 182,
+      "height": 141
+    },
+    "Ranger": {
+      "slug": "ranger",
+      "width": 182,
+      "height": 141
+    },
+    "Sorceress": {
+      "slug": "sorceress",
+      "width": 182,
+      "height": 141
+    },
+    "Warrior": {
+      "slug": "warrior",
+      "width": 182,
+      "height": 141
+    },
+    "Witch": {
+      "slug": "witch",
+      "width": 182,
+      "height": 141
+    }
+  }
+}

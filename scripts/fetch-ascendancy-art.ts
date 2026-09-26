@@ -5,7 +5,7 @@
  *   npm run ascendancy:art                 # fetch anything missing
  *   npm run ascendancy:art -- --force      # re-download everything
  *   npm run ascendancy:art -- --dry-run    # list what would be fetched
- *   npm run ascendancy:art -- --game poe2  # one set only (poe1, poe1-avatar, poe1-class, poe2)
+ *   npm run ascendancy:art -- --game poe2  # one set only (poe1, poe1-avatar, poe1-class, poe2, poe2-class)
  *
  * This is the wide key art the game shows on the ascendancy selection screen —
  * not the round emblem in `ascendancy-icons.json`. The emblem is cropped out of
@@ -41,7 +41,11 @@
  * Scavenger and the rest, which the wiki draws no art for at all — so a
  * character from one of those events is shown as the class its ascendancy
  * belongs to (`ALTERNATE_ASCENDANCIES` in poe1/ascendancy.ts). One file serves
- * as portrait, avatar and emblem, the way a Path of Exile 2 portrait does.
+ * as portrait, avatar and emblem, the way a Path of Exile 2 portrait does. The
+ * same picture stands in for a character with no ascendancy at all — under
+ * level 68, or a record that names only the class — and Path of Exile 2's
+ * wiki has the same thing for its eight classes, "<Class> portrait.png", the
+ * shape of its ascendancy portraits, fetched as `poe2-class`.
  *
  * Path of Exile 1 also has an avatar per ascendancy, "<Ascendancy> avatar.png":
  * a 135x105 close crop of the face, the same shape as Path of Exile 2's
@@ -58,7 +62,7 @@ import fs from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import icons from "../src/lib/games/poe1/ascendancy-icons.json";
-import { ASCENDANCIES as POE2_ASCENDANCIES } from "../src/lib/games/poe2/classes";
+import { ASCENDANCIES as POE2_ASCENDANCIES, CLASSES as POE2_CLASSES } from "../src/lib/games/poe2/classes";
 import { CLASSES as POE1_CLASSES } from "../src/lib/leagues";
 
 type Source = {
@@ -103,6 +107,14 @@ const GAMES: Record<string, Source> = {
     suffix: /_portrait$/i,
     output: path.join(process.cwd(), "public", "ascendancy", "poe2"),
     index: path.join(process.cwd(), "src", "lib", "games", "poe2", "ascendancy-portraits.json"),
+  },
+  "poe2-class": {
+    api: "https://www.poe2wiki.net/api.php",
+    names: [...POE2_CLASSES].sort(),
+    title: (name) => `File:${name} portrait.png`,
+    suffix: /_portrait$/i,
+    output: path.join(process.cwd(), "public", "ascendancy", "poe2", "class"),
+    index: path.join(process.cwd(), "src", "lib", "games", "poe2", "class-portraits.json"),
   },
 };
 

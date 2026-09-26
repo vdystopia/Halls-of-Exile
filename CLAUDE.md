@@ -337,8 +337,13 @@ and its payload is stored in `characters.source_payload` for the same reason.
   the alternate tree data, where each sits in the slot of the ascendancy it replaced) maps each to
   its class, and the class's own wiki picture — `npm run ascendancy:art -- --game poe1-class`, a
   137x105 face crop into `public/ascendancy/class/`, committed — serves as portrait, avatar and
-  card icon (centre square), the way a Path of Exile 2 portrait does. A base class named on its
-  own is still no ascendancy and draws nothing.
+  card icon (centre square), the way a Path of Exile 2 portrait does. **A character with no
+  ascendancy is drawn as its class too**: every lookup takes the class beside the ascendancy
+  (`ascendancyPortrait(game, ascendancy, className)`), and reads the class only when there is no
+  ascendancy — the ascendancy names its class, and the class column can be wrong (the owner's
+  record files a Surfcaster under Ranger). Path of Exile 2's classes have the same on its wiki
+  (`--game poe2-class`, into `public/ascendancy/poe2/class/`). An ascendancy nobody knows draws
+  nothing rather than guessing from the class, and a class in the ascendancy slot is still nothing.
 - **Passives are placed by one shared rule, `tree-geometry.ts`, and 16- and 40-slot orbits are
   uneven.** Since 3.17 the game puts a 16-slot orbit's passives at every 30 and 45 degrees and a
   40-slot orbit's at every 10 and 45 — Path of Building's `CalcOrbitAngles`, from the export's own

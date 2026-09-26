@@ -20,8 +20,9 @@ import type { GameId } from "@/lib/games/types";
  * dark panel rather than a broken-image glyph.
  *
  * A character with no ascendancy — under level 68, or one that never took one —
- * renders nothing, so the header closes up rather than leaving a hole. The rule
- * `AscendancyIcon` and `SkillIcon` both follow.
+ * is drawn as its class, from the class's own picture; one whose class is not
+ * known either renders nothing, so the header closes up rather than leaving a
+ * hole. The rule `AscendancyIcon` follows too.
  *
  * `variant="avatar"` draws the close crop of the face instead, for a compact
  * banner: in Path of Exile 1 that is its own file, in Path of Exile 2 it is the
@@ -30,6 +31,7 @@ import type { GameId } from "@/lib/games/types";
 export function AscendancyPortrait({
   game,
   ascendancy,
+  characterClass,
   height,
   variant = "portrait",
   className = "",
@@ -37,17 +39,20 @@ export function AscendancyPortrait({
   game: GameId;
   variant?: "portrait" | "avatar";
   ascendancy?: string | null;
+  /** The base class, drawn when there is no ascendancy. */
+  characterClass?: string | null;
   /** In CSS pixels. */
   height: number;
   className?: string;
 }) {
-  const portrait = (variant === "avatar" ? ascendancyAvatar : ascendancyPortrait)(game, ascendancy);
+  const portrait = (variant === "avatar" ? ascendancyAvatar : ascendancyPortrait)(game, ascendancy, characterClass);
   if (!portrait) return null;
+  const label = ascendancy || characterClass || undefined;
 
   return (
     <span
-      aria-label={ascendancy ?? undefined}
-      title={ascendancy ?? undefined}
+      aria-label={label}
+      title={label}
       className={`block shrink-0 overflow-hidden rounded-sm bg-black/40 ring-1 ring-line ${className}`}
       style={{
         height,

@@ -36,7 +36,7 @@ export function CharacterCard({
     <Link href={href} className="panel group flex flex-col justify-between p-4 transition-colors hover:border-gold/60">
       <div>
         <div className="flex items-start gap-3">
-          <AscendancyIcon game={game} ascendancy={character.ascendancy} />
+          <AscendancyIcon game={game} ascendancy={character.ascendancy} characterClass={character.className} />
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-3">
               <h3 className="display text-lg leading-tight group-hover:text-gold-bright">{character.name}</h3>

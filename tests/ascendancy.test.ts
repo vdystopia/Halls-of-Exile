@@ -131,6 +131,54 @@ test("an event ascendancy is drawn as its class, in every size", () => {
   assert.equal(ascendancyPortraitFor("poe2", "Scavenger"), null);
 });
 
+/**
+ * A character with no ascendancy — under level 68, or a record that names
+ * only the class — is drawn as its class, from the class's own picture on each
+ * game's wiki. The ascendancy decides when there is one; the class is read only
+ * when there is not, so a wrong class column cannot override a real ascendancy.
+ */
+test("a character with no ascendancy is drawn as its class, in both games", () => {
+  for (const className of Object.keys(ASCENDANCIES)) {
+    const portrait = ascendancyPortraitFor("poe1", null, className);
+    assert.ok(portrait, `no class picture for ${className}`);
+    assert.equal(portrait.src, `/ascendancy/class/${className.toLowerCase()}.webp`);
+    assert.deepEqual(ascendancyAvatarFor("poe1", null, className), portrait);
+    assert.equal(ascendancyIconFor("poe1", "", className)?.src, portrait.src);
+    assert.ok(fs.existsSync(path.join(process.cwd(), "public", portrait.src.replace(/^\//, ""))));
+  }
+  for (const className of Object.keys(POE2_ASCENDANCIES)) {
+    const portrait = ascendancyPortraitFor("poe2", null, className);
+    assert.ok(portrait, `no Path of Exile 2 class picture for ${className}`);
+    assert.equal(portrait.src, `/ascendancy/poe2/class/${className.toLowerCase()}.webp`);
+    assert.ok(portrait.width > 0 && portrait.height > 0);
+    assert.equal(ascendancyIconFor("poe2", undefined, className)?.src, portrait.src);
+    assert.ok(fs.existsSync(path.join(process.cwd(), "public", portrait.src.replace(/^\//, ""))));
+  }
+  // Witch is a class in both games, and each game's own picture.
+  assert.notEqual(ascendancyPortraitFor("poe1", null, "Witch")?.src, ascendancyPortraitFor("poe2", null, "Witch")?.src);
+  // The record's placeholder for a missing class, and a class from the other game, draw nothing.
+  assert.equal(ascendancyPortraitFor("poe1", null, "Unknown"), null);
+  assert.equal(ascendancyPortraitFor("poe1", null, "Sorceress"), null);
+  assert.equal(ascendancyPortraitFor("poe2", null, "Templar"), null);
+  assert.equal(ascendancyIconFor("poe1", null, null), null);
+});
+
+test("the ascendancy decides the picture, and the class is read only when there is none", () => {
+  // A Surfcaster filed under Ranger is drawn as the Shadow it is.
+  assert.equal(ascendancyPortrait("Surfcaster", "Ranger")?.src, "/ascendancy/class/shadow.webp");
+  assert.equal(ascendancyPortrait("Necromancer", "Ranger")?.src, "/ascendancy/necromancer.webp");
+  // An ascendancy nobody knows is not the same as none: the class is not guessed for it.
+  assert.equal(ascendancyPortrait("Bladeweaver", "Witch"), null);
+  assert.equal(ascendancyPortraitFor("poe2", "Bladeweaver", "Witch"), null);
+  // A class in the ascendancy slot is still not an ascendancy.
+  assert.equal(ascendancyPortrait("Witch", "Witch"), null);
+  // The owner's record writes "Unknown" for a value it lacks; that is no ascendancy, not a strange one.
+  assert.equal(ascendancyPortraitFor("poe1", "Unknown", "Templar")?.src, "/ascendancy/class/templar.webp");
+  assert.equal(ascendancyAvatarFor("poe1", "Unknown", "Templar")?.src, "/ascendancy/class/templar.webp");
+  assert.equal(ascendancyIconFor("poe1", "Unknown", "Templar")?.src, "/ascendancy/class/templar.webp");
+  assert.equal(ascendancyPortraitFor("poe1", "Unknown", "Unknown"), null);
+});
+
 /** A real ascendancy never falls through to a class picture. */
 test("a regular ascendancy keeps its own art", () => {
   assert.equal(ascendancyPortrait("Necromancer")?.src, "/ascendancy/necromancer.webp");
