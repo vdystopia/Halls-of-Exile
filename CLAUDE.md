@@ -517,9 +517,28 @@ and its payload is stored in `characters.source_payload` for the same reason.
   `globals.css` puts a gem's gloss and facet over it. A class the map lacks keeps the gold. Path
   of Exile 2's attributes (Huntress dex, Druid int/str) come from memory, not a source.
 - **The player page's metrics are computed in `src/lib/metrics.ts`, per game.** Classes roll up
-  into ascendancies (characters, leagues, /played, average and highest level, 90+; the rollup
-  still computes `topSkill` but the table no longer shows a "Most built" column — too few skills
-  repeat for it to say anything). Builds are grouped by skill and ranked two ways, by character count (the default) or
+  into ascendancies (characters, leagues, /played, average and highest level; the rollup still
+  computes `level90s` and `topSkill` but the table shows neither — the 90+ column went on
+  2026-09-26 and too few skills repeat for "Most built" to say anything). **The Classes panel is
+  two halves** (`ClassBreakdown`): a pie by class on the left, the table on the right. The pie
+  is by class, never by ascendancy — its hover/focus flyout is where the ascendancies and their
+  counts are. Geometry is `src/lib/pie.ts` (twelve o'clock, clockwise, a lone slice is a circle,
+  a zero takes no slice; tested), colours are each class's own from `classSwatch` (a hybrid runs
+  its attributes into each other, Unknown is stone), resolved on the server so the client
+  component only draws. Because the game's class hues sit close for some pairs, identity never
+  rests on colour: slices are parted by a 2px hair of surface, a slice carries its name when
+  the name fits the room its wedge offers at the label point (`room` in `pie.ts`: the chord
+  across an upright wedge, more for one pointing sideways) and no placed label would overprint
+  it, and the legend lists all with counts and shares. Slice labels and legend text wear text
+  tokens, not the series colour. The flyout is portalled to the body (a sticky ancestor is a
+  stacking context under the site header), flips above the pointer in the lower half of the
+  window, is the focused slice's `aria-describedby`, closes on Escape and on scroll, and each
+  slice hides it on mouse leave. The pie sticks to the top of its column (`lg:top-20`, clearing
+  the 55px header) while the table grows. **The table's columns follow the table's own width**
+  (`@container` with `@md`/`@lg` variants), not the window's: sized by the window it overflowed
+  its half of the panel between 1024 and 1107px and clipped the Highest column. Its /played
+  figure is centred over its bar.
+  Builds are grouped by skill and ranked two ways, by character count (the default) or
   by /played, each breaking ties with the other; `BuildRanking` only picks which
   server-rendered grid to show. Witch and Ranger are classes in both games and skills share
   names across them, so nothing is summed across games. A /played total covers only characters

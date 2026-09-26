@@ -40,6 +40,20 @@ const GEM: Record<Attribute, { light: string; base: string; dark: string }> = {
 };
 
 /**
+ * The colours a class is painted with where a solid or a gradient is wanted
+ * rather than a text fill — a pie slice, a legend swatch. One attribute is its
+ * gem's body colour; two or three run into each other in the order the class
+ * starts on them, the same run the name's gradient makes. A class the map does
+ * not know gets the page's muted stone, so "Unknown" is never mistaken for a
+ * class.
+ */
+export function classSwatch(game: GameId, className: string | null | undefined): string[] {
+  const attributes = className ? CLASS_ATTRIBUTES[game][className] : undefined;
+  if (!attributes) return ["#8b8272"];
+  return attributes.map((attribute) => GEM[attribute].base);
+}
+
+/**
  * The character name's fill, as custom properties for `.gem-name`: one colour
  * runs light to dark, two or three run into each other. The gloss and facet are
  * the stylesheet's; this only chooses the colours under them.
