@@ -281,15 +281,24 @@ export function LeagueIndex({
           const total = challengeTotal(league);
           const empty = league.characterCount === 0;
           const running = isLeagueRunning(league.startDate, league.endDate);
+          // The row is a div and the link an empty overlay across it, so no
+          // text sits inside an anchor: a browser set to underline every link
+          // would otherwise underline the whole row. `PlayerTile` says why.
           return (
-            <Link
+            <div
               key={league.id}
-              href={`/players/${username}/${league.game}/${league.slug}`}
-              className={`flex flex-wrap items-center gap-4 px-4 py-4 transition-colors hover:bg-white/[0.03] ${
+              className={`relative flex flex-wrap items-center gap-4 px-4 py-4 transition-colors hover:bg-white/[0.03] ${
                 empty ? "opacity-55" : ""
               }`}
             >
-              <span className="w-16 shrink-0 font-display text-lg text-gold/70 tabular-nums">
+              <Link
+                href={`/players/${username}/${league.game}/${league.slug}`}
+                aria-label={leagueLabel(league)}
+                className="absolute inset-0"
+              />
+              {/* The same size and face as the patch beside it; it used to be a
+                  display-face figure twice the size of anything else in the row. */}
+              <span className="w-16 shrink-0 font-mono text-sm text-gold/70 tabular-nums">
                 {gameNumber(league.game)}
               </span>
               {/* The patch has a column of its own now, so the name beside it
@@ -322,7 +331,7 @@ export function LeagueIndex({
               <span className="w-32 shrink-0">
                 <ChallengeMeter completed={league.challengesCompleted} total={total} size="sm" label={false} />
               </span>
-            </Link>
+            </div>
           );
         })}
         {shown.length === 0 ? (

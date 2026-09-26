@@ -769,8 +769,17 @@ and its payload is stored in `characters.source_payload` for the same reason.
   set in the archive's own type**: picture with the username beside it, "Level 100" and "Total
   challenges" (summed over league records) on the right, then Chars, Leagues and /played in
   whole hours. Labels are `eyebrow` and figures `display`, the pair the profile header and the
-  front page use, so nothing on the tile is underlined or monospace any more — **underlines are
-  for links only, anywhere on the site.** "Total challenges" stays on one line
+  front page use, so nothing on the tile is underlined or monospace any more. **The owner's
+  browser underlines every link** (an accessibility setting Chrome and Firefox both offer, which
+  site CSS cannot turn off), so a card that *is* a link underlines every word on it. The rule
+  that follows: **no text sits inside an anchor unless it is meant to read as a link.** A
+  clickable block is a `div` with the link stretched over it — the tile's username link carries
+  `after:absolute after:inset-0`, so the username is the one underlined word; the import box
+  and every league index row carry an empty `absolute inset-0` anchor with an `aria-label`, so
+  nothing in them is. Check any new card under `a { text-decoration: underline !important }`
+  before calling it done. The tile shows Total levels and Total challenges on the right, Exiles,
+  Leagues and /played underneath, every label above its figure, as on the front page's three
+  totals. "Total challenges" stays on one line
   (`whitespace-nowrap`). The /played hours come from `formatPlayedTotal`, so the tile and the
   profile header round the same figure the same way. The /played total carries `*` when some
   characters have none, as everywhere else. No tagline, best level or latest patch.
@@ -778,7 +787,17 @@ and its payload is stored in `characters.source_payload` for the same reason.
   profile header both. **The profile header is the tile opened up**: picture hard left, "Archive
   of" and the username beside it, then Characters, Leagues played, **Total levels** (every
   character's level added together, `getUserTotals.totalLevels`) and Total /played. Highest
-  level lives on in the class table, not the header.
+  level lives on in the class table, not the header. **The header is coloured by the player's
+  picture**: `avatarAccent` in `src/lib/avatars.ts` reads the picture at 48x48 through sharp,
+  bins every pixel by hue weighted by saturation and mid-lightness (so a glowing hand beats the
+  black around it), averages the winning bin and lifts it to at least the gold's lightness and
+  saturation so it reads as text; a greyscale picture gives null and the header stays gold. It
+  is computed when a picture is saved and stored in `avatars.accent` (a migration adds the
+  column; `""` means "read, no colour" so it is not re-read every visit), and `playerAccent`
+  fills it lazily for pictures saved before the column existed. It colours the border, the
+  username and the four figures; the labels keep the muted gold. **sharp is therefore a runtime
+  dependency** (`dependencies`, and in `serverExternalPackages` beside better-sqlite3), no
+  longer a build-script-only one. The front page's three instruction cards are gone.
 - **A player's Path of Exile account lives on the player row**, in `users.poe_account`. It is
   there so the collector script holds no configuration: it asks `/api/players` which accounts to
   read, and every export names the account it came from, so `playerForAccount` matches the two

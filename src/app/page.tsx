@@ -36,8 +36,8 @@ export default function HomePage() {
           { label: "Leagues played", value: totals.leagues },
         ].map((stat) => (
           <div key={stat.label} className="bg-surface px-4 py-6 text-center">
-            <p className="display text-3xl">{stat.value}</p>
-            <p className="eyebrow mt-1">{stat.label}</p>
+            <p className="eyebrow">{stat.label}</p>
+            <p className="display mt-1 text-3xl">{stat.value}</p>
           </div>
         ))}
       </section>
@@ -57,32 +57,6 @@ export default function HomePage() {
           </div>
         </section>
       ) : null}
-
-      <section className="grid gap-4 md:grid-cols-3">
-        {[
-          {
-            step: "01",
-            title: "Claim a name",
-            body: "A username, nothing more. No password, no email — every archive here is public by design.",
-          },
-          {
-            step: "02",
-            title: "Pick the league",
-            body: "Every patch from 1.0 Domination to the current league, with its dates and your challenge count.",
-          },
-          {
-            step: "03",
-            title: "Paste the build",
-            body: "Drop in a Path of Building code or a pobb.in link and the character sheet builds itself — gear, gems, tree, stats.",
-          },
-        ].map((card) => (
-          <div key={card.step} className="panel p-5">
-            <p className="eyebrow">{card.step}</p>
-            <h3 className="display mt-2 text-lg">{card.title}</h3>
-            <p className="mt-2 text-sm text-parchment/75">{card.body}</p>
-          </div>
-        ))}
-      </section>
     </div>
   );
 }

@@ -75,6 +75,8 @@ export type UserSummary = User & {
   latestLeague: string | null;
   /** Characters at level 100. */
   level100s: number;
+  /** Every character's level added together. */
+  totalLevels: number;
   /** Challenges completed, summed over every league record. */
   challengesDone: number;
   playedMinutes: number;
@@ -96,6 +98,7 @@ export function listUsers(): UserSummary[] {
               (SELECT l.name FROM characters c JOIN leagues l ON l.id = c.league_id
                  WHERE c.user_id = u.id ORDER BY l.sort_order DESC LIMIT 1)                   AS latest_league,
               (SELECT COUNT(*) FROM characters c WHERE c.user_id = u.id AND c.level >= 100)   AS level_100s,
+              (SELECT COALESCE(SUM(c.level), 0) FROM characters c WHERE c.user_id = u.id)     AS total_levels,
               (SELECT COALESCE(SUM(r.challenges_completed), 0) FROM league_records r
                  WHERE r.user_id = u.id)                                                      AS challenges_done,
               (SELECT COALESCE(SUM(c.played_minutes), 0) FROM characters c WHERE c.user_id = u.id) AS played_minutes,
@@ -114,6 +117,7 @@ export function listUsers(): UserSummary[] {
     latestPatch: row.latest_patch,
     latestLeague: row.latest_league,
     level100s: row.level_100s,
+    totalLevels: row.total_levels,
     challengesDone: row.challenges_done,
     playedMinutes: row.played_minutes,
     playedRecorded: row.played_recorded,

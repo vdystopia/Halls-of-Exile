@@ -8,7 +8,7 @@ import { CharacterBanner } from "@/components/CharacterBanner";
 import { LeagueIndex } from "@/components/LeagueIndex";
 import { PlayerAdmin } from "@/components/PlayerAdmin";
 import { PlayerPicture } from "@/components/PlayerPicture";
-import { avatarUrl } from "@/lib/avatars";
+import { avatarUrl, playerAccent } from "@/lib/avatars";
 import { Section } from "@/components/Section";
 import { formatPlayedTotal } from "@/lib/format";
 import { buildSkill, skillArt } from "@/lib/games/skills";
@@ -35,6 +35,8 @@ export default async function PlayerPage({ params, searchParams }: Props) {
   if (!user) notFound();
 
   const totals = getUserTotals(user.id);
+  const accent = await playerAccent(user.id);
+  const accentStyle = accent ? { color: accent } : undefined;
   const leagues = listLeaguesForUser(user.id);
   const recent = listRecentCharacters(user.id, 3);
   const played = leagues.filter((league) => league.characterCount > 0 || league.challengesCompleted !== null);
@@ -86,14 +88,19 @@ export default async function PlayerPage({ params, searchParams }: Props) {
   return (
     <div className="space-y-8">
       {/* The player tile, opened up: picture hard left with the username beside
-          it, the figures on the right. */}
-      <header className="panel p-6">
+          it, the figures on the right. The border, the username and the figures
+          take the picture's own strongest colour (`playerAccent`); the labels
+          keep the archive's muted gold. Without a picture, or a colourless one,
+          everything stays gold. */}
+      <header className="panel p-6" style={accent ? { borderColor: accent } : undefined}>
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div className="flex min-w-0 items-center gap-5">
             <PlayerPicture username={user.username} src={avatarUrl(user.username, user.avatarVersion)} className="size-24 sm:size-28" />
             <div className="min-w-0">
               <p className="eyebrow">Archive of</p>
-              <h1 className="display mt-2 text-3xl break-words sm:text-4xl">{user.username}</h1>
+              <h1 className="display mt-2 text-3xl break-words sm:text-4xl" style={accentStyle}>
+                {user.username}
+              </h1>
               {user.tagline ? <p className="mt-2 max-w-xl text-sm text-parchment/75 italic">“{user.tagline}”</p> : null}
             </div>
           </div>
@@ -128,7 +135,9 @@ export default async function PlayerPage({ params, searchParams }: Props) {
             ].map((stat) => (
               <div key={stat.label} className="text-right">
                 <dt className="eyebrow">{stat.label}</dt>
-                <dd className="display text-2xl">{stat.value}</dd>
+                <dd className="display text-2xl" style={accentStyle}>
+                  {stat.value}
+                </dd>
               </div>
             ))}
           </dl>
@@ -201,13 +210,21 @@ export default async function PlayerPage({ params, searchParams }: Props) {
 
       <AddLeagueForm returnTo={`/players/${user.username}`} />
 
-      <Link href={`/players/${user.username}/import`} className="panel block p-4 hover:bg-surface-2/60">
-        <span className="text-sm text-parchment">Import an account from Path of Exile</span>
-        <span className="mt-1 block text-xs text-muted">
+      {/* The link is an empty overlay so no text sits inside an anchor: a
+          browser set to underline every link would otherwise underline both
+          lines. `PlayerTile` says why. */}
+      <div className="panel relative p-4 hover:bg-surface-2/60">
+        <p className="text-sm text-parchment">Import an account from Path of Exile</p>
+        <p className="mt-1 text-xs text-muted">
           Fill in gear, gems and the passive tree for every character at once, from an export of the game&rsquo;s
           own character list.
-        </span>
-      </Link>
+        </p>
+        <Link
+          href={`/players/${user.username}/import`}
+          aria-label="Import an account from Path of Exile"
+          className="absolute inset-0 rounded"
+        />
+      </div>
 
       <PlayerAdmin
         username={user.username}

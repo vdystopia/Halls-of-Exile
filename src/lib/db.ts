@@ -29,7 +29,10 @@ CREATE TABLE IF NOT EXISTS avatars (
   user_id    INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
   image      BLOB NOT NULL,
   type       TEXT NOT NULL,
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+  -- The picture's strongest colour as "#rrggbb", read from it once (see
+  -- avatars.ts); null until it has been, or when the picture has no colour.
+  accent     TEXT
 );
 
 CREATE TABLE IF NOT EXISTS leagues (
@@ -114,6 +117,7 @@ function migrate(db: Database.Database) {
     ["users", "poe_account", "TEXT"],
     ["characters", "skill_gem", "TEXT"],
     ["characters", "league_modifiers", "TEXT"],
+    ["avatars", "accent", "TEXT"],
   ];
   for (const [table, column, definition] of additions) {
     const columns = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];

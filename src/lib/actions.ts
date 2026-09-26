@@ -21,7 +21,7 @@ import { findNamesake, getLeague, getUser } from "./queries";
 import { resyncLeagueOrder } from "./db";
 import type { BuildData } from "./types";
 import { usernameProblem } from "./usernames";
-import { readAvatarUpload, removeAvatar, saveAvatar } from "./avatars";
+import { avatarAccent, readAvatarUpload, removeAvatar, saveAvatar } from "./avatars";
 
 export type ActionState = {
   error?: string;
@@ -79,12 +79,13 @@ export async function createPlayerAction(_prev: ActionState, formData: FormData)
   }
   const avatar = await readAvatarUpload(formData.get("avatar"));
   if (typeof avatar === "string") return { error: avatar };
+  const accent = avatar ? await avatarAccent(avatar.image) : null;
 
   db.transaction(() => {
     const { lastInsertRowid } = db
       .prepare(`INSERT INTO users (username, tagline) VALUES (?, ?)`)
       .run(username, tagline || null);
-    if (avatar) saveAvatar(Number(lastInsertRowid), avatar);
+    if (avatar) saveAvatar(Number(lastInsertRowid), avatar, accent);
   })();
 
   revalidatePath("/players");
@@ -443,6 +444,7 @@ export async function renamePlayerAction(_prev: ActionState, formData: FormData)
   // A new picture replaces the old one; leaving the field empty keeps it.
   const avatar = await readAvatarUpload(formData.get("avatar"));
   if (typeof avatar === "string") return { error: avatar };
+  const accent = avatar ? await avatarAccent(avatar.image) : null;
 
   db.transaction(() => {
     db.prepare(`UPDATE users SET username = ?, tagline = ?, poe_account = ? WHERE id = ?`).run(
@@ -451,7 +453,7 @@ export async function renamePlayerAction(_prev: ActionState, formData: FormData)
       poeAccount,
       user.id,
     );
-    if (avatar) saveAvatar(user.id, avatar);
+    if (avatar) saveAvatar(user.id, avatar, accent);
     else if (formData.get("removeAvatar")) removeAvatar(user.id);
   })();
   revalidatePath("/players");
