@@ -92,6 +92,10 @@ export type ImportResult = {
   skipped: string[];
   /** The names actually written, so a caller can name the ones that were not. */
   written: string[];
+  /** New to the archive, and not written because no league was chosen for them. */
+  needsLeague: string[];
+  /** More than one archived character has the name, so neither was touched. */
+  ambiguous: string[];
   /** League keys touched, as `<game>/<slug>`, for cache revalidation. */
   touched: Set<string>;
 };
@@ -337,6 +341,8 @@ export function applyImport(
   let created = 0;
   const skipped: string[] = [];
   const written: string[] = [];
+  const needsLeague: string[] = [];
+  const ambiguous: string[] = [];
   const touched = new Set<string>();
   // A record with nothing to say writes "Unknown" rather than leaving a blank,
   // so that reads as absent — otherwise a real value would lose to a placeholder.
@@ -401,10 +407,16 @@ export function applyImport(
         touched.add(`${existing.game}/${existing.league}`);
         continue;
       }
-      if (found.length > 1) continue;
+      if (found.length > 1) {
+        ambiguous.push(character.name);
+        continue;
+      }
 
       const slug = options.leagueFor(character.name);
-      if (!slug) continue;
+      if (!slug) {
+        needsLeague.push(character.name);
+        continue;
+      }
       const league = getLeague(exported.game, slug);
       if (!league) continue;
       insert.run(
@@ -429,5 +441,5 @@ export function applyImport(
   });
   run();
 
-  return { imported, created, skipped, written, touched };
+  return { imported, created, skipped, written, needsLeague, ambiguous, touched };
 }

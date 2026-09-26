@@ -650,6 +650,19 @@ and its payload is stored in `characters.source_payload` for the same reason.
   it as finished. `readAccountExport` drops them into `emptyCharacters`, and the upload page names
   them. The Path of Exile 2 exporter has no fallback account either: it asks, or exports nothing,
   since the account in the file decides whose characters they are.
+- **A name belongs to one character per player per game.** The game enforces it per realm, so a
+  second one is the same character added twice or a mistake. `findNamesake` (case-insensitive,
+  within the game) is what every writer asks: the add form answers a clash with a warning naming
+  where the other one is archived, and Overwrite (delete it and insert this one, in one
+  transaction) or Cancel; a rename onto a taken name is refused; the upload page already matches
+  by name, and applying it asks for confirmation naming every archived character ticked for
+  overwrite — cancelling the submit event is what stops React running the action. Placeholders
+  for a name the record never held ("Unnamed Exile", "Unknown") are exempt: the owner's record has
+  four. There is no database constraint, because a live archive holding a duplicate would fail
+  the migration. The add form submits through `onSubmit` rather than `action`, so React does not
+  reset it: Overwrite resends the same entry, and an error no longer empties a pasted code.
+  `/api/import/poe` names what it skipped for each reason: `alreadyArchivedNames`, `needsLeague`,
+  `ambiguous`, `empty`, `unreadable`.
 - **Editing a character: typed fields are the last word, and a code fills what was left alone.**
   The form is pre-filled, so a field still holding its saved value is one nobody changed: a code
   pasted in the same save fills those (class, ascendancy, level) and never one that was edited.

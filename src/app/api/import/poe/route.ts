@@ -70,7 +70,7 @@ export async function POST(request: Request) {
   // needed again.
   rememberAccount(user.id, exported.account);
 
-  const { imported, skipped, written, touched } = applyImport(user, exported, {
+  const { imported, skipped, written, needsLeague, ambiguous, touched } = applyImport(user, exported, {
     include: () => true,
     // Never invent a league, and never rewrite a character that is already
     // archived. Both need someone to ask.
@@ -82,14 +82,12 @@ export async function POST(request: Request) {
   revalidatePath("/");
   revalidatePath(`/players/${user.username}`);
 
-  // Everything the export held falls into one of three buckets, and the two
-  // that were not written are worth naming. "Skipped" is the archive doing its
-  // job; "unmatched" is a character that needs a league chosen on the upload
-  // page, or a name two archived rows share.
-  const accounted = new Set([...written, ...skipped]);
-  const unmatched = exported.characters
-    .map((character) => character.name)
-    .filter((name) => !accounted.has(name));
+  // Every character in the file is accounted for by name, one reason each: filled
+  // in; already archived and left alone; new, so it needs a league chosen on the
+  // upload page; sharing a name with more than one archived character; holding
+  // nothing to archive; or unreadable when it was exported. `unmatched` is the
+  // two that need the upload page, kept for callers that read it.
+  const unmatched = [...needsLeague, ...ambiguous];
 
   return NextResponse.json({
     status: "ok",
@@ -98,7 +96,13 @@ export async function POST(request: Request) {
     generatedAt: exported.generatedAt,
     characters: exported.characters.length,
     filled: imported,
+    filledNames: written,
     alreadyArchived: skipped.length,
+    alreadyArchivedNames: skipped,
+    needsLeague,
+    ambiguous,
+    empty: exported.emptyCharacters,
+    unreadable: exported.skippedCharacters,
     unmatched: unmatched.length,
     unmatchedNames: unmatched,
   });

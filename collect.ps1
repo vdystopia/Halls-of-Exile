@@ -189,9 +189,15 @@ foreach ($target in $targets) {
     }
 
     Write-Note "$($response.filled) filled in, $($response.alreadyArchived) already archived and left alone"
-    if ($response.unmatched -gt 0) {
-        Write-Note "$($response.unmatched) not in the archive: $($response.unmatchedNames -join ', ')"
+    if (@($response.needsLeague).Count -gt 0) {
+        Write-Note "Not in the archive yet: $($response.needsLeague -join ', ')"
         Write-Note "Add those at $Base/players/$username/import, where a league can be chosen."
+    }
+    if (@($response.ambiguous).Count -gt 0) {
+        Write-Note "More than one archived character has each of these names, so none was touched: $($response.ambiguous -join ', ')"
+    }
+    if (@($response.empty).Count -gt 0) {
+        Write-Note "The account holds nothing for these, so they were left out: $($response.empty -join ', ')"
     }
 }
 

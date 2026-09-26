@@ -59,7 +59,26 @@ export function ImportExportForm({
   };
 
   return (
-    <form className="space-y-4">
+    <form
+      className="space-y-4"
+      // Replacing an archived character is never a side effect of importing the
+      // rest: every one ticked is named, and Cancel stops the whole import.
+      // Cancelling the submit event is what stops React running the action.
+      onSubmit={(event) => {
+        const submitter = (event.nativeEvent as SubmitEvent).submitter;
+        if (submitter?.id !== "import-apply") return;
+        const archived = [
+          ...event.currentTarget.querySelectorAll<HTMLInputElement>("input[data-archived]:checked"),
+        ].map((input) => input.dataset.archived);
+        if (!archived.length) return;
+        const list = archived.join(", ");
+        const noun = archived.length === 1 ? "character" : "characters";
+        const message =
+          `This overwrites ${archived.length} archived ${noun}: ${list}.\n\n` +
+          "What was archived is replaced by what the account holds today. Overwrite, or cancel?";
+        if (!window.confirm(message)) event.preventDefault();
+      }}
+    >
       <SkillOptions options={skills[game]} />
       <input type="hidden" name="username" value={username} />
 
@@ -91,7 +110,7 @@ export function ImportExportForm({
             Look at the file
           </SubmitButton>
           {plan ? (
-            <SubmitButton formAction={importAction} pendingLabel="Importing…">
+            <SubmitButton id="import-apply" formAction={importAction} pendingLabel="Importing…">
               Import the ticked rows
             </SubmitButton>
           ) : null}
@@ -142,6 +161,7 @@ export function ImportExportForm({
                   defaultChecked={!row.finalised && (row.action === "update" || Boolean(row.suggested))}
                   disabled={row.action === "ambiguous"}
                   aria-label={`Import ${row.name}`}
+                  data-archived={row.finalised ? row.name : undefined}
                   className="accent-gold"
                 />
                 <span className="min-w-40 flex-1 font-semibold text-parchment">{row.name}</span>
@@ -153,7 +173,7 @@ export function ImportExportForm({
                   row.finalised ? (
                     <span className="min-w-56 text-xs text-muted">
                       already archived in <span className="text-parchment/80">{row.target.leagueTitle}</span>
-                      <span className="text-muted/70"> — tick to replace it</span>
+                      <span className="text-life/80"> — tick to overwrite it; you will be asked to confirm</span>
                     </span>
                   ) : (
                     <span className="min-w-56 text-xs text-muted">

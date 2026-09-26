@@ -1,11 +1,11 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import Link from "next/link";
+import { startTransition, useActionState, useRef, useState } from "react";
 import { addCharacterAction, type ActionState } from "@/lib/actions";
 import { LEAGUE_MODIFIERS } from "@/lib/league-modifiers";
 import { FormError } from "./FormError";
 import { SkillOptions, SkillSelect } from "./SkillSelect";
-import { SubmitButton } from "./SubmitButton";
 
 const INITIAL: ActionState = {};
 
@@ -24,13 +24,35 @@ export function AddCharacterForm({
   /** This game's classes and their ascendancies: the two games share class names and not ascendancies. */
   ascendancies: Record<string, string[]>;
 }) {
-  const [state, formAction] = useActionState(addCharacterAction, INITIAL);
+  const [state, dispatch, pending] = useActionState(addCharacterAction, INITIAL);
+  const form = useRef<HTMLFormElement>(null);
+  // The warning for a name already archived, until it is answered. Cancel hides
+  // it and leaves the form as it was, so the name can be changed instead.
+  const [answered, setAnswered] = useState<ActionState | null>(null);
+  const conflict = state.conflict && state !== answered ? state.conflict : null;
+
+  // Submitted by hand rather than through the form's `action`: React resets a
+  // form once its action returns, which emptied the pasted code on any error —
+  // and "overwrite" has to send the very same entry again.
+  function submit(overwrite: boolean) {
+    if (!form.current) return;
+    const data = new FormData(form.current);
+    if (overwrite) data.set("overwrite", "1");
+    startTransition(() => dispatch(data));
+  }
   const [mode, setMode] = useState<"pob" | "manual">("pob");
   const classes = Object.keys(ascendancies);
   const [className, setClassName] = useState<string>(classes.includes("Witch") ? "Witch" : classes[0]);
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form
+      ref={form}
+      onSubmit={(event) => {
+        event.preventDefault();
+        submit(false);
+      }}
+      className="space-y-6"
+    >
       <SkillOptions options={skills} />
       <input type="hidden" name="username" value={username} />
       <input type="hidden" name="game" value={game} />
@@ -145,7 +167,7 @@ export function AddCharacterForm({
           <input id="name" name="name" className="input" required />
           {mode === "pob" ? (
             <p className="mt-1 text-xs text-muted">
-              Optional — the main skill is used if you leave it blank. Level comes from the import.
+              A build code carries no name, so this is required. Level comes from the import.
             </p>
           ) : null}
         </div>
@@ -209,7 +231,37 @@ export function AddCharacterForm({
       </div>
 
       <FormError message={state.error} />
-      <SubmitButton pendingLabel="Archiving…">Add to the archive</SubmitButton>
+      {conflict ? (
+        <div role="alert" className="panel space-y-3 border-life/40 p-4 text-sm">
+          <p className="text-parchment">
+            A character named <span className="font-semibold">{conflict.name}</span> is already archived in{" "}
+            <Link href={conflict.href} className="link-gold">
+              {conflict.leagueTitle}
+            </Link>
+            . A name belongs to one character per game.
+          </p>
+          <p className="text-xs text-muted">
+            Overwriting deletes that character — its build, memories and /played — and archives this one here in
+            its place.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="btn border-life/40 text-life hover:border-life hover:text-life"
+              disabled={pending}
+              onClick={() => submit(true)}
+            >
+              Overwrite {conflict.name}
+            </button>
+            <button type="button" className="btn" disabled={pending} onClick={() => setAnswered(state)}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : null}
+      <button type="submit" className="btn btn-gold" disabled={pending}>
+        {pending ? "Archiving…" : "Add to the archive"}
+      </button>
     </form>
   );
 }

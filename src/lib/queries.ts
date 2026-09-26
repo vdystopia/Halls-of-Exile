@@ -324,3 +324,39 @@ export function getArchiveTotals() {
 export function hasStoredExport(characterId: number): boolean {
   return Boolean(db.prepare(`SELECT 1 FROM characters WHERE id = ? AND source_payload IS NOT NULL`).get(characterId));
 }
+
+/**
+ * Names a character can share: placeholders for a name the record never held
+ * (the Path of Exile 2 beta characters are "Unnamed Exile"), which are not names.
+ */
+const PLACEHOLDER_NAMES = new Set(["unnamed exile", "unknown"]);
+
+/**
+ * Another character of this player's in this game with the same name, if there
+ * is one. A name is unique within a game — the game itself enforces that per
+ * realm — so a second one is either the same character added twice or a
+ * mistake, and the caller asks before replacing it rather than keeping both.
+ */
+export function findNamesake(
+  userId: number,
+  game: GameId,
+  name: string,
+  exceptId?: number,
+): { id: number; slug: string; leagueSlug: string; leagueTitle: string } | null {
+  if (PLACEHOLDER_NAMES.has(name.trim().toLowerCase())) return null;
+  const row = db
+    .prepare(
+      `SELECT c.id, c.slug, l.slug AS league_slug, l.patch, l.name AS league_name, l.kind, l.parent, l.expansion
+         FROM characters c JOIN leagues l ON l.id = c.league_id
+        WHERE c.user_id = ? AND l.game = ? AND c.name = ? COLLATE NOCASE AND c.id IS NOT ?
+        LIMIT 1`,
+    )
+    .get(userId, game, name.trim(), exceptId ?? null) as Row | undefined;
+  if (!row) return null;
+  return {
+    id: row.id,
+    slug: row.slug,
+    leagueSlug: row.league_slug,
+    leagueTitle: leagueTitle({ patch: row.patch, name: row.league_name, kind: row.kind, parent: row.parent, expansion: row.expansion }),
+  };
+}

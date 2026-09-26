@@ -17,11 +17,19 @@ import {
 } from "./import";
 import { parsePlayed } from "./format";
 import { formatLeagueModifiers } from "./league-modifiers";
-import { getLeague, getUser } from "./queries";
+import { findNamesake, getLeague, getUser } from "./queries";
 import type { BuildData } from "./types";
 import { usernameProblem } from "./usernames";
 
-export type ActionState = { error?: string; ok?: boolean };
+export type ActionState = {
+  error?: string;
+  ok?: boolean;
+  /**
+   * The name is already archived in this game. The add form shows where, and
+   * offers to overwrite that character or cancel; nothing was written.
+   */
+  conflict?: { name: string; leagueTitle: string; href: string };
+};
 
 function text(formData: FormData, key: string): string {
   const value = formData.get(key);
@@ -128,6 +136,18 @@ export async function addCharacterAction(_prev: ActionState, formData: FormData)
 
   const data = parsed.data;
   const name = text(formData, "name") || data.mainSkill || "Unnamed Exile";
+  // One name, one character, per game. Adding a name that is already archived
+  // asks first; confirming replaces that character with this one.
+  const namesake = findNamesake(user.id, league.game, name);
+  if (namesake && formData.get("overwrite") !== "1") {
+    return {
+      conflict: {
+        name,
+        leagueTitle: namesake.leagueTitle,
+        href: `/players/${username}/${league.game}/${namesake.leagueSlug}/${namesake.slug}`,
+      },
+    };
+  }
   const className = text(formData, "className") || data.className || "Unknown";
   const ascendancy = text(formData, "ascendancy") || data.ascendClassName || null;
   const level = integer(formData, "level") ?? data.level ?? null;
@@ -151,32 +171,39 @@ export async function addCharacterAction(_prev: ActionState, formData: FormData)
     data.stats = manualStats(formData);
   }
 
-  const slug = uniqueSlug(user.id, league.id, slugify(name));
+  // Replacing a namesake is one step: were the insert to fail after the delete,
+  // the character being replaced would be gone with nothing in its place.
+  const replace = db.transaction(() => {
+    if (namesake) db.prepare(`DELETE FROM characters WHERE id = ?`).run(namesake.id);
+    const slug = uniqueSlug(user.id, league.id, slugify(name));
 
-  db.prepare(
-    `INSERT INTO characters
-       (user_id, league_id, slug, name, class_name, ascendancy, level, main_skill, skill_gem,
-        league_modifiers, notes, played_minutes, is_favorite, pob_code, pob_url, data, parser_version)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run(
-    user.id,
-    league.id,
-    slug,
-    name,
-    className,
-    ascendancy,
-    level,
-    mainSkill,
-    skillGem,
-    leagueModifiers,
-    notes,
-    playedMinutes,
-    favorite,
-    parsed.code,
-    parsed.url,
-    JSON.stringify(data),
-    parserVersionFor(league.game),
-  );
+    db.prepare(
+      `INSERT INTO characters
+         (user_id, league_id, slug, name, class_name, ascendancy, level, main_skill, skill_gem,
+          league_modifiers, notes, played_minutes, is_favorite, pob_code, pob_url, data, parser_version)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ).run(
+      user.id,
+      league.id,
+      slug,
+      name,
+      className,
+      ascendancy,
+      level,
+      mainSkill,
+      skillGem,
+      leagueModifiers,
+      notes,
+      playedMinutes,
+      favorite,
+      parsed.code,
+      parsed.url,
+      JSON.stringify(data),
+      parserVersionFor(league.game),
+    );
+    return slug;
+  });
+  const slug = replace();
 
   revalidatePath(`/players/${username}`);
   revalidatePath(`/players/${username}/${game}/${leagueSlug}`);
@@ -303,6 +330,12 @@ export async function updateCharacterAction(_prev: ActionState, formData: FormDa
   // A new name or a new league is a new address. The slug follows the name, so
   // a renamed character is not left at a URL spelling its old one.
   const renamed = typedName !== existing.name;
+  const namesake = renamed ? findNamesake(user.id, league.game, typedName, existing.id) : null;
+  if (namesake) {
+    return {
+      error: `${typedName} is already archived in ${namesake.leagueTitle}. A name is unique within a game; rename or delete that one first.`,
+    };
+  }
   const moved = target.id !== league.id;
   const newSlug = renamed || moved ? uniqueSlug(user.id, target.id, slugify(typedName), existing.id) : slug;
 

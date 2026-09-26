@@ -142,6 +142,9 @@ test("an unattended import creates nothing and names what it skipped", async () 
   const landed = new Set(result.written);
   const unmatched = exported.characters.map((c) => c.name).filter((name) => !landed.has(name));
   assert.deepEqual(unmatched.sort(), ["BEVSTCHEESE", "WelcomeToMySimulation", "vCVRSE"].sort());
+  // And the result names them by reason, which is what the endpoint reports.
+  assert.deepEqual(result.needsLeague.sort(), unmatched.sort());
+  assert.deepEqual(result.ambiguous, []);
 });
 
 test("an import fills in gear without touching the record's own fields", async () => {
@@ -255,6 +258,7 @@ test("an ambiguous name is left alone rather than guessed at", async () => {
   const result = applyImport(user, exported, { include: () => true, leagueFor: () => null });
   assert.equal(result.imported, 0);
   assert.deepEqual(result.written, []);
+  assert.deepEqual(result.ambiguous, ["TheLocalVoid"]);
 
   const row = planFor(user.id, exported, "token").rows.find((entry) => entry.name === "TheLocalVoid");
   assert.equal(row?.action, "ambiguous");
@@ -407,4 +411,28 @@ test("an empty skill field does not clear a recorded skill", async () => {
     .prepare(`SELECT skill_gem FROM characters WHERE user_id = ? AND name = 'TheLocalVoid'`)
     .get(user.id) as { skill_gem: string };
   assert.equal(row.skill_gem, "Detonate Dead");
+});
+
+/**
+ * A name belongs to one character per game, so adding or renaming onto one
+ * already archived is caught first. Placeholders for a name the record never
+ * held are not names, and the two games' namespaces are separate.
+ */
+test("a namesake is found within the game, case-insensitively, placeholders aside", async () => {
+  const { findNamesake } = await import("../src/lib/queries");
+  const { db, user } = await setup("namesake-tester", null);
+  const poe1 = db.prepare(`SELECT id FROM leagues WHERE game = 'poe1' AND slug = '3.25'`).get() as { id: number };
+  const insert = db.prepare(
+    `INSERT INTO characters (user_id, league_id, slug, name, class_name, data, parser_version)
+     VALUES (?, ?, ?, ?, 'Witch', '{}', 0)`,
+  );
+  const id = insert.run(user.id, poe1.id, "sparky", "Sparky").lastInsertRowid as number;
+  insert.run(user.id, poe1.id, "unnamed-exile", "Unnamed Exile");
+
+  const found = findNamesake(user.id, "poe1", "SPARKY");
+  assert.equal(found?.id, id);
+  assert.match(found?.leagueTitle ?? "", /^3\.25 Settlers of Kalguur/);
+  assert.equal(findNamesake(user.id, "poe1", "Sparky", id), null, "a character is not its own namesake");
+  assert.equal(findNamesake(user.id, "poe2", "Sparky"), null, "names are per game");
+  assert.equal(findNamesake(user.id, "poe1", "Unnamed Exile"), null, "a placeholder is not a name");
 });
