@@ -12,7 +12,7 @@ export default function NewPlayerPage() {
         </Link>
         <h1 className="display mt-3 text-3xl">Create a profile</h1>
         <p className="mt-2 text-sm text-parchment/75">
-          Two fields. That is the whole account. Characters and leagues attach to it from here.
+          Two fields, and a picture if you like. That is the whole account. Characters and leagues attach to it from here.
         </p>
       </div>
       <div className="panel p-6">

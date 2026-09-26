@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { deletePlayerAction, renamePlayerAction, type ActionState } from "@/lib/actions";
+import { AvatarInput } from "./AvatarInput";
 import { FormError } from "./FormError";
 import { SubmitButton } from "./SubmitButton";
 
@@ -17,12 +18,15 @@ export function PlayerAdmin({
   firstName,
   tagline,
   poeAccount,
+  avatar,
   characters,
 }: {
   username: string;
   firstName: string;
   tagline: string | null;
   poeAccount: string | null;
+  /** The player's picture URL, if they have one. */
+  avatar: string | null;
   characters: number;
 }) {
   const [state, renameAction] = useActionState(renamePlayerAction, INITIAL);
@@ -91,8 +95,19 @@ export function PlayerAdmin({
             own — an export says which account it came from, and this is what matches it to a player.
           </p>
         </div>
+        <div>
+          <label className="label" htmlFor="avatar">
+            Picture <span className="text-muted/60">(optional)</span>
+          </label>
+          <AvatarInput current={avatar} />
+          {avatar ? (
+            <label className="mt-2 flex items-center gap-2 text-xs text-muted">
+              <input type="checkbox" name="removeAvatar" value="1" /> Remove the picture
+            </label>
+          ) : null}
+        </div>
         <FormError message={state.error} />
-        <SubmitButton pendingLabel="Renaming…">Save changes</SubmitButton>
+        <SubmitButton pendingLabel="Saving…">Save changes</SubmitButton>
       </form>
 
       <form

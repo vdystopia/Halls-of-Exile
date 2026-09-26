@@ -7,6 +7,7 @@ import { ClassRollup } from "@/components/ClassRollup";
 import { CharacterBanner } from "@/components/CharacterBanner";
 import { LeagueIndex } from "@/components/LeagueIndex";
 import { PlayerAdmin } from "@/components/PlayerAdmin";
+import { avatarUrl } from "@/lib/avatars";
 import { Section } from "@/components/Section";
 import { formatPlayedTotal } from "@/lib/format";
 import { buildSkill, skillArt } from "@/lib/games/skills";
@@ -207,6 +208,7 @@ export default async function PlayerPage({ params, searchParams }: Props) {
         firstName={user.firstName}
         tagline={user.tagline}
         poeAccount={user.poeAccount}
+        avatar={avatarUrl(user.username, user.avatarVersion)}
         characters={totals.characters}
       />
     </div>

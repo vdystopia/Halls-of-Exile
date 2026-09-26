@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PlayerTile } from "@/components/PlayerTile";
 import { getArchiveTotals, listUsers } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -49,15 +50,9 @@ export default function HomePage() {
               All players →
             </Link>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 xl:grid-cols-2">
             {players.map((player) => (
-              <Link key={player.id} href={`/players/${player.username}`} className="panel block p-4 hover:border-gold/60">
-                <p className="display text-lg">{player.username}</p>
-                <p className="text-sm text-muted">{player.firstName}</p>
-                <p className="mt-3 text-xs text-muted">
-                  {player.characterCount} characters · {player.leagueCount} leagues
-                </p>
-              </Link>
+              <PlayerTile key={player.id} player={player} />
             ))}
           </div>
         </section>

@@ -24,6 +24,15 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- A player's picture, kept in its own table so listing players never reads the
+-- image bytes. In the database rather than on disk so a backup holds it.
+CREATE TABLE IF NOT EXISTS avatars (
+  user_id    INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  image      BLOB NOT NULL,
+  type       TEXT NOT NULL,
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS leagues (
   id              INTEGER PRIMARY KEY AUTOINCREMENT,
   game            TEXT NOT NULL DEFAULT 'poe1',
@@ -88,6 +97,10 @@ CREATE INDEX IF NOT EXISTS idx_characters_league ON characters(user_id, league_i
  * is declared here as well as in the schema above.
  */
 function migrate(db: Database.Database) {
+  // Every statement is IF NOT EXISTS, so this only adds what is missing — a
+  // table added since the connection opened, which a hot reload would
+  // otherwise leave out until the dev server restarted.
+  db.exec(SCHEMA);
   const additions: [string, string, string][] = [
     ["leagues", "end_date_estimated", "INTEGER NOT NULL DEFAULT 0"],
     ["characters", "played_minutes", "INTEGER"],
@@ -472,7 +485,7 @@ function create(): Database.Database {
     if (!(error instanceof Error) || !/locked|busy/i.test(error.message)) throw error;
   }
   connection.pragma("foreign_keys = ON");
-  connection.exec(SCHEMA);
+
   migrate(connection);
   syncLeagueCatalogue(connection);
   clearRedundantTotals(connection);

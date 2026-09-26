@@ -74,6 +74,15 @@ export type UserSummary = User & {
   highestLevel: number | null;
   latestPatch: string | null;
   latestLeague: string | null;
+  /** Characters at level 100. */
+  level100s: number;
+  /** Challenges completed, summed over every league record. */
+  challengesDone: number;
+  playedMinutes: number;
+  /** How many characters have a /played, so the total can say what it covers. */
+  playedRecorded: number;
+  /** When the picture last changed, for its URL; null without one. */
+  avatarVersion: string | null;
 };
 
 export function listUsers(): UserSummary[] {
@@ -86,7 +95,13 @@ export function listUsers(): UserSummary[] {
               (SELECT l.patch FROM characters c JOIN leagues l ON l.id = c.league_id
                  WHERE c.user_id = u.id ORDER BY l.sort_order DESC LIMIT 1)                   AS latest_patch,
               (SELECT l.name FROM characters c JOIN leagues l ON l.id = c.league_id
-                 WHERE c.user_id = u.id ORDER BY l.sort_order DESC LIMIT 1)                   AS latest_league
+                 WHERE c.user_id = u.id ORDER BY l.sort_order DESC LIMIT 1)                   AS latest_league,
+              (SELECT COUNT(*) FROM characters c WHERE c.user_id = u.id AND c.level >= 100)   AS level_100s,
+              (SELECT COALESCE(SUM(r.challenges_completed), 0) FROM league_records r
+                 WHERE r.user_id = u.id)                                                      AS challenges_done,
+              (SELECT COALESCE(SUM(c.played_minutes), 0) FROM characters c WHERE c.user_id = u.id) AS played_minutes,
+              (SELECT COUNT(*) FROM characters c WHERE c.user_id = u.id AND c.played_minutes > 0) AS played_recorded,
+              (SELECT a.updated_at FROM avatars a WHERE a.user_id = u.id)                     AS avatar_version
        FROM users u
        ORDER BY character_count DESC, u.username COLLATE NOCASE ASC`,
     )
@@ -99,12 +114,22 @@ export function listUsers(): UserSummary[] {
     highestLevel: row.highest_level,
     latestPatch: row.latest_patch,
     latestLeague: row.latest_league,
+    level100s: row.level_100s,
+    challengesDone: row.challenges_done,
+    playedMinutes: row.played_minutes,
+    playedRecorded: row.played_recorded,
+    avatarVersion: row.avatar_version,
   }));
 }
 
-export function getUser(username: string): (User & { tagline: string | null }) | null {
-  const row = db.prepare(`SELECT * FROM users WHERE username = ? COLLATE NOCASE`).get(username) as Row;
-  return row ? { ...mapUser(row), tagline: row.tagline } : null;
+export function getUser(username: string): (User & { tagline: string | null; avatarVersion: string | null }) | null {
+  const row = db
+    .prepare(
+      `SELECT u.*, (SELECT a.updated_at FROM avatars a WHERE a.user_id = u.id) AS avatar_version
+       FROM users u WHERE u.username = ? COLLATE NOCASE`,
+    )
+    .get(username) as Row;
+  return row ? { ...mapUser(row), tagline: row.tagline, avatarVersion: row.avatar_version ?? null } : null;
 }
 
 export function listLeaguesForUser(userId: number): LeagueWithProgress[] {

@@ -232,7 +232,9 @@ and its payload is stored in `characters.source_payload` for the same reason.
 - **Migrations must survive a hot reload.** The connection is cached on globalThis so it
   outlives dev-server reloads, so `connection()` re-runs `migrate()` and the catalogue sync
   once per module evaluation. Without that, pulling a schema change left a running dev
-  server erroring with "no such column" until it was restarted.
+  server erroring with "no such column" until it was restarted. `migrate()` also runs `SCHEMA`
+  itself (every statement is `IF NOT EXISTS`), so a new *table* reaches a running server the
+  same way; creating the player pictures table failed every profile save until it did.
 - **Nothing may open the database at import time.** `src/lib/db.ts` exports a proxy that
   connects on first use. `next build` imports every route module across one worker per core;
   connecting eagerly raced on the WAL lock and failed the build on machines with enough
@@ -738,6 +740,19 @@ and its payload is stored in `characters.source_payload` for the same reason.
   commit in `logs/failed-deploy.sha`; a lock held by another update is not a failure. update.ps1
   reports failure by throwing, so the watcher catches it to log it. `.\update.ps1` by hand
   retries regardless.
+- **A player's picture is in the database, in its own table.** `avatars` (one row per player,
+  cascading with them) holds the bytes, so a backup carries it and `listUsers` never reads
+  them. It is set when creating a profile or under "Manage player" (a new one replaces, the
+  box removes). `AvatarInput` crops to the centre square and shrinks to 320px WebP in the
+  browser before sending; the server takes 2 MB at most and trusts only the file's own
+  first bytes — PNG, JPEG, WebP or GIF, never SVG, since it is served from the archive's own
+  origin. `/api/avatars/<user>?v=<updated_at>` serves it, cached for good because a new
+  picture is a new URL.
+- **The player tile (`PlayerTile`, players list and front page) follows the owner's mockup**:
+  picture, username and display name underlined, "Level 100" and "Total Challenges" (summed
+  over league records) in gold monospace beside them, then Chars, Leagues and /played in whole
+  hours, whose labels are underlined and figures are not. The /played total carries `*` when
+  some characters have none, as everywhere else. No tagline, best level or latest patch.
 - **A player's Path of Exile account lives on the player row**, in `users.poe_account`. It is
   there so the collector script holds no configuration: it asks `/api/players` which accounts to
   read, and every export names the account it came from, so `playerForAccount` matches the two

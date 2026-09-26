@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PlayerTile } from "@/components/PlayerTile";
 import { listUsers } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -32,40 +33,9 @@ export default function PlayersPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 xl:grid-cols-2">
           {players.map((player) => (
-            <Link
-              key={player.id}
-              href={`/players/${player.username}`}
-              className="panel group flex flex-col justify-between p-5 transition-colors hover:border-gold/60"
-            >
-              <div>
-                <div className="flex items-baseline justify-between gap-3">
-                  <h2 className="display text-lg group-hover:text-gold-bright">{player.username}</h2>
-                  {player.highestLevel ? (
-                    <span className="tag">lvl {player.highestLevel} best</span>
-                  ) : null}
-                </div>
-                <p className="text-sm text-muted">{player.firstName}</p>
-                {player.tagline ? (
-                  <p className="mt-3 text-sm text-parchment/70 italic">“{player.tagline}”</p>
-                ) : null}
-              </div>
-              <dl className="mt-5 grid grid-cols-3 gap-2 border-t border-line pt-3 text-center">
-                <div>
-                  <dt className="eyebrow">Chars</dt>
-                  <dd className="font-display text-base">{player.characterCount}</dd>
-                </div>
-                <div>
-                  <dt className="eyebrow">Leagues</dt>
-                  <dd className="font-display text-base">{player.leagueCount}</dd>
-                </div>
-                <div>
-                  <dt className="eyebrow">Latest</dt>
-                  <dd className="font-display text-base">{player.latestPatch ?? "—"}</dd>
-                </div>
-              </dl>
-            </Link>
+            <PlayerTile key={player.id} player={player} />
           ))}
         </div>
       )}

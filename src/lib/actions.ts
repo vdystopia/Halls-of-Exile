@@ -21,6 +21,7 @@ import { findNamesake, getLeague, getUser } from "./queries";
 import { resyncLeagueOrder } from "./db";
 import type { BuildData } from "./types";
 import { usernameProblem } from "./usernames";
+import { readAvatarUpload, removeAvatar, saveAvatar } from "./avatars";
 
 export type ActionState = {
   error?: string;
@@ -80,12 +81,15 @@ export async function createPlayerAction(_prev: ActionState, formData: FormData)
   if (db.prepare(`SELECT 1 FROM users WHERE username = ? COLLATE NOCASE`).get(username)) {
     return { error: `The name "${username}" is already in the archive.` };
   }
+  const avatar = await readAvatarUpload(formData.get("avatar"));
+  if (typeof avatar === "string") return { error: avatar };
 
-  db.prepare(`INSERT INTO users (username, first_name, tagline) VALUES (?, ?, ?)`).run(
-    username,
-    firstName,
-    tagline || null,
-  );
+  db.transaction(() => {
+    const { lastInsertRowid } = db
+      .prepare(`INSERT INTO users (username, first_name, tagline) VALUES (?, ?, ?)`)
+      .run(username, firstName, tagline || null);
+    if (avatar) saveAvatar(Number(lastInsertRowid), avatar);
+  })();
 
   revalidatePath("/players");
   redirect(`/players/${username}`);
@@ -443,14 +447,21 @@ export async function renamePlayerAction(_prev: ActionState, formData: FormData)
       .get(poeAccount, user.id) as { username: string } | undefined;
     if (taken) return { error: `That account is already on ${taken.username}.` };
   }
+  // A new picture replaces the old one; leaving the field empty keeps it.
+  const avatar = await readAvatarUpload(formData.get("avatar"));
+  if (typeof avatar === "string") return { error: avatar };
 
-  db.prepare(`UPDATE users SET username = ?, first_name = ?, tagline = ?, poe_account = ? WHERE id = ?`).run(
-    username,
-    firstName,
-    tagline,
-    poeAccount,
-    user.id,
-  );
+  db.transaction(() => {
+    db.prepare(`UPDATE users SET username = ?, first_name = ?, tagline = ?, poe_account = ? WHERE id = ?`).run(
+      username,
+      firstName,
+      tagline,
+      poeAccount,
+      user.id,
+    );
+    if (avatar) saveAvatar(user.id, avatar);
+    else if (formData.get("removeAvatar")) removeAvatar(user.id);
+  })();
   revalidatePath("/players");
   revalidatePath("/");
   revalidatePath(`/players/${current}`);

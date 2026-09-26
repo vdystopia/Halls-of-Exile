@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { createPlayerAction, type ActionState } from "@/lib/actions";
+import { AvatarInput } from "./AvatarInput";
 import { FormError } from "./FormError";
 import { SubmitButton } from "./SubmitButton";
 
@@ -43,6 +44,12 @@ export function CreatePlayerForm() {
           className="input"
           autoComplete="off"
         />
+      </div>
+      <div>
+        <label className="label" htmlFor="avatar">
+          Picture <span className="text-muted/60">(optional)</span>
+        </label>
+        <AvatarInput />
       </div>
       <FormError message={state.error} />
       <div className="flex items-center gap-3">
