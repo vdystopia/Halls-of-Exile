@@ -529,15 +529,22 @@ and its payload is stored in `characters.source_payload` for the same reason.
   (Witch and Sorceress share the top). The owner asked for this order explicitly; the first
   version ranked by count and read as nothing. Geometry is `src/lib/pie.ts` (twelve o'clock,
   clockwise, an `offset` centres the top group, a lone slice is a circle, a zero takes no slice;
-  tested). **It is drawn as a stained-glass wheel in the game's keystone ring**
-  (`keystoneFrame(game)`, the frames now saved at the wiki's native 216/220px, never enlarged,
-  because 160px was blurry at 380px): a solid class is its gem lit mid-depth and dark at hub and
-  rim (radial gradient), a hybrid runs along its arc from the neighbour before it into the one
-  after (`classFill`; Shadow is blue → green) so the disc is one continuous wheel, over which
-  sit a gloss from the upper left and a fractal-noise grain (SVG filter, soft-light), with a
-  gold-over-black hairline between panes and a hub at the centre. The owner called the first,
-  flat-colour version appalling; keep the texture and the ring. Because the game's class hues
-  sit close for some pairs, identity never rests on colour: a slice carries its name when
+  tested). **It is drawn as a stained-glass wheel with a slim gold rim** — the owner tried the
+  keystone ring as a border and found it far too thick; the frames stay at the wiki's native
+  size for the keystone tiles. **Scion is the hub**: the six ring classes are bands of a ring
+  (`innerRadius`), and Scion, the tree's centre class (`classRingOrder`'s `centre`), is a disc
+  in the middle painted at the same angles as the ring so its blue faces Witch and its green
+  Ranger, its area its share of the characters (clamped to 20–50% of the radius), with a gold
+  border between hub and ring. **"Unknown class" is not on the wheel at all**: the finished
+  archive will have none, and the table still lists it. A solid class is its gem lit mid-depth
+  and dark at the ends (radial gradient), a hybrid runs along its arc from the neighbour before
+  it into the one after (`classFill`; Shadow is blue → green) so the ring is one continuous
+  wheel, over which sit a gloss from the upper left and a fractal-noise grain (SVG filter,
+  soft-light), with a gold-over-black hairline between panes. **Every ring class's name is set
+  along its slice's radius**, reading outward from the hub (turned to read inward on the left
+  half so it stays upright), so it fits however thin the slice; Scion's alone is level in the
+  hub. The owner called the first, flat-colour, count-ordered version appalling. Because the
+  game's class hues sit close for some pairs, identity never rests on colour: a slice carries its name when
   the name fits the room its wedge offers at the label point (`room` in `pie.ts`: the chord
   across an upright wedge, more for one pointing sideways) and no placed label would overprint
   it, and the legend lists all with counts and shares. Slice labels and legend text wear text

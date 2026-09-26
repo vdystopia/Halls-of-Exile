@@ -9,16 +9,18 @@ import { classFill, classRingOrder } from "../src/lib/games/class-colors";
  */
 test("Path of Exile's classes are ordered as they sit on the tree, whatever order they arrive in", () => {
   const arrived = ["Marauder", "Unknown class", "Scion", "Witch", "Templar", "Ranger", "Duelist", "Shadow"];
-  const { order, top } = classRingOrder("poe1", arrived);
+  const { order, top, centre } = classRingOrder("poe1", arrived);
   assert.deepEqual(order, ["Witch", "Shadow", "Ranger", "Duelist", "Marauder", "Templar", "Scion", "Unknown class"]);
   assert.deepEqual(top, ["Witch"], "Witch alone is centred on twelve o'clock");
+  assert.deepEqual(centre, ["Scion"], "Scion sits at the tree's centre, so it is the hub");
 });
 
 /** Path of Exile 2's classes take the same places by their attributes, two to a pure one. */
 test("Path of Exile 2's classes follow the same ring by attribute, with both intelligence classes at the top", () => {
-  const { order, top } = classRingOrder("poe2", ["Warrior", "Druid", "Witch", "Mercenary", "Monk", "Ranger", "Huntress", "Sorceress"]);
+  const { order, top, centre } = classRingOrder("poe2", ["Warrior", "Druid", "Witch", "Mercenary", "Monk", "Ranger", "Huntress", "Sorceress"]);
   assert.deepEqual(order, ["Witch", "Sorceress", "Monk", "Ranger", "Huntress", "Mercenary", "Warrior", "Druid"]);
   assert.deepEqual(top, ["Witch", "Sorceress"]);
+  assert.deepEqual(centre, [], "Path of Exile 2 has no class at the centre");
 });
 
 /**

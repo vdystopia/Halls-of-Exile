@@ -75,3 +75,13 @@ test("an offset starts the wheel before twelve o'clock so the first slice is cen
   assert.equal(slices[2].end, 315);
   assert.deepEqual(slices[0].label, pointAt(120, 120, 66, 0), "and its label sits straight up");
 });
+
+/** With a hub in the middle the slices are bands of a ring, and a lone slice is a whole ring. */
+test("an inner radius turns the wedges into bands, drawn even-odd, and a lone slice into a ring", () => {
+  const bands = pieSlices([{ n: 1 }, { n: 3 }], (item) => item.n, { ...geometry, innerRadius: 40 });
+  assert.match(bands[0].path, /^M 120 80 L 120 20 A 100 100 0 0 1 /, "from the hub's edge out to the rim");
+  assert.match(bands[0].path, / A 40 40 0 0 0 120 80 Z$/, "and back along the hub, the other way round");
+  assert.equal(bands[0].middle, 45);
+  const [ring] = pieSlices([{ n: 2 }], (item) => item.n, { ...geometry, innerRadius: 40 });
+  assert.match(ring.path, /^M 120 20 A 100 100 0 1 1 120 220 A 100 100 0 1 1 120 20 Z M 120 80 A 40 40 0 1 0 120 160 A 40 40 0 1 0 120 80 Z$/);
+});

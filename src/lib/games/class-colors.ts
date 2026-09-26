@@ -69,11 +69,13 @@ const signature = (game: GameId, className: string | null | undefined) => {
 };
 
 /**
- * The classes in the tree's clockwise order, and which of them are the pure
- * intelligence classes that sit at the top — the pie centres those at twelve
- * o'clock. Classes the ring does not know keep their given order at the end.
+ * The classes in the tree's clockwise order; which of them are the pure
+ * intelligence classes that sit at the top, which the wheel centres at twelve
+ * o'clock; and which sit at the tree's centre rather than on its ring (Scion,
+ * with all three attributes), which the wheel draws as its hub. Classes the
+ * ring does not know keep their given order at the end.
  */
-export function classRingOrder(game: GameId, names: string[]): { order: string[]; top: string[] } {
+export function classRingOrder(game: GameId, names: string[]): { order: string[]; top: string[]; centre: string[] } {
   const rank = (name: string) => {
     const at = RING.indexOf(signature(game, name) ?? "");
     return at < 0 ? RING.length : at;
@@ -82,7 +84,11 @@ export function classRingOrder(game: GameId, names: string[]): { order: string[]
     .map((name, index) => ({ name, index, rank: rank(name) }))
     .sort((a, b) => a.rank - b.rank || a.index - b.index)
     .map((entry) => entry.name);
-  return { order, top: order.filter((name) => signature(game, name) === "int") };
+  return {
+    order,
+    top: order.filter((name) => signature(game, name) === "int"),
+    centre: order.filter((name) => signature(game, name) === "dex+int+str"),
+  };
 }
 
 /** How a class's slice of the ring is painted. */

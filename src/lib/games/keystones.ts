@@ -16,9 +16,3 @@ export function keystoneIcon(game: GameId, name?: string | null) {
   return ICONS[game](name);
 }
 
-const FRAMES = { poe1: poe1.keystoneFrame, poe2: poe2.keystoneFrame } satisfies Record<GameId, unknown>;
-
-/** Each game's keystone ring on its own: the class pie is drawn inside it. */
-export function keystoneFrame(game: GameId) {
-  return FRAMES[game]();
-}
