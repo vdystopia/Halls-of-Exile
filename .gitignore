@@ -60,3 +60,6 @@ next-env.d.ts
 
 # written by watch.ps1
 /logs
+
+# written by update.ps1 and restore.ps1: copies of the archive kept off the Docker volume
+/backups

@@ -52,6 +52,7 @@ and no database to provision.
 | Stop / start | `docker compose down` / `docker compose up -d` |
 | Update to the latest code | `.\update.ps1` (see below) |
 | Back up the archive | `docker compose exec halls node scripts/backup.mjs /data/backups` |
+| Restore a backup | `.\restore.ps1` (newest in `.\backups`) or `.\restore.ps1 -From <file>` |
 | Shell in | `docker compose exec halls sh` |
 
 **Where the data lives.** The SQLite archive sits on the `halls-data` named volume, mounted at
@@ -62,13 +63,15 @@ the container runs as the unprivileged `node` user (uid 1000), not root.
 
 **Backups.** SQLite runs in WAL mode, so copying `archive.db` on its own can miss data still in the
 `-wal` file. `scripts/backup.mjs` uses SQLite's online backup API and writes one consistent file
-while the server keeps running. To restore: `docker compose down`, copy a backup over
-`/data/archive.db` (deleting any `-wal`/`-shm` beside it), `docker compose up -d`. Worth a weekly
-cron entry on the host:
+while the server keeps running. `.\update.ps1` takes one before every deploy and copies it out of
+the volume to `.\backups` on the host, keeping the newest 20 in each place: a backup that only
+lived inside the volume would be lost with it.
 
-```
-0 4 * * 0 docker compose -f /path/to/docker-compose.yml exec -T halls node scripts/backup.mjs /data/backups
-```
+**Restoring.** `.\restore.ps1` puts the newest backup in `.\backups` back (or `-From <file>` for
+another). The volume's path is not something the host can safely write to, so the script backs up
+the current archive first, stops the app, copies the file in through a one-off container of the
+same service — which mounts the same volume — removing SQLite's `-wal`/`-shm` files with it, and
+starts the app again. Restoring the wrong one is undone the same way, from the backup it took first.
 
 **Health.** `GET /api/health` returns `{"status":"ok", users, characters, leagues, uptime}` and is
 wired to Docker's healthcheck, so `docker compose ps` shows `healthy` only when the app can read

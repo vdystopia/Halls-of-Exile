@@ -12,3 +12,18 @@ docker-compose.yml
 .env.local
 # The collector runs on the machine that can reach the game, not in the image.
 tools
+# Nothing below is read by the build or the running app. Left in the build
+# context, each one changed the context and threw away the build cache on every
+# deploy — collect/ changes daily and holds several megabytes of account exports.
+.claude
+backups
+collect
+logs
+.update.lock
+tests
+coverage
+*.ps1
+start-dev.cmd
+CLAUDE.md
+ROADMAP.md
+tsconfig.tsbuildinfo

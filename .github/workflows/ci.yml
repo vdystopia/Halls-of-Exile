@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
       - run: npm ci
       - name: Typecheck
@@ -34,7 +34,7 @@ jobs:
         shell: pwsh
         run: |
           $errors = $null
-          foreach ($script in 'update.ps1', 'collect.ps1', 'watch.ps1') {
+          foreach ($script in 'update.ps1', 'collect.ps1', 'watch.ps1', 'restore.ps1') {
             [System.Management.Automation.Language.Parser]::ParseFile(
               (Resolve-Path $script), [ref]$null, [ref]$errors) | Out-Null
             if ($errors) {
@@ -115,5 +115,20 @@ jobs:
           cat /tmp/missing.json; echo
           test "${missing}" = "404"
           grep -q 'Nobody#0000' /tmp/missing.json
+      # Path of Exile 2 has its own assets and its own export mapper; the checks
+      # above only ever touched Path of Exile 1's. Every generated tree, a
+      # portrait, and a Path of Exile 2 export reaching the account lookup rather
+      # than a stack trace.
+      - name: Path of Exile 2 is in the image
+        run: |
+          for path in /trees/poe2/0.1.svg /trees/poe2/0.2.svg /trees/poe2/0.3.svg /trees/poe2/0.4.svg /trees/poe2/0.5.svg /ascendancy/poe2/abyssal-lich.webp; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:3000${path}")
+            echo "${code} ${path}"
+            test "${code}" = "200"
+          done
+          body='{"game":"poe2","schema_version":1,"account":"Nobody2#0000","characters":[]}'
+          poe2=$(curl -s -o /tmp/poe2.json -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d "${body}" http://127.0.0.1:3000/api/import/poe)
+          cat /tmp/poe2.json; echo
+          case "${poe2}" in 400|404) ;; *) echo "expected a considered 400 or 404, got ${poe2}"; exit 1 ;; esac
       - if: always()
         run: docker rm -f halls-ci

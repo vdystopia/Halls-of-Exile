@@ -2,13 +2,13 @@
 # The full node image (not slim) already carries python3, make and g++, which
 # better-sqlite3 needs to compile from source on any architecture that has no
 # prebuilt binary. None of it reaches the final image.
-FROM node:22-bookworm AS deps
+FROM node:24-bookworm AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
 # ---- build ------------------------------------------------------------------
-FROM node:22-bookworm AS builder
+FROM node:24-bookworm AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
@@ -16,7 +16,7 @@ COPY . .
 RUN npm run build
 
 # ---- runtime ----------------------------------------------------------------
-FROM node:22-bookworm-slim AS runner
+FROM node:24-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \

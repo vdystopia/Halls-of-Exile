@@ -42,7 +42,12 @@ There are two ways to make even those unattended, and the first is much better:
 
 Deploy is `.\update.ps1` on the owner's PC, never a bare `docker compose up -d --build`:
 it backs up, pulls, rebuilds, health-checks, rolls back on failure, and holds a lock so two
-runs cannot race. `backup.mjs` keeps the newest 20 backups in a folder (`BACKUP_KEEP`). **Item art is baked into the image** (`COPY /app/public`), so `npm run
+runs cannot race. `backup.mjs` keeps the newest 20 backups in a folder (`BACKUP_KEEP`), and
+`update.ps1` copies each one out of the volume to `.\backups` on the host (newest 20 kept),
+because a backup inside the volume dies with it. `.\restore.ps1` puts one back: it backs up the
+current archive, stops the app, and copies the file in through a one-off `docker compose run` of
+the same service, which mounts the volume the host cannot reach, removing `-wal`/`-shm` with it.
+Its copy was tested against a scratch compose project (`-Project`), never the live volume. **Item art is baked into the image** (`COPY /app/public`), so `npm run
 art:fetch` has to run *before* the build, not after — fetching afterwards leaves the
 container serving the art it was built with. So `update.ps1` does it itself, after the pull and
 before the build: `npm run art:fetch -- --check` compares every picture both games' indexes
@@ -750,7 +755,11 @@ and its payload is stored in `characters.source_payload` for the same reason.
   and npm 11 emit different bundled-dependency entries, so a lockfile written by the older
   npm gets rewritten by every local install there, dirtying the tree and blocking both
   `git pull` and `update.ps1`. When changing dependencies from a sandbox running npm 10,
-  use `npx npm@11 install ...` and commit the result.
+  use `npx npm@11 install ...` and commit the result. The Docker image and CI run Node 24 too
+  (which carries npm 11), so the lockfile is installed by the npm that wrote it everywhere.
+- **`.dockerignore` keeps out everything the build and the app never read** — `collect/` (account
+  exports that change daily), `backups/`, `logs/`, `tests/`, the PowerShell scripts, the docs.
+  Each one in the build context changed it and threw away the build cache on every deploy.
 
 ## Before pushing
 

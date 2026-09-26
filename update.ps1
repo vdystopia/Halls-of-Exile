@@ -119,9 +119,24 @@ try {
         Write-Step 'Nothing running yet, so no backup to take'
     } else {
         Write-Step 'Backing up the archive'
-        docker compose exec -T $Service node scripts/backup.mjs /data/backups
+        $backupOutput = @(docker compose exec -T $Service node scripts/backup.mjs /data/backups)
         if ($LASTEXITCODE -ne 0) {
             throw "Backup failed. Refusing to update. Re-run with -SkipBackup only if you accept losing the current data."
+        }
+        $backupOutput | ForEach-Object { Write-Note $_ }
+        # The backup is written inside the volume, beside the database, so losing
+        # the volume would lose both. A copy goes to .\backups on the host, which
+        # restore.ps1 reads from. The newest 20 are kept there too.
+        $inside = ($backupOutput | Select-Object -First 1) -replace '\s+\(.*\)$', ''
+        $hostBackups = Join-Path $PSScriptRoot 'backups'
+        New-Item -ItemType Directory -Force -Path $hostBackups | Out-Null
+        docker compose cp "${Service}:$inside" $hostBackups | Out-Null
+        if ($LASTEXITCODE -eq 0) {
+            Write-Note "copied to $hostBackups"
+            Get-ChildItem $hostBackups -Filter 'archive-*.db' | Sort-Object Name -Descending |
+                Select-Object -Skip 20 | Remove-Item -Force
+        } else {
+            Write-Bad 'The backup could not be copied out of the container; it is only inside the volume.'
         }
     }
 
