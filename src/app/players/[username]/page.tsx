@@ -122,7 +122,7 @@ export default async function PlayerPage({ params, searchParams }: Props) {
       <header className="panel p-6" style={accent ? { borderColor: accent } : undefined}>
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div className="flex min-w-0 items-center gap-5">
-            <PlayerPicture username={user.username} src={avatarUrl(user.username, user.avatarVersion)} className="size-24 sm:size-28" />
+            <PlayerPicture username={user.username} src={avatarUrl(user.username, user.avatarVersion)} className="size-24 sm:size-28" accent={accent} />
             <div className="min-w-0">
               <p className="eyebrow">Archive of</p>
               <h1 className="display mt-2 text-3xl break-words sm:text-4xl" style={accentStyle}>
