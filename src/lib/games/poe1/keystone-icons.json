@@ -1,5 +1,9 @@
 {
   "size": 96,
+  "frame": {
+    "size": 160,
+    "window": 0.519
+  },
   "icons": {
     "Acrobatics": {
       "slug": "acrobatics"

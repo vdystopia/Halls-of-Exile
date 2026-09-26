@@ -322,7 +322,12 @@ and its payload is stored in `characters.source_payload` for the same reason.
   keystones, and saves 96px WebP into `public/keystones/<game>/` with an index beside each
   game's code, both committed and tested. Lookup is `keystoneIcon(game, name)` in
   `src/lib/games/keystones.ts`, by game, because Ancestral Bond and Resolute Technique are
-  keystones in both games with different art.
+  keystones in both games with different art. **A keystone is two pictures**: the icon and the
+  frame it sits in (each wiki's "Keystone passive frame.png", a carved ring with a transparent
+  window, one per game and different in each). The script saves the frame at 160px with its
+  alpha and **measures the window** along the middle row (52% of the width on Path of Exile's,
+  46% on Path of Exile 2's) into the index, and `FramedKeystone` draws the icon at 1.12 x that
+  fraction under the frame so it fills the window with its corners tucked beneath the ring.
 - **A build is drawn on the tree it was made on.** Node ids are stable between versions but
   positions are not — about a third of an old build's nodes sit somewhere else on a current
   tree — so `treeAsset` matches `treeVersion` to a generated SVG. Adding one is `npm run tree:svg -- 3.25`, and the script finds the commit itself by reading

@@ -141,10 +141,48 @@ async function download(info: ImageInfo, destination: string): Promise<"saved" |
   }
 }
 
+/**
+ * The frame every keystone sits in, one per game ("Keystone passive frame.png"
+ * on each wiki: a carved ring with a transparent window in its middle), saved
+ * with its alpha at `FRAME_SIZE` and measured: the window's width as a fraction
+ * of the frame's, read along the middle row, is what the panel sizes the icon
+ * to, so the picture fills the window and its corners tuck under the ring.
+ */
+const FRAME_SIZE = 160;
+const FRAME_TITLE = "File:Keystone passive frame.png";
+
+async function fetchFrame(source: Source): Promise<{ size: number; window: number } | null> {
+  const info = (await resolve(source, [FRAME_TITLE])).get(FRAME_TITLE);
+  if (!info) return null;
+  const destination = path.join(source.output, "frame.webp");
+  if (force || !fs.existsSync(destination) || fs.statSync(destination).size === 0) {
+    const response = await fetch(info.url, { headers: { "user-agent": USER_AGENT } });
+    if (!response.ok) throw new Error(`frame: HTTP ${response.status}`);
+    const buffer = Buffer.from(await response.arrayBuffer());
+    fs.mkdirSync(source.output, { recursive: true });
+    fs.writeFileSync(
+      destination,
+      await sharp(buffer).resize(FRAME_SIZE, FRAME_SIZE, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } }).webp({ quality: QUALITY }).toBuffer(),
+    );
+  }
+  const { data, info: raw } = await sharp(destination).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const alpha = (x: number, y: number) => data[(y * raw.width + x) * 4 + 3];
+  const cx = Math.floor(raw.width / 2);
+  const cy = Math.floor(raw.height / 2);
+  let right = 0;
+  while (cx + right < raw.width && alpha(cx + right, cy) < 40) right += 1;
+  let left = 0;
+  while (cx - left >= 0 && alpha(cx - left, cy) < 40) left += 1;
+  return { size: FRAME_SIZE, window: Math.round(((left + right) / raw.width) * 1000) / 1000 };
+}
+
 async function fetchGame(game: string, source: Source) {
   const list = await keystones(source);
   process.stdout.write(`${game}: ${list.length} keystones on the wiki\n`);
   const resolved = await resolve(source, list.map((entry) => entry.file));
+  const frame = await fetchFrame(source);
+  if (!frame) process.stderr.write(`  no keystone frame on the wiki\n`);
+  else process.stdout.write(`${game}: frame saved, window ${Math.round(frame.window * 100)}% of its width\n`);
 
   const icons: Record<string, { slug: string }> = {};
   let saved = 0;
@@ -169,14 +207,14 @@ async function fetchGame(game: string, source: Source) {
   }
   for (const name of missing) process.stderr.write(`  no icon file on the wiki for ${name}\n`);
 
-  if (failed === 0 && Object.keys(icons).length) {
+  if (failed === 0 && frame && Object.keys(icons).length) {
     const sorted = Object.fromEntries(Object.entries(icons).sort(([a], [b]) => a.localeCompare(b)));
-    fs.writeFileSync(source.index, `${JSON.stringify({ size: SIZE, icons: sorted }, null, 2)}\n`);
+    fs.writeFileSync(source.index, `${JSON.stringify({ size: SIZE, frame, icons: sorted }, null, 2)}\n`);
   }
   process.stdout.write(
     `${game}: ${Object.keys(icons).length} icons: ${saved} saved, ${skipped} already there, ${failed} failed, ${missing.length} without a file\n`,
   );
-  if (failed > 0) process.exitCode = 1;
+  if (failed > 0 || !frame) process.exitCode = 1;
 }
 
 async function main() {

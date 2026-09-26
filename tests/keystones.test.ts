@@ -29,6 +29,23 @@ test("every keystone icon the index names is on disk, in both games", () => {
   }
 });
 
+/**
+ * Every keystone sits in its game's frame, a carved ring with a transparent
+ * window the picture is sized to. The window was measured from the file, so a
+ * frame that came back solid, or one that is mostly hole, is a fetch gone wrong.
+ */
+test("each game's keystone frame is on disk, with a window the picture can fill", () => {
+  for (const [game, name] of [
+    ["poe1", "Ancestral Bond"],
+    ["poe2", "Ancestral Bond"],
+  ] as const) {
+    const icon = keystoneIcon(game, name)!;
+    assert.equal(icon.frame.src, `/keystones/${game}/frame.webp`);
+    assert.ok(fs.existsSync(path.join(process.cwd(), "public", icon.frame.src.replace(/^\//, ""))), `${icon.frame.src} missing`);
+    assert.ok(icon.frame.window > 0.35 && icon.frame.window < 0.65, `${game} frame window ${icon.frame.window}`);
+  }
+});
+
 /** The same name is a different keystone in each game, with its own art. */
 test("a keystone both games have resolves to each game's own icon, and a name is never guessed", () => {
   const first = keystoneIcon("poe1", "Ancestral Bond");

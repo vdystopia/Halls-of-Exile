@@ -1,6 +1,16 @@
 import index from "./keystone-icons.json";
 
-export type KeystoneIcon = { src: string; size: number };
+/**
+ * A keystone's picture, and the frame it sits in. The frame is one per game, a
+ * carved ring with a transparent window; `window` is that window's width as a
+ * fraction of the frame's, so the picture can be drawn to fill it with its
+ * corners under the ring, the way the game draws it.
+ */
+export type KeystoneIcon = {
+  src: string;
+  size: number;
+  frame: { src: string; size: number; window: number };
+};
 
 const ICONS = index.icons as Record<string, { slug: string }>;
 
@@ -12,5 +22,10 @@ const ICONS = index.icons as Record<string, { slug: string }>;
  */
 export function keystoneIcon(name?: string | null): KeystoneIcon | null {
   const entry = name ? ICONS[name.trim()] : undefined;
-  return entry ? { src: `/keystones/poe1/${entry.slug}.webp`, size: index.size } : null;
+  if (!entry) return null;
+  return {
+    src: `/keystones/poe1/${entry.slug}.webp`,
+    size: index.size,
+    frame: { src: "/keystones/poe1/frame.webp", size: index.frame.size, window: index.frame.window },
+  };
 }

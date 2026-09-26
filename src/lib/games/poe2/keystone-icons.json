@@ -1,5 +1,9 @@
 {
   "size": 96,
+  "frame": {
+    "size": 160,
+    "window": 0.463
+  },
   "icons": {
     "Ancestral Bond": {
       "slug": "ancestral-bond"

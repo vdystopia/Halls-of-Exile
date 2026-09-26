@@ -1,4 +1,4 @@
-import { keystoneIcon } from "@/lib/games/keystones";
+import { keystoneIcon, type KeystoneIcon } from "@/lib/games/keystones";
 import type { GameId } from "@/lib/games/types";
 import type { PassiveDetail } from "@/lib/types";
 
@@ -33,6 +33,38 @@ function NameList({ title, names }: { title: string; names: string[] }) {
   );
 }
 
+/** How wide a framed keystone is drawn, in CSS pixels. */
+const KEYSTONE_SIZE = 72;
+
+/**
+ * A keystone as the game draws it: the picture inside the frame's window, its
+ * corners tucked under the carved ring. Two layers, the frame on top; the
+ * picture is drawn a little wider than the window so no gap shows at its edge.
+ */
+function FramedKeystone({ icon }: { icon: KeystoneIcon }) {
+  const picture = Math.round(KEYSTONE_SIZE * icon.frame.window * 1.12);
+  return (
+    <span aria-hidden className="relative block" style={{ width: KEYSTONE_SIZE, height: KEYSTONE_SIZE }}>
+      <span
+        className="absolute rounded-sm"
+        style={{
+          width: picture,
+          height: picture,
+          left: (KEYSTONE_SIZE - picture) / 2,
+          top: (KEYSTONE_SIZE - picture) / 2,
+          backgroundImage: `url(${icon.src})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      />
+      <span
+        className="absolute inset-0"
+        style={{ backgroundImage: `url(${icon.frame.src})`, backgroundSize: "contain", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}
+      />
+    </span>
+  );
+}
+
 /**
  * Keystones with their icons, two to a row, the name above the picture. A
  * keystone the index has no icon for keeps its place with the name alone.
@@ -51,13 +83,7 @@ function Keystones({ game, names }: { game: GameId; names: string[] }) {
                 {entry.name}
                 {entry.count > 1 ? <span className="ml-1 text-muted">×{entry.count}</span> : null}
               </span>
-              {icon ? (
-                <span
-                  aria-hidden
-                  className="block size-12 rounded-full bg-black/40 ring-1 ring-line"
-                  style={{ backgroundImage: `url(${icon.src})`, backgroundSize: "cover", backgroundPosition: "center" }}
-                />
-              ) : null}
+              {icon ? <FramedKeystone icon={icon} /> : null}
             </li>
           );
         })}
