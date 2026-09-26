@@ -800,12 +800,13 @@ bugs can pass there and still fail on the server.
 
 ## Working with the owner
 
-- **Still in development: nothing stored is final (as of 2026-09-24).** The owner uploads the
-  finished characters only once development is done, so every character in the archive today,
-  dev or deployed, is test data. Re-deriving, reshaping or breaking stored builds is fine, and so
-  is changing the import process. Perfecting the functionality comes first. The rules above
-  still describe how the finished product must behave, so keep their guards; just don't let
-  protecting today's rows hold a fix back. Remove this note when final uploads begin.
+- **Live since 2026-09-25: the deployed archive holds real records.** Development is done and
+  the owner is uploading the finished characters into the deployed archive (the Docker volume).
+  Every rule above now protects real data: never re-derive, reshape or break a stored build
+  without a reason that survives the never-overwrite rule, give every new column a migration and
+  exercise it against a copy of the live database, and keep `BuildData` changes additive. Main is
+  meant to change rarely; it is deployed by hand with `update.ps1`, and no watcher is installed.
+  The development database in `./data` is still scratch.
 
 - Wants scientific, critical, objective answers. No preamble, no restating the question,
   no flattery. Recommend one option rather than surveying five.
