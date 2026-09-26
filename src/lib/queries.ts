@@ -3,6 +3,7 @@ import { emptyBuild } from "./games/poe1/pob";
 import { leagueTitle } from "./format";
 import type { GameId } from "./games/types";
 import { parseLeagueModifiers } from "./league-modifiers";
+import { parseSlotItems } from "./slot-items";
 import type { BuildData, Character, League, LeagueWithProgress, User } from "./types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -63,6 +64,7 @@ function mapCharacter(row: Row): Character {
     pobCode: row.pob_code,
     pobUrl: row.pob_url,
     hasExport: row.source_payload !== null && row.source_payload !== undefined,
+    slotItems: parseSlotItems(row.slot_items),
     createdAt: row.created_at,
     data,
   };

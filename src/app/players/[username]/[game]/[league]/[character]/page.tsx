@@ -17,6 +17,7 @@ import { getCharacter, getLeague, getUser, hasStoredExport, listAllLeagues } fro
 import { ascendanciesFor } from "@/lib/games/classes";
 import { buildSkill, skillArt, skillNamesFor } from "@/lib/games/skills";
 import { gearFor } from "@/lib/games/gear";
+import { applySlotItems } from "@/lib/slot-items";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +42,8 @@ export default async function CharacterPage({ params }: Props) {
   const character = getCharacter(user.id, league.id, characterSlug);
   if (!character) notFound();
 
-  const build = character.data;
+  // Items pasted into the doll by hand sit over the stored build (slot-items.ts).
+  const build = applySlotItems(character.data, character.slotItems);
   const stats = build.stats ?? {};
   const tree = build.trees?.[build.activeTree] ?? build.trees?.[0];
   const hasStats = Object.keys(stats).length > 0;
@@ -201,11 +203,18 @@ export default async function CharacterPage({ params }: Props) {
               <span className="text-xs text-muted">{build.items.length} items</span>
             </div>
             <div className="p-4">
-              {build.items.length ? (
-                <GearGrid build={build} game={league.game} />
-              ) : (
-                <p className="py-8 text-center text-sm text-muted">No gear recorded.</p>
-              )}
+              {/* Drawn even with nothing in it: the corner of each slot is where an item is pasted in. */}
+              <GearGrid
+                build={build}
+                game={league.game}
+                edit={{
+                  username: user.username,
+                  game: league.game,
+                  league: league.slug,
+                  character: character.slug,
+                  slotItems: character.slotItems,
+                }}
+              />
             </div>
           </section>
 

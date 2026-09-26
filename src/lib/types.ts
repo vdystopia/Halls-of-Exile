@@ -323,6 +323,8 @@ export type Character = {
   pobUrl: string | null;
   /** Whether an account export is stored underneath the build (`source_payload`). */
   hasExport: boolean;
+  /** Items pasted into the paper doll by hand, slot → clipboard text. See `slot-items.ts`. */
+  slotItems: Record<string, string>;
   createdAt: string;
   data: BuildData;
 };

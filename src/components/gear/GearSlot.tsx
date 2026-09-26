@@ -6,6 +6,7 @@ import { rarityClass, type ItemArt, type TooltipSection } from "@/lib/games/shar
 import type { ParsedItem } from "@/lib/types";
 import { ItemTooltip } from "./ItemTooltip";
 import { SlotIcon, type SlotShape } from "./SlotIcon";
+import { SlotPaste, type SlotEdit } from "./SlotPaste";
 
 const RARITY_BORDER: Record<string, string> = {
   NORMAL: "#c8c8c8",
@@ -22,6 +23,7 @@ export function GearSlot({
   shape,
   label,
   style,
+  edit,
 }: {
   item?: ParsedItem;
   art?: ItemArt | null;
@@ -30,6 +32,8 @@ export function GearSlot({
   shape: SlotShape;
   label: string;
   style?: React.CSSProperties;
+  /** Where a paste into this slot goes; absent for a tile that is not a slot (a tree jewel). */
+  edit?: SlotEdit;
 }) {
   const [open, setOpen] = useState(false);
   // Art is optional: the images are fetched separately and may not be present.
@@ -142,6 +146,7 @@ export function GearSlot({
             style={{ background: border ?? undefined }}
           />
         ) : null}
+        {edit ? <SlotPaste edit={edit} occupied={Boolean(item)} /> : null}
       </div>
 
       {open && item && tooltip

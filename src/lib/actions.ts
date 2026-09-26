@@ -19,6 +19,8 @@ import { parsePlayed } from "./format";
 import { formatLeagueModifiers } from "./league-modifiers";
 import { findNamesake, getLeague, getUser, listAllLeagues } from "./queries";
 import { applyRecord, readRecordSheet, type RecordResult } from "./record";
+import { parseClipboardItem } from "./games/shared/clipboard";
+import { parseSlotItems } from "./slot-items";
 import { resyncLeagueOrder } from "./db";
 import type { BuildData } from "./types";
 import { usernameProblem } from "./usernames";
@@ -645,6 +647,49 @@ export async function deleteLeagueAction(_prev: ActionState, formData: FormData)
 export type ImportState = ActionState & { plan?: ImportPlan; imported?: number; created?: number };
 
 export type RecordState = ActionState & { result?: RecordResult; problems?: string[] };
+
+/**
+ * Put an item copied from the game into a slot on the paper doll, or take a
+ * pasted one out again. The text is kept as it was pasted, beside the build
+ * rather than in it (see `src/lib/slot-items.ts`), and read back on every
+ * visit; here it is only read once to make sure it is an item at all.
+ */
+export async function setSlotItemAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const username = text(formData, "username");
+  const game = text(formData, "game");
+  const leagueSlug = text(formData, "league");
+  const slug = text(formData, "slug");
+  const slot = text(formData, "slot");
+  const user = getUser(username);
+  const league = getLeague(game, leagueSlug);
+  if (!user || !league) return { error: "Unknown player or league." };
+  const existing = db
+    .prepare(`SELECT id, slot_items FROM characters WHERE user_id = ? AND league_id = ? AND slug = ?`)
+    .get(user.id, league.id, slug) as { id: number; slot_items: string | null } | undefined;
+  if (!existing) return { error: "Character not found." };
+  if (!slot || slot.length > 40) return { error: "No slot named." };
+
+  const items = parseSlotItems(existing.slot_items);
+  if (formData.get("remove")) {
+    delete items[slot];
+  } else {
+    const pasted = (formData.get("item") ?? "").toString().replace(/\r\n?/g, "\n").trim();
+    if (!pasted) return { error: "Paste the item first." };
+    if (pasted.length > 16_000) return { error: "That is too long to be one item." };
+    try {
+      parseClipboardItem(pasted, 0);
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : "Could not read that item." };
+    }
+    items[slot] = pasted;
+  }
+  db.prepare(`UPDATE characters SET slot_items = ? WHERE id = ?`).run(
+    Object.keys(items).length ? JSON.stringify(items) : null,
+    existing.id,
+  );
+  revalidatePath(`/players/${username}/${game}/${leagueSlug}/${slug}`);
+  return { ok: true };
+}
 
 /**
  * The owner's record as a spreadsheet: the first step of the initial

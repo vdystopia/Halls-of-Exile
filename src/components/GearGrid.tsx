@@ -2,12 +2,16 @@ import { gearFor } from "@/lib/games/gear";
 import type { GameId } from "@/lib/games/types";
 import type { BuildData, ParsedItem } from "@/lib/types";
 import { GearSlot } from "./gear/GearSlot";
+import type { SlotEdit } from "./gear/SlotPaste";
 
 /** One square of the paper doll. Tiles are sized from this. */
 const CELL = "clamp(44px, 7.2vw, 76px)";
 const GAP = "6px";
 
-export function GearGrid({ build, game }: { build: BuildData; game: GameId }) {
+/** Where pastes into this doll go: the character, and what is pasted in each slot now. */
+export type GearEdit = { username: string; game: string; league: string; character: string; slotItems: Record<string, string> };
+
+export function GearGrid({ build, game, edit }: { build: BuildData; game: GameId; edit?: GearEdit }) {
   // The doll, the art and the tooltip are the character's own game's: the two
   // games share base names and not the pictures or numbers behind them.
   const { doll: PAPER_DOLL, columns: DOLL_COLUMNS, flaskSlots: FLASK_SLOTS, art, tooltip } = gearFor(game);
@@ -20,6 +24,9 @@ export function GearGrid({ build, game }: { build: BuildData; game: GameId }) {
   // requirement arithmetic that reads it reaches the browser.
   const artFor = (item?: ParsedItem) => (item ? art(item) : null);
   const tooltipFor = (item?: ParsedItem) => (item ? tooltip(item) : undefined);
+  // Every slot on the doll takes a paste; a tree jewel is an item, not a slot.
+  const editFor = (slot: string): SlotEdit | undefined =>
+    edit ? { ...edit, slot, pasted: edit.slotItems[slot] ?? null } : undefined;
 
   // Path of Building keeps every item a build has ever held in one list, so an
   // item is only shown if the build actually uses it: equipped in a slot, or
@@ -53,6 +60,7 @@ export function GearGrid({ build, game }: { build: BuildData; game: GameId }) {
             tooltip={tooltipFor(at(cell.slot))}
             shape={cell.shape}
             label={cell.label}
+            edit={editFor(cell.slot)}
             style={{ gridColumn: cell.column, gridRow: cell.row }}
           />
         ))}
@@ -64,6 +72,7 @@ export function GearGrid({ build, game }: { build: BuildData; game: GameId }) {
             tooltip={tooltipFor(at(slot))}
             shape="flask"
             label={slot}
+            edit={editFor(slot)}
             style={{ gridColumn: String(index + 1), gridRow: "7 / span 2" }}
           />
         ))}
@@ -81,6 +90,7 @@ export function GearGrid({ build, game }: { build: BuildData; game: GameId }) {
                 tooltip={tooltipFor(at(slot))}
                 shape={/Weapon 2|Offhand/.test(slot) ? "offhand" : /Weapon/.test(slot) ? "weapon" : "jewel"}
                 label={slot}
+                edit={editFor(slot)}
                 style={{ width: CELL, height: CELL }}
               />
             ))}
@@ -100,6 +110,7 @@ export function GearGrid({ build, game }: { build: BuildData; game: GameId }) {
                 tooltip={tooltipFor(at(slot))}
                 shape="jewel"
                 label={slot}
+                edit={editFor(slot)}
                 style={{ width: CELL, height: CELL }}
               />
             ))}

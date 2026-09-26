@@ -81,6 +81,9 @@ CREATE TABLE IF NOT EXISTS characters (
   is_favorite  INTEGER NOT NULL DEFAULT 0,
   -- Marked failed in the owner's record; filterable, never hidden by default.
   failed       INTEGER NOT NULL DEFAULT 0,
+  -- Items pasted into the paper doll by hand, slot → the game's clipboard text.
+  -- Beside the build, not in it, so a re-parse never loses them (slot-items.ts).
+  slot_items   TEXT,
   pob_code     TEXT,
   pob_url      TEXT,
   data         TEXT NOT NULL DEFAULT '{}',
@@ -121,6 +124,7 @@ function migrate(db: Database.Database) {
     ["characters", "league_modifiers", "TEXT"],
     ["avatars", "accent", "TEXT"],
     ["characters", "failed", "INTEGER NOT NULL DEFAULT 0"],
+    ["characters", "slot_items", "TEXT"],
   ];
   for (const [table, column, definition] of additions) {
     const columns = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];

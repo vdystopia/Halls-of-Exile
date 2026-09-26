@@ -877,6 +877,21 @@ and its payload is stored in `characters.source_payload` for the same reason.
   the rest are spares that must not be drawn. The reverse holds for a slot the paper doll has
   no cell for — the weapon swap set, a heist trinket, a socketed abyss jewel: those are worn,
   so `GearGrid` draws them in a row beneath the doll rather than dropping them.
+- **An item pasted into the paper doll lives beside the build, never in it.** Every slot on the
+  doll (empty or not) has a small `+`/`✎` in its corner; it opens a dialog that takes the item
+  as the game copies it (Ctrl+Alt+C, the advanced form with a `{ Prefix Modifier … }` header over
+  every mod and ranges after each roll, or plain Ctrl+C with `(implicit)`/`(crafted)` suffixes).
+  `parseClipboardItem` in `src/lib/games/shared/clipboard.ts` reads that shape — sections
+  divided by dashes: header, properties, Requirements, Sockets, Item Level, mods, flags, a
+  unique's verse (dropped) — into the same `ParsedItem` the other sources produce, so the art
+  lookup, the tooltip and the requirement derivation all follow from the text. The text is kept
+  as pasted in `characters.slot_items` (slot → text, migrated) and laid over the build on every
+  read by `applySlotItems`, taking the slot and displacing what was there: **the stored build is
+  a parser cache that `reparseStaleBuilds` rewrites, and anything written into it by hand would
+  go with it.** A paste therefore survives every re-parse and every re-import and never
+  overwrites what a source said; "Remove pasted item" puts the build's own item back. The doll is
+  drawn even for a character with no gear at all, since its corners are where gear starts. Ids
+  for pasted items begin at 900,000, above anything a code or export numbers.
 - **`BuildData` changes stay additive.** Rows written by older versions must still render;
   `mapCharacter` merges parsed JSON over `emptyBuild()` for exactly this reason.
 - **better-sqlite3 stays in `serverExternalPackages`.** It is a native module; bundling it
