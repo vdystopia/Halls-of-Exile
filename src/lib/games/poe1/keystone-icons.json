@@ -1,0 +1,311 @@
+{
+  "size": 96,
+  "icons": {
+    "Acrobatics": {
+      "slug": "acrobatics"
+    },
+    "Ancestral Bond": {
+      "slug": "ancestral-bond"
+    },
+    "Arrow Dancing": {
+      "slug": "arrow-dancing"
+    },
+    "Arsenal of Vengeance": {
+      "slug": "arsenal-of-vengeance"
+    },
+    "Avatar of Fire": {
+      "slug": "avatar-of-fire"
+    },
+    "Bitter Frost": {
+      "slug": "bitter-frost"
+    },
+    "Black Scythe Training": {
+      "slug": "black-scythe-training"
+    },
+    "Blood Magic": {
+      "slug": "blood-magic"
+    },
+    "Bloodsoaked Blade": {
+      "slug": "bloodsoaked-blade"
+    },
+    "Call to Arms": {
+      "slug": "call-to-arms"
+    },
+    "Captivated Interest": {
+      "slug": "captivated-interest"
+    },
+    "Celestial Mathematics": {
+      "slug": "celestial-mathematics"
+    },
+    "Chainbreaker": {
+      "slug": "chainbreaker"
+    },
+    "Chaos Inoculation": {
+      "slug": "chaos-inoculation"
+    },
+    "Conduit": {
+      "slug": "conduit"
+    },
+    "Corrupted Soul": {
+      "slug": "corrupted-soul"
+    },
+    "Cosmic Wounds": {
+      "slug": "cosmic-wounds"
+    },
+    "Crimson Dance": {
+      "slug": "crimson-dance"
+    },
+    "DAMAGE FROM MANA": {
+      "slug": "damage-from-mana"
+    },
+    "Dance of Destruction": {
+      "slug": "dance-of-destruction"
+    },
+    "Dance with Death": {
+      "slug": "dance-with-death"
+    },
+    "Disciple of Kitava": {
+      "slug": "disciple-of-kitava"
+    },
+    "Divine Flesh": {
+      "slug": "divine-flesh"
+    },
+    "Divine Shield": {
+      "slug": "divine-shield"
+    },
+    "Eldritch Battery": {
+      "slug": "eldritch-battery"
+    },
+    "Eldritch Gaze": {
+      "slug": "eldritch-gaze"
+    },
+    "Elemental Equilibrium": {
+      "slug": "elemental-equilibrium"
+    },
+    "Elemental Overload": {
+      "slug": "elemental-overload"
+    },
+    "Eternal Youth": {
+      "slug": "eternal-youth"
+    },
+    "Ghost Dance": {
+      "slug": "ghost-dance"
+    },
+    "Ghost Reaver": {
+      "slug": "ghost-reaver"
+    },
+    "Glancing Blows": {
+      "slug": "glancing-blows"
+    },
+    "Grand Design": {
+      "slug": "grand-design"
+    },
+    "Height of Hubris": {
+      "slug": "height-of-hubris"
+    },
+    "Hex Master": {
+      "slug": "hex-master"
+    },
+    "Hollow Palm Technique": {
+      "slug": "hollow-palm-technique"
+    },
+    "Imbalanced Guard": {
+      "slug": "imbalanced-guard"
+    },
+    "Immortal Ambition": {
+      "slug": "immortal-ambition"
+    },
+    "Inner Conviction": {
+      "slug": "inner-conviction"
+    },
+    "Insatiable Appetite": {
+      "slug": "insatiable-appetite"
+    },
+    "Iron Grip": {
+      "slug": "iron-grip"
+    },
+    "Iron Reflexes": {
+      "slug": "iron-reflexes"
+    },
+    "Iron Will": {
+      "slug": "iron-will"
+    },
+    "Kineticism": {
+      "slug": "kineticism"
+    },
+    "Lethe Shade": {
+      "slug": "lethe-shade"
+    },
+    "Lone Messenger": {
+      "slug": "lone-messenger"
+    },
+    "Magebane": {
+      "slug": "magebane"
+    },
+    "Memento Mori": {
+      "slug": "memento-mori"
+    },
+    "Mind Over Matter": {
+      "slug": "mind-over-matter"
+    },
+    "Minion Instability": {
+      "slug": "minion-instability"
+    },
+    "Mortal Conviction": {
+      "slug": "mortal-conviction"
+    },
+    "Nature's Patience": {
+      "slug": "nature-s-patience"
+    },
+    "Necromantic Aegis": {
+      "slug": "necromantic-aegis"
+    },
+    "Overwhelming Hate": {
+      "slug": "overwhelming-hate"
+    },
+    "Pain Attunement": {
+      "slug": "pain-attunement"
+    },
+    "Perfect Agony": {
+      "slug": "perfect-agony"
+    },
+    "Phase Acrobatics": {
+      "slug": "phase-acrobatics"
+    },
+    "Pitfighter": {
+      "slug": "pitfighter"
+    },
+    "Point Blank": {
+      "slug": "point-blank"
+    },
+    "POWER CHARGE": {
+      "slug": "power-charge"
+    },
+    "Power of Purpose": {
+      "slug": "power-of-purpose"
+    },
+    "Precise Technique": {
+      "slug": "precise-technique"
+    },
+    "Reconstructed Essence": {
+      "slug": "reconstructed-essence"
+    },
+    "Resolute Technique": {
+      "slug": "resolute-technique"
+    },
+    "Roiling Tempest": {
+      "slug": "roiling-tempest"
+    },
+    "Runebinder": {
+      "slug": "runebinder"
+    },
+    "Second Sight": {
+      "slug": "second-sight"
+    },
+    "Secrets of Suffering": {
+      "slug": "secrets-of-suffering"
+    },
+    "Singular Focus": {
+      "slug": "singular-focus"
+    },
+    "Solipsism": {
+      "slug": "solipsism"
+    },
+    "Strength of Blood": {
+      "slug": "strength-of-blood"
+    },
+    "Supreme Decadence": {
+      "slug": "supreme-decadence"
+    },
+    "Supreme Ego": {
+      "slug": "supreme-ego"
+    },
+    "Supreme Grandstanding": {
+      "slug": "supreme-grandstanding"
+    },
+    "Supreme Ostentation": {
+      "slug": "supreme-ostentation"
+    },
+    "Tempered by War": {
+      "slug": "tempered-by-war"
+    },
+    "The Agnostic": {
+      "slug": "the-agnostic"
+    },
+    "The Impaler": {
+      "slug": "the-impaler"
+    },
+    "The Loyal Few": {
+      "slug": "the-loyal-few"
+    },
+    "The Perfect Storm": {
+      "slug": "the-perfect-storm"
+    },
+    "The Traitor": {
+      "slug": "the-traitor"
+    },
+    "The Unbreaking Circle": {
+      "slug": "the-unbreaking-circle"
+    },
+    "Thirst for Knowledge": {
+      "slug": "thirst-for-knowledge"
+    },
+    "Throw the Gauntlet": {
+      "slug": "throw-the-gauntlet"
+    },
+    "Transcendence": {
+      "slug": "transcendence"
+    },
+    "Twist of Fate": {
+      "slug": "twist-of-fate"
+    },
+    "Unwavering Stance": {
+      "slug": "unwavering-stance"
+    },
+    "Unwavering Vision": {
+      "slug": "unwavering-vision"
+    },
+    "Vaal Carnage": {
+      "slug": "vaal-carnage"
+    },
+    "Vaal Dominion": {
+      "slug": "vaal-dominion"
+    },
+    "Vaal Pact": {
+      "slug": "vaal-pact"
+    },
+    "Versatile Combatant": {
+      "slug": "versatile-combatant"
+    },
+    "Veteran's Awareness": {
+      "slug": "veteran-s-awareness"
+    },
+    "Voracious Flame": {
+      "slug": "voracious-flame"
+    },
+    "Wandering Path": {
+      "slug": "wandering-path"
+    },
+    "Weighted Exchange": {
+      "slug": "weighted-exchange"
+    },
+    "Wellspring of Creation": {
+      "slug": "wellspring-of-creation"
+    },
+    "Wicked Ward": {
+      "slug": "wicked-ward"
+    },
+    "Wind Dancer": {
+      "slug": "wind-dancer"
+    },
+    "Worship the Blightheart": {
+      "slug": "worship-the-blightheart"
+    },
+    "Wrath of the Cosmos": {
+      "slug": "wrath-of-the-cosmos"
+    },
+    "Zealot's Oath": {
+      "slug": "zealot-s-oath"
+    }
+  }
+}

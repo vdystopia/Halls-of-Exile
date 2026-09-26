@@ -186,7 +186,7 @@ export default async function CharacterPage({ params }: Props) {
             ) : null}
             {/* The game's own export computes nothing, so a character read from it
                 has no stats to show and this column carries its passives instead. */}
-            {!hasStats && build.passives ? <PassivePanel passives={build.passives} /> : null}
+            {!hasStats && build.passives ? <PassivePanel game={league.game} passives={build.passives} /> : null}
           </div>
         ) : null}
 
@@ -312,16 +312,15 @@ export default async function CharacterPage({ params }: Props) {
         </div>
       </div>
 
-      {/* The whole window's width, not the page column's: a tree drawn small is
-          a smudge, and on a 4K screen the 1400px column left it a postage stamp.
-          The negative margins break out of the column symmetrically, so the
-          panel stays centred under everything else, and keep the page's own
-          1.25rem gutter; margins rather than a translate, because a transform
-          would become the containing block for the tooltip's position: fixed.
-          The tree is square, so width alone only adds empty sides — the box is
-          as tall as the screen allows and never taller than it is wide. */}
+      {/* The page column's width, like every other panel. It used to break out
+          to the window's width, which on a wide screen left it the one panel
+          out of line with the rest. The tree is square, so the box is as tall
+          as the screen allows and never taller than it is wide: the column is
+          1400px minus its gutters, which is the last term. No transform here,
+          ever — a transformed ancestor becomes the containing block for the
+          tooltip's position: fixed and throws it off the pointer. */}
       {treeArt && treeNodes.length ? (
-        <section className="panel mx-[calc(50%_-_50vw_+_1.25rem)]">
+        <section className="panel">
           <div className="panel-header">
             <h2 className="panel-title">Passive tree</h2>
             <span className="text-xs text-muted">
@@ -343,7 +342,7 @@ export default async function CharacterPage({ params }: Props) {
               ascendancy={gear.treeAscendancy(character.ascendancy, treeArt.version)}
               allocatedCount={tree?.nodeCount ?? treeNodes.length}
               treeVersion={tree?.treeVersion || treeArt.version}
-              className="h-[max(420px,min(calc(100svh_-_8rem),calc(100vw_-_4.5rem)))]"
+              className="h-[max(420px,min(calc(100svh_-_8rem),calc(100vw_-_4.5rem),1355px))]"
             />
           </div>
         </section>

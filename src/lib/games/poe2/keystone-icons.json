@@ -1,0 +1,185 @@
+{
+  "size": 96,
+  "icons": {
+    "Ancestral Bond": {
+      "slug": "ancestral-bond"
+    },
+    "Avatar of Fire": {
+      "slug": "avatar-of-fire"
+    },
+    "Black Scythe Training": {
+      "slug": "black-scythe-training"
+    },
+    "Blackflame Covenant": {
+      "slug": "blackflame-covenant"
+    },
+    "Blood Magic": {
+      "slug": "blood-magic"
+    },
+    "Bulwark": {
+      "slug": "bulwark"
+    },
+    "Chainbreaker": {
+      "slug": "chainbreaker"
+    },
+    "Chaos Inoculation": {
+      "slug": "chaos-inoculation"
+    },
+    "Chimeral Blood": {
+      "slug": "chimeral-blood"
+    },
+    "Circular Teachings": {
+      "slug": "circular-teachings"
+    },
+    "Conduit": {
+      "slug": "conduit"
+    },
+    "Corrupted Soul": {
+      "slug": "corrupted-soul"
+    },
+    "Crimson Assault": {
+      "slug": "crimson-assault"
+    },
+    "Dance with Death": {
+      "slug": "dance-with-death"
+    },
+    "Divine Flesh": {
+      "slug": "divine-flesh"
+    },
+    "Eldritch Battery": {
+      "slug": "eldritch-battery"
+    },
+    "Elemental Equilibrium": {
+      "slug": "elemental-equilibrium"
+    },
+    "Eternal Youth": {
+      "slug": "eternal-youth"
+    },
+    "Giant's Blood": {
+      "slug": "giant-s-blood"
+    },
+    "Glancing Blows": {
+      "slug": "glancing-blows"
+    },
+    "Heartstopper": {
+      "slug": "heartstopper"
+    },
+    "Hollow Palm Technique": {
+      "slug": "hollow-palm-technique"
+    },
+    "Immortal Ambition": {
+      "slug": "immortal-ambition"
+    },
+    "Inner Conviction": {
+      "slug": "inner-conviction"
+    },
+    "Iron Reflexes": {
+      "slug": "iron-reflexes"
+    },
+    "Knightly Tenets": {
+      "slug": "knightly-tenets"
+    },
+    "Lord of the Wilds": {
+      "slug": "lord-of-the-wilds"
+    },
+    "Mind Over Matter": {
+      "slug": "mind-over-matter"
+    },
+    "Necromantic Talisman": {
+      "slug": "necromantic-talisman"
+    },
+    "Oasis": {
+      "slug": "oasis"
+    },
+    "Pain Attunement": {
+      "slug": "pain-attunement"
+    },
+    "Power of Purpose": {
+      "slug": "power-of-purpose"
+    },
+    "Primal Hunger": {
+      "slug": "primal-hunger"
+    },
+    "Resolute Technique": {
+      "slug": "resolute-technique"
+    },
+    "Resonance": {
+      "slug": "resonance"
+    },
+    "Ritual Cadence": {
+      "slug": "ritual-cadence"
+    },
+    "Sacrifice of Blood": {
+      "slug": "sacrifice-of-blood"
+    },
+    "Sacrifice of Flesh": {
+      "slug": "sacrifice-of-flesh"
+    },
+    "Sacrifice of Loyalty": {
+      "slug": "sacrifice-of-loyalty"
+    },
+    "Sacrifice of Mind": {
+      "slug": "sacrifice-of-mind"
+    },
+    "Sacrifice of Sight": {
+      "slug": "sacrifice-of-sight"
+    },
+    "Scarred Faith": {
+      "slug": "scarred-faith"
+    },
+    "Second Sight": {
+      "slug": "second-sight"
+    },
+    "Strength of Blood": {
+      "slug": "strength-of-blood"
+    },
+    "Supreme Decadence": {
+      "slug": "supreme-decadence"
+    },
+    "Supreme Ego": {
+      "slug": "supreme-ego"
+    },
+    "Supreme Grandstanding": {
+      "slug": "supreme-grandstanding"
+    },
+    "Supreme Ostentation": {
+      "slug": "supreme-ostentation"
+    },
+    "Tempered by War": {
+      "slug": "tempered-by-war"
+    },
+    "The Agnostic": {
+      "slug": "the-agnostic"
+    },
+    "The Chosen Path": {
+      "slug": "the-chosen-path"
+    },
+    "The Traitor": {
+      "slug": "the-traitor"
+    },
+    "Transcendence": {
+      "slug": "transcendence"
+    },
+    "Trusted Kinship": {
+      "slug": "trusted-kinship"
+    },
+    "Unwavering Stance": {
+      "slug": "unwavering-stance"
+    },
+    "Vaal Pact": {
+      "slug": "vaal-pact"
+    },
+    "Whispers of Doom": {
+      "slug": "whispers-of-doom"
+    },
+    "Wildsurge Incantation": {
+      "slug": "wildsurge-incantation"
+    },
+    "Wind Dancer": {
+      "slug": "wind-dancer"
+    },
+    "Zealot's Oath": {
+      "slug": "zealot-s-oath"
+    }
+  }
+}

@@ -306,13 +306,23 @@ and its payload is stored in `characters.source_payload` for the same reason.
   elements have no business in React's reconciler or in the page's HTML — and the stylesheet
   **must be constructed in the SVG document's own window**: Chrome refuses to adopt one built
   by the parent, which took the whole page down the first time.
-  **The tree panel is as wide as the window, not the page column.** On a 4K screen the 1400px
-  column left it a postage stamp. It breaks out with symmetric negative margins
-  (`mx-[calc(50%_-_50vw_+_1.25rem)]`), so it stays centred under the column and keeps the page's
-  gutter. Never use a transform for this: a transformed ancestor becomes the containing block
-  for the tooltip's `position: fixed` and throws it off the pointer. The tree is square, so width
-  alone only adds empty sides; the box is as tall as the screen allows (`100svh - 8rem`), never
-  taller than it is wide, and at least 420px.
+  **The tree panel is the page column's width, like every other panel.** It broke out to the
+  window's width for a while (negative margins), and the owner asked for it back in line on
+  2026-09-26. Never use a transform to position it: a transformed ancestor becomes the
+  containing block for the tooltip's `position: fixed` and throws it off the pointer. The tree
+  is square, so the box is as tall as the screen allows (`100svh - 8rem`), never taller than it
+  is wide (the column's 1400px minus gutters is the cap), and at least 420px.
+  **The allocated panel** (`PassivePanels`) sets its section labels in bold fuchsia
+  (`text-fuchsia-500`, the runegraft colour), names each mastery in aubergine with the chosen
+  effect in parchment, sorted by mastery name so the six Life Masteries sit together, and draws
+  every keystone with its icon, two to a row, name above picture. **Keystone icons come from
+  the wikis' Cargo tables**: `npm run keystones:art` asks `passive_skills` where `is_keystone=1`
+  on poewiki.net and poe2wiki.net for each keystone's icon file, since the file names are the
+  game's internal ones ("Totemmax" is Ancestral Bond) and cannot be derived, skips atlas
+  keystones, and saves 96px WebP into `public/keystones/<game>/` with an index beside each
+  game's code, both committed and tested. Lookup is `keystoneIcon(game, name)` in
+  `src/lib/games/keystones.ts`, by game, because Ancestral Bond and Resolute Technique are
+  keystones in both games with different art.
 - **A build is drawn on the tree it was made on.** Node ids are stable between versions but
   positions are not — about a third of an old build's nodes sit somewhere else on a current
   tree — so `treeAsset` matches `treeVersion` to a generated SVG. Adding one is `npm run tree:svg -- 3.25`, and the script finds the commit itself by reading
