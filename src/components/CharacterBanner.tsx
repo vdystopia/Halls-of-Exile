@@ -5,6 +5,7 @@ import { SkillIcon } from "@/components/SkillIcon";
 import { classLine, formatPlayed } from "@/lib/format";
 import { classNameStyle } from "@/lib/games/class-colors";
 import { buildSkill, skillArt, skillTagClass } from "@/lib/games/skills";
+import { leagueModifierClass, leagueModifierLabel, leagueModifierTitle } from "@/lib/league-modifiers";
 import type { PlayerCharacter } from "@/lib/queries";
 
 /** The banner's picture height: the avatar at left and the league logo at right share it. */
@@ -60,6 +61,16 @@ export function CharacterBanner({
       {/* Beside the name when there is room, a row of their own beneath it on a phone. */}
       <div className="flex flex-wrap gap-2 sm:flex-col sm:items-end">
         <span className="tag">{character.leagueTitle}</span>
+        {/* Which variant of the league it was played in, coloured as on the character page. */}
+        {character.leagueModifiers.length ? (
+          <div className="flex flex-wrap justify-end gap-2">
+            {character.leagueModifiers.map((modifier) => (
+              <span key={modifier} className={`tag ${leagueModifierClass(modifier)}`} title={leagueModifierTitle(modifier)}>
+                {leagueModifierLabel(modifier)}
+              </span>
+            ))}
+          </div>
+        ) : null}
         {played ? <span className="tag">/played {played}</span> : null}
       </div>
       <LeagueLogo

@@ -134,8 +134,16 @@ export function PassiveTree({
     // both are id selectors, so the later one wins. Only allocated nodes — an
     // override on a passive the character never took does nothing.
     for (const [id, override] of Object.entries(overrides ?? {})) {
-      if (!allocated.has(Number(id)) || !doc.getElementById(`n${id}`)) continue;
-      rules.push(`#n${id}{color:${OVERRIDE_COLOR[override.kind]}}`);
+      const circle = doc.getElementById(`n${id}`);
+      if (!allocated.has(Number(id)) || !circle) continue;
+      // A tattoo replaces one small attribute passive and only that attribute's,
+      // so it is drawn in the attribute's colour: the node's own stats, baked
+      // into the SVG, say which one it was. Lime only when they do not.
+      const color =
+        override.kind === "tattoo"
+          ? (tattooColor(circle.getAttribute("data-stats") ?? "") ?? OVERRIDE_COLOR.tattoo)
+          : OVERRIDE_COLOR[override.kind];
+      rules.push(`#n${id}{color:${color}}`);
     }
 
     // The sheet has to be constructed in the SVG document's own realm: Chrome
@@ -329,12 +337,22 @@ export function PassiveTree({
         ) : null}
         {overrideKinds.length ? (
           <span className="flex gap-3 text-[11px] text-muted">
-            {overrideKinds.map((kind) => (
-              <span key={kind} className="flex items-center gap-1">
-                <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: OVERRIDE_COLOR[kind] }} />
-                {kind}
-              </span>
-            ))}
+            {overrideKinds.map((kind) =>
+              kind === "tattoo" ? (
+                // A tattoo takes the colour of the attribute it replaced, so the legend shows all three.
+                <span key={kind} className="flex items-center gap-1">
+                  {(["str", "dex", "int"] as const).map((attribute) => (
+                    <span key={attribute} className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: ATTRIBUTE_COLOR[attribute] }} />
+                  ))}
+                  tattoo (its attribute)
+                </span>
+              ) : (
+                <span key={kind} className="flex items-center gap-1">
+                  <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: OVERRIDE_COLOR[kind] }} />
+                  {kind}
+                </span>
+              ),
+            )}
           </span>
         ) : null}
         <span className="text-[11px] text-muted">
@@ -365,11 +383,26 @@ const ATTRIBUTE_NAME: Record<"str" | "dex" | "int", string> = {
   int: "Intelligence",
 };
 
-/** Runegrafts in fuchsia, tattoos in lime: distinct from the gold of an ordinary allocation. */
+/** Runegrafts in fuchsia; a tattoo in its attribute's colour, lime only when the node's attribute is unknown. */
 const OVERRIDE_COLOR: Record<NodeOverride["kind"], string> = {
   runegraft: "#d946ef",
   tattoo: "#a3e635",
 };
+
+/** The three attributes in the socket colours the rest of the page uses. */
+const ATTRIBUTE_COLOR: Record<"str" | "dex" | "int", string> = {
+  str: "#c94f4f",
+  dex: "#4fb04f",
+  int: "#4f6fd4",
+};
+
+/** "+10 to Intelligence" is an intelligence node; a tattoo over it is blue. */
+function tattooColor(stats: string): string | null {
+  if (/\bStrength\b/i.test(stats)) return ATTRIBUTE_COLOR.str;
+  if (/\bDexterity\b/i.test(stats)) return ATTRIBUTE_COLOR.dex;
+  if (/\bIntelligence\b/i.test(stats)) return ATTRIBUTE_COLOR.int;
+  return null;
+}
 
 /**
  * Append a character's clusters to the loaded tree, under the ids and classes
