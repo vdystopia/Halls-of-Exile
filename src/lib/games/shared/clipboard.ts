@@ -40,6 +40,9 @@ const INFLUENCES = new Set([
 /** The tags the tooltip knows how to show, from the plain form's suffix or the advanced form's header. */
 const TAGS = ["implicit", "enchant", "crafted", "fractured", "scourge", "rune", "desecrated"] as const;
 
+/** The usage text at the foot of a flask, a jewel or a map. */
+const INSTRUCTION = /^(Right[- ]click|Place into|Can be used|Shift[- ]click|Travel to this Map)/i;
+
 /** Lines a flask or a weapon prints under its name that are facts, not mods. */
 const PROPERTY_SENTENCE = /^(Lasts|Consumes|Recovers|Currently has|Grants|Limited to|Radius)\b/;
 const PROPERTY_KEYS = new Set([
@@ -185,6 +188,9 @@ export function parseClipboardItem(text: string, id: number): ParsedItem {
       continue;
     }
     if (/^Note:/i.test(first)) continue;
+    // "Right click to drink…", "Place into an allocated Jewel Socket…": how to
+    // use the item, printed on every flask and jewel, and not a fact about it.
+    if (section.every((line) => INSTRUCTION.test(line))) continue;
 
     // The lines under the name: a value with a key, or a flask's sentence. The
     // game prints them in the first section after the header, and a flask's

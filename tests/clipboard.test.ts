@@ -146,7 +146,11 @@ Right click to drink. Can only hold charges while in belt. Refill at Wells or by
     { name: "Consumes 20 of 60 Charges on use", value: "" },
     { name: "40% increased Movement Speed", value: "" },
   ]);
-  assert.deepEqual(flask.explicits, ["27% increased Duration", "+26% chance to Avoid being Stunned during Effect"]);
+  assert.deepEqual(
+    flask.explicits,
+    ["27% increased Duration", "+26% chance to Avoid being Stunned during Effect"],
+    "the 'Right click to drink' instruction is not a mod",
+  );
   const art = findItemArt(flask);
   assert.ok(art && /Quicksilver|Flask/i.test(art.src), `no art for a magic quicksilver flask: ${art?.src}`);
 });
