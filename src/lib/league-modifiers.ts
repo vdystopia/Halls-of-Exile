@@ -69,3 +69,18 @@ export function leagueModifierLabel(id: LeagueModifierId): string {
 export function leagueModifierTitle(id: LeagueModifierId): string {
   return BY_ID.get(id)?.title ?? "";
 }
+
+/**
+ * Each variant's colour on a tag, so the character header reads at a glance:
+ * SSF fuchsia, Hardcore crimson, Ruthless a darker red, Trade forest green.
+ */
+const TAG_CLASS: Record<LeagueModifierId, string> = {
+  ssf: "border-fuchsia-500/60 text-fuchsia-500",
+  hardcore: "border-[#dc143c]/60 text-[#dc143c]",
+  ruthless: "border-[#9b1c1c]/60 text-[#9b1c1c]",
+  trade: "border-forest/60 text-forest",
+};
+
+export function leagueModifierClass(id: LeagueModifierId): string {
+  return TAG_CLASS[id] ?? "";
+}

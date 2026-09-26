@@ -4,7 +4,7 @@ import { LeagueLogo } from "@/components/LeagueLogo";
 import { SkillIcon } from "@/components/SkillIcon";
 import { classLine, formatPlayed } from "@/lib/format";
 import { classNameStyle } from "@/lib/games/class-colors";
-import { buildSkill, skillArt } from "@/lib/games/skills";
+import { buildSkill, skillArt, skillTagClass } from "@/lib/games/skills";
 import type { PlayerCharacter } from "@/lib/queries";
 
 /** The banner's picture height: the avatar at left and the league logo at right share it. */
@@ -53,7 +53,7 @@ export function CharacterBanner({
         {skill ? (
           <div className="mt-2 flex items-center gap-2">
             <SkillIcon src={art?.src} name={skill} frames={art?.frames} size={28} />
-            <span className="tag border-rarity-gem/60 text-rarity-gem">{skill}</span>
+            <span className={`tag ${skillTagClass(game, skill)}`}>{skill}</span>
           </div>
         ) : null}
       </div>

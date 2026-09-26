@@ -12,10 +12,10 @@ import { SkillIcon } from "@/components/SkillIcon";
 import { AllStatsTable, AttributeStrip, ResistanceBar, StatColumn } from "@/components/StatPanels";
 import { classNameStyle } from "@/lib/games/class-colors";
 import { classLine, formatPlayed, formatPlayedExact, leagueTitle, leagueWindow } from "@/lib/format";
-import { leagueModifierLabel, leagueModifierTitle } from "@/lib/league-modifiers";
+import { leagueModifierClass, leagueModifierLabel, leagueModifierTitle } from "@/lib/league-modifiers";
 import { getCharacter, getLeague, getUser, hasStoredExport, listAllLeagues } from "@/lib/queries";
 import { ascendanciesFor } from "@/lib/games/classes";
-import { buildSkill, skillArt, skillNamesFor } from "@/lib/games/skills";
+import { buildSkill, skillArt, skillNamesFor, skillTagClass } from "@/lib/games/skills";
 import { gearFor } from "@/lib/games/gear";
 import { applySlotItems } from "@/lib/slot-items";
 
@@ -123,7 +123,7 @@ export default async function CharacterPage({ params }: Props) {
               {skillName ? (
                 <div className="mt-3 flex items-center gap-2">
                   <SkillIcon src={art?.src} name={skillName} frames={art?.frames} size={28} />
-                  <span className="tag border-rarity-gem/60 text-rarity-gem">{skillName}</span>
+                  <span className={`tag ${skillTagClass(league.game, skillName)}`}>{skillName}</span>
                 </div>
               ) : null}
             </div>
@@ -141,7 +141,7 @@ export default async function CharacterPage({ params }: Props) {
               {character.leagueModifiers.length ? (
                 <div className="flex flex-wrap justify-end gap-2">
                   {character.leagueModifiers.map((modifier) => (
-                    <span key={modifier} className="tag" title={leagueModifierTitle(modifier)}>
+                    <span key={modifier} className={`tag ${leagueModifierClass(modifier)}`} title={leagueModifierTitle(modifier)}>
                       {leagueModifierLabel(modifier)}
                     </span>
                   ))}
