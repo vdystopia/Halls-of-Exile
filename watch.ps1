@@ -91,7 +91,11 @@ function Write-Log {
 }
 
 function Get-RepoSlug {
-    $url = & git remote get-url origin 2>$null
+    # Not `2>$null`: redirecting a native command's stderr is fatal in Windows
+    # PowerShell 5.1 under 'Stop' whenever it writes anything there.
+    $saved = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try { $url = & git remote get-url origin 2>&1 | Where-Object { $_ -is [string] } } finally { $ErrorActionPreference = $saved }
     if ($LASTEXITCODE -ne 0 -or -not $url) { return $null }
     if ($url -match 'github\.com[:/]+(?<owner>[^/]+)/(?<repo>[^/.]+)') {
         return "$($Matches.owner)/$($Matches.repo)"
@@ -155,6 +159,34 @@ function Step-Unreachable {
     return $count
 }
 
+<#
+    Run one of the scripts beside this one as its own PowerShell process, logging
+    everything it prints, and return its exit code and output.
+
+    Not `& update.ps1 2>&1`: in Windows PowerShell 5.1, merging a script's error
+    stream turns every line a native command writes to stderr into an error
+    record, and under 'Stop' the first one ends the script. docker writes its
+    progress there, so every deploy from here died at the first docker call —
+    the build, or copying the backup out — while working fine by hand. In a
+    child process that text is only text, and a failure is the exit code.
+#>
+function Invoke-Child {
+    param([string]$Script)
+    $path = Join-Path $PSScriptRoot $Script
+    $saved = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $lines = @(& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $path 2>&1 | ForEach-Object { "$_" })
+        $code = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $saved
+    }
+    New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
+    $lines | Add-Content -Path $LogFile
+    $lines | ForEach-Object { Write-Host $_ }
+    return @{ Code = $code; Lines = $lines }
+}
+
 function Invoke-DeployCheck {
     & git fetch --quiet origin Main
     if ($LASTEXITCODE -ne 0) {
@@ -210,23 +242,17 @@ function Invoke-DeployCheck {
 
     Write-Log "Deploying $short."
     # update.ps1 does the rest: backup, pull, rebuild, health check, rollback,
-    # and the lock that stops two of these overlapping. It reports failure by
-    # throwing, which would otherwise end this script before anything is logged.
-    $failure = $null
-    try {
-        & (Join-Path $PSScriptRoot 'update.ps1') 2>&1 | Tee-Object -FilePath $LogFile -Append
-        if ($LASTEXITCODE -ne 0 -and $null -ne $LASTEXITCODE) { $failure = "exit code $LASTEXITCODE" }
-    } catch {
-        $failure = $_.Exception.Message
-    }
+    # and the lock that stops two of these overlapping.
+    $run = Invoke-Child 'update.ps1'
+    $failure = if ($run.Code -eq 0) { $null } else { ($run.Lines | Where-Object { $_ -match '\S' } | Select-Object -Last 1) }
     if (-not $failure) {
         Write-Log "Deployed $short."
         if (Test-Path $failedFile) { Remove-Item $failedFile -Force }
-    } elseif ($failure -match 'already running') {
+    } elseif ($run.Lines -match 'already running') {
         # Another update holds the lock: nothing is wrong with the commit.
-        Write-Log "Deploy of $short deferred: $failure"
+        Write-Log "Deploy of $short deferred: another update is running."
     } else {
-        Write-Log "Deploy of $short failed: $failure"
+        Write-Log "Deploy of $short failed (exit code $($run.Code)): $failure"
         New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
         Set-Content -Path $failedFile -Value $remote
     }
@@ -234,8 +260,8 @@ function Invoke-DeployCheck {
 
 function Invoke-Collection {
     Write-Log 'Collecting.'
-    & (Join-Path $PSScriptRoot 'collect.ps1') 2>&1 | Tee-Object -FilePath $LogFile -Append
-    if ($LASTEXITCODE -ne 0) { Write-Log "Collection failed with exit code $LASTEXITCODE." }
+    $run = Invoke-Child 'collect.ps1'
+    if ($run.Code -ne 0) { Write-Log "Collection failed with exit code $($run.Code)." }
 }
 
 function Install-Tasks {

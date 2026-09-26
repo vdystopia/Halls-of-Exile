@@ -107,8 +107,10 @@ try {
     $healthUrl = "http://127.0.0.1:$port/api/health"
     $previousCommit = (git rev-parse HEAD).Trim()
 
-    docker image inspect $Image *> $null
-    $hadImage = $LASTEXITCODE -eq 0
+    # `image ls -q` prints the id or nothing, and never writes to stderr. Silencing
+    # `image inspect` with `*> $null` instead is fatal in Windows PowerShell 5.1
+    # under 'Stop' the first time there is no image to inspect.
+    $hadImage = -not [string]::IsNullOrWhiteSpace((docker image ls -q $Image))
     if ($hadImage) { docker tag $Image $RollbackImage | Out-Null }
 
     # --- backup ------------------------------------------------------------------

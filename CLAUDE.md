@@ -711,6 +711,16 @@ and its payload is stored in `characters.source_payload` for the same reason.
   deploying nothing while looking healthy, which is the failure worth shouting about. The
   status is read anonymously, which is 60 requests an hour per address and far more than the
   few this needs; `GITHUB_TOKEN` in the environment lifts it if that is ever the obstacle.
+  **The watcher runs `update.ps1` and `collect.ps1` as child processes (`Invoke-Child`), never
+  `& script 2>&1`.** In Windows PowerShell 5.1, redirecting a native command's stderr — `2>&1`,
+  `2>$null`, `*>$null`, or merging a whole script's error stream — turns every line it writes
+  there into an error record, and under `'Stop'` the first one ends the script. docker writes its
+  progress to stderr, so every watcher deploy died at the first docker call while working by hand;
+  it was found when the first deploy of Main was run that way. In a child process the output is
+  only text and failure is the exit code. So inside these scripts, never silence a native command
+  by redirecting its stderr: pipe stdout to `Out-Null`, or ask a question that prints nothing on
+  stderr (`docker image ls -q` rather than `docker image inspect *> $null`). To run `update.ps1`
+  from a session, run it the same way: `powershell -NoProfile -File .\update.ps1`.
   **A commit that fails to deploy is not retried until Main moves.** It was green in CI and
   failed here, so it will fail again, and after the rollback HEAD is behind Main once more — the
   watcher used to redeploy it every tick, a backup and a full rebuild each time. It records the
