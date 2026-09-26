@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AscendancyPortrait } from "@/components/AscendancyPortrait";
+import { ascendancyPortrait } from "@/lib/games/ascendancy";
 import { LeagueLogo } from "@/components/LeagueLogo";
 import { CharacterAdmin } from "@/components/CharacterAdmin";
 import { CopyButton } from "@/components/CopyButton";
@@ -56,6 +57,9 @@ export default async function CharacterPage({ params }: Props) {
   const skillName = buildSkill(league.game, character.skillGem, character.mainSkill);
   const art = skillName ? skillArt(league.game, skillName) : null;
   const nameStyle = classNameStyle(league.game, character.className);
+  // The header's border and the portrait's frame take the portrait's strongest
+  // colour, as a banner and a player tile take theirs.
+  const accent = ascendancyPortrait(league.game, character.ascendancy, character.className)?.accent ?? null;
   // Which generated tree this build is drawn on, resolved here because the
   // index of what has been generated is server-side data.
   const treeNodes = tree?.nodes ?? [];
@@ -85,7 +89,7 @@ export default async function CharacterPage({ params }: Props) {
         </Link>
       </div>
 
-      <header className="panel p-6">
+      <header className="panel p-6" style={accent ? { borderColor: accent } : undefined}>
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div className="flex flex-wrap items-start gap-4">
             {/* The class portrait, not the tree's emblem: see AscendancyPortrait.
@@ -97,6 +101,7 @@ export default async function CharacterPage({ params }: Props) {
               ascendancy={character.ascendancy}
               characterClass={character.className}
               height={PORTRAIT_HEIGHT}
+              framed
             />
             {/* Name, level and class, the skill: nothing else. Prose from the
                 record ("chaos dot") and build details belong elsewhere; only a
