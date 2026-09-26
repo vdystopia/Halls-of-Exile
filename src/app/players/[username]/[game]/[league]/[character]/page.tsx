@@ -393,6 +393,7 @@ export default async function CharacterPage({ params }: Props) {
         notes={character.notes}
         played={formatPlayedExact(character.playedMinutes)}
         isFavorite={character.isFavorite === 1}
+        failed={character.failed}
       />
     </div>
   );

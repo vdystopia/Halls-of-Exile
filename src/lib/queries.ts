@@ -59,8 +59,10 @@ function mapCharacter(row: Row): Character {
     notes: row.notes,
     playedMinutes: row.played_minutes ?? null,
     isFavorite: row.is_favorite,
+    failed: row.failed === 1,
     pobCode: row.pob_code,
     pobUrl: row.pob_url,
+    hasExport: row.source_payload !== null && row.source_payload !== undefined,
     createdAt: row.created_at,
     data,
   };

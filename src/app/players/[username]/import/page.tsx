@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ImportExportForm } from "@/components/ImportExportForm";
+import { RecordImportForm } from "@/components/RecordImportForm";
 import { skillNamesFor } from "@/lib/games/skills";
 import { getUser, listAllLeagues } from "@/lib/queries";
 
@@ -52,6 +53,17 @@ export default async function ImportPage({ params }: Props) {
         leagues={leagues}
         skills={{ poe1: skillNamesFor("poe1"), poe2: skillNamesFor("poe2") }}
       />
+
+      <header className="panel p-6">
+        <h2 className="display text-xl">Or start from the record</h2>
+        <p className="mt-2 max-w-2xl text-sm text-parchment/80">
+          For a backlog, upload the spreadsheet first: /played, notes, the build and the league for every character,
+          under the name the game knows it by. The exports above then find each character by name and fill in its
+          gear, and the record&rsquo;s own answers are kept. Every character is tiered from what it holds — see the
+          character list on the player page.
+        </p>
+      </header>
+      <RecordImportForm username={user.username} />
     </div>
   );
 }

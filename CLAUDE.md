@@ -704,6 +704,27 @@ and its payload is stored in `characters.source_payload` for the same reason.
   it as finished. `readAccountExport` drops them into `emptyCharacters`, and the upload page names
   them. The Path of Exile 2 exporter has no fallback account either: it asks, or exports nothing,
   since the account in the file decides whose characters they are.
+- **The initial population starts from the record, and every character carries a tier.** The
+  backlog comes in two halves: the owner's spreadsheet (/played, notes, the build, the league,
+  under the name the game knows the character by) and the game's exports. The upload page takes
+  the spreadsheet (`RecordImportForm`, CSV or tab-separated, headers in any of the spellings in
+  `COLUMNS` in `src/lib/record.ts`) and applies it with the atlas importer's rules: match by
+  league and name, create or update a hand-written character in place, and around a character
+  that holds a build only fill the blank record fields and set the failed mark. A name archived
+  in another league of the same game is skipped and named, not moved or duplicated; a league the
+  catalogue lacks is skipped and named. The exports then find each character by name and fill
+  its gear, keeping the record's answers, as they always did. **The tier is derived, never
+  stored** (`characterTier` in `src/lib/tier.ts`), so a character moves up the moment it
+  qualifies: tier 3 while /played, notes, the main skill or a real league is missing, or nothing
+  has been imported; tier 2 with all of those and the game's export; tier 1 with all of those and
+  a Path of Building code, which outranks an export (a code-only character, the ongoing case, is
+  tier 1). What an export cannot carry — Path of Exile 2's tree and gems — never counts against
+  it. The owner calls these "class 1/2/3"; the code says tier because class is Witch. The player
+  page's "All characters" section is `CharacterMatrix`: every character with its tier, what it is
+  still missing, and filters by tier, game and failed, in the browser. **Failed is a mark on the
+  character** (`characters.failed`, migrated): set from the sheet's status column or a build
+  written "failed …" (the record's own convention, also honoured by `seed:atlas`), editable under
+  Manage this character, shown as a tag and filterable out, never hidden by default.
 - **A name belongs to one character per player per game.** The game enforces it per realm, so a
   second one is the same character added twice or a mistake. `findNamesake` (case-insensitive,
   within the game) is what every writer asks: the add form answers a clash with a warning naming

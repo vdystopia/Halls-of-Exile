@@ -5,12 +5,14 @@ import { BuildCard } from "@/components/BuildCard";
 import { BuildRanking } from "@/components/BuildRanking";
 import { ClassRollup } from "@/components/ClassRollup";
 import { CharacterBanner } from "@/components/CharacterBanner";
+import { CharacterMatrix, type MatrixRow } from "@/components/CharacterMatrix";
 import { LeagueIndex } from "@/components/LeagueIndex";
 import { PlayerAdmin } from "@/components/PlayerAdmin";
 import { PlayerPicture } from "@/components/PlayerPicture";
 import { avatarUrl, playerAccent } from "@/lib/avatars";
 import { Section } from "@/components/Section";
-import { formatPlayedTotal } from "@/lib/format";
+import { classLine, formatPlayed, formatPlayedTotal } from "@/lib/format";
+import { characterTier } from "@/lib/tier";
 import { buildSkill, skillArt } from "@/lib/games/skills";
 import { GAME_NAMES } from "@/lib/games/types";
 import { rollupByClass, rollupBySkill } from "@/lib/metrics";
@@ -71,6 +73,31 @@ export default async function PlayerPage({ params, searchParams }: Props) {
     .sort((a, b) => (b.playedMinutes ?? 0) - (a.playedMinutes ?? 0))
     .slice(0, 3);
   const level100 = characters.filter((c) => c.level === 100);
+  // Every character with its tier, for the matrix. Resolved here so the client
+  // component gets plain rows and reads no game module.
+  const matrix: MatrixRow[] = characters.map((c) => {
+    const report = characterTier({ ...c, leagueSlug: c.leagueSlug });
+    return {
+      id: c.id,
+      href: `/players/${user.username}/${c.game}/${c.leagueSlug}/${c.slug}`,
+      name: c.name,
+      game: c.game,
+      gameName: GAME_NAMES[c.game],
+      leagueTitle: c.leagueTitle,
+      classLine: classLine(c.className, c.ascendancy),
+      level: c.level,
+      // The gem where there is one, else the record's own words; "Unknown" is neither.
+      skill: buildSkill(c.game, c.skillGem, c.mainSkill) ?? (c.mainSkill && c.mainSkill !== "Unknown" ? c.mainSkill : null),
+      played: formatPlayed(c.playedMinutes),
+      tier: report.tier,
+      missing: report.missing,
+      failed: c.failed,
+    };
+  });
+  const tierCounts = matrix.reduce(
+    (counts, row) => ({ ...counts, [row.tier]: counts[row.tier] + 1 }),
+    { 1: 0, 2: 0, 3: 0 } as Record<1 | 2 | 3, number>,
+  );
   // One banner per row, in every list here: each is the character page's
   // header, compressed, and three abreast would leave no room for its name.
   const banners = (list: typeof characters) => (
@@ -171,6 +198,19 @@ export default async function PlayerPage({ params, searchParams }: Props) {
       {recent.length ? (
         <Section title="Pinned & most recent">
           {banners(recent)}
+        </Section>
+      ) : null}
+
+      {matrix.length ? (
+        <Section
+          title="All characters"
+          aside={
+            <span className="text-muted">
+              tier 1 · {tierCounts[1]} &nbsp; tier 2 · {tierCounts[2]} &nbsp; tier 3 · {tierCounts[3]}
+            </span>
+          }
+        >
+          <CharacterMatrix rows={matrix} />
         </Section>
       ) : null}
 

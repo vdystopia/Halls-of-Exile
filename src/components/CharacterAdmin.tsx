@@ -29,6 +29,7 @@ export function CharacterAdmin({
   notes,
   played,
   isFavorite,
+  failed,
 }: {
   username: string;
   game: string;
@@ -54,6 +55,7 @@ export function CharacterAdmin({
   notes: string | null;
   played: string | null;
   isFavorite: boolean;
+  failed: boolean;
 }) {
   const [state, formAction] = useActionState(updateCharacterAction, INITIAL);
   // The class picked in the form, which narrows the ascendancy list. It follows
@@ -76,7 +78,7 @@ export function CharacterAdmin({
   // after its action, but a select resets to the option it was first rendered
   // with, not to the saved one: the form went on showing the old class after a
   // save, and saving again wrote the old class back.
-  const saved = JSON.stringify([name, level, className, ascendancy, mainSkill, skillGem, leagueModifiers, notes, played, isFavorite, league]);
+  const saved = JSON.stringify([name, level, className, ascendancy, mainSkill, skillGem, leagueModifiers, notes, played, isFavorite, failed, league]);
 
   return (
     <details className="panel group">
@@ -262,6 +264,10 @@ export function CharacterAdmin({
           <label className="flex items-center gap-2 text-sm text-muted">
             <input type="checkbox" name="favorite" defaultChecked={isFavorite} className="accent-[#c8aa6e]" />
             Pinned to the top of the league
+          </label>
+          <label className="flex items-center gap-2 text-sm text-muted">
+            <input type="checkbox" name="failed" defaultChecked={failed} className="accent-[#c8aa6e]" />
+            Failed — never got where it was going. Stays in the archive; the character list can filter it out.
           </label>
           <FormError message={state.error} />
           <FormSuccess message={state.ok ? "Character updated." : undefined} />

@@ -314,8 +314,15 @@ export type Character = {
   /** In-game /played time in minutes, entered by hand — no export carries it. */
   playedMinutes: number | null;
   isFavorite: number;
+  /**
+   * Marked failed in the owner's record: a character that never got where it
+   * was going. Kept in the archive like any other, and filterable out of a list.
+   */
+  failed: boolean;
   pobCode: string | null;
   pobUrl: string | null;
+  /** Whether an account export is stored underneath the build (`source_payload`). */
+  hasExport: boolean;
   createdAt: string;
   data: BuildData;
 };

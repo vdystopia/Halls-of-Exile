@@ -79,6 +79,8 @@ CREATE TABLE IF NOT EXISTS characters (
   notes        TEXT,
   played_minutes INTEGER,
   is_favorite  INTEGER NOT NULL DEFAULT 0,
+  -- Marked failed in the owner's record; filterable, never hidden by default.
+  failed       INTEGER NOT NULL DEFAULT 0,
   pob_code     TEXT,
   pob_url      TEXT,
   data         TEXT NOT NULL DEFAULT '{}',
@@ -118,6 +120,7 @@ function migrate(db: Database.Database) {
     ["characters", "skill_gem", "TEXT"],
     ["characters", "league_modifiers", "TEXT"],
     ["avatars", "accent", "TEXT"],
+    ["characters", "failed", "INTEGER NOT NULL DEFAULT 0"],
   ];
   for (const [table, column, definition] of additions) {
     const columns = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];

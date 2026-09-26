@@ -17,7 +17,8 @@ import {
 } from "./import";
 import { parsePlayed } from "./format";
 import { formatLeagueModifiers } from "./league-modifiers";
-import { findNamesake, getLeague, getUser } from "./queries";
+import { findNamesake, getLeague, getUser, listAllLeagues } from "./queries";
+import { applyRecord, readRecordSheet, type RecordResult } from "./record";
 import { resyncLeagueOrder } from "./db";
 import type { BuildData } from "./types";
 import { usernameProblem } from "./usernames";
@@ -328,6 +329,7 @@ export async function updateCharacterAction(_prev: ActionState, formData: FormDa
   const notes = text(formData, "notes");
   const playedMinutes = parsePlayed(text(formData, "played"));
   const favorite = formData.get("favorite") ? 1 : 0;
+  const failed = formData.get("failed") ? 1 : 0;
 
   // A new name or a new league is a new address. The slug follows the name, so
   // a renamed character is not left at a URL spelling its old one.
@@ -355,6 +357,7 @@ export async function updateCharacterAction(_prev: ActionState, formData: FormDa
        notes          = ?,
        played_minutes = ?,
        is_favorite    = ?,
+       failed         = ?,
        pob_code    = ?,
        pob_url     = CASE WHEN ? THEN ? ELSE pob_url END,
        data        = COALESCE(?, data),
@@ -374,6 +377,7 @@ export async function updateCharacterAction(_prev: ActionState, formData: FormDa
     notes || null,
     playedMinutes,
     favorite,
+    failed,
     code,
     url !== undefined ? 1 : 0,
     url ?? null,
@@ -639,6 +643,31 @@ export async function deleteLeagueAction(_prev: ActionState, formData: FormData)
  * because the ingest endpoint does the same work without a person watching.
  */
 export type ImportState = ActionState & { plan?: ImportPlan; imported?: number; created?: number };
+
+export type RecordState = ActionState & { result?: RecordResult; problems?: string[] };
+
+/**
+ * The owner's record as a spreadsheet: the first step of the initial
+ * population, before any export. See `src/lib/record.ts` for the rules; the
+ * upshot is that it creates and updates hand-written characters and only ever
+ * fills blanks on one that holds a build.
+ */
+export async function importRecordAction(_prev: RecordState, formData: FormData): Promise<RecordState> {
+  const user = getUser(text(formData, "username"));
+  if (!user) return { error: "Unknown player." };
+  const file = formData.get("record");
+  if (!(file instanceof File) || file.size === 0) return { error: "Choose the spreadsheet first (CSV, or tab-separated)." };
+  if (file.size > 4 * 1024 * 1024) return { error: "That file is over 4 MB, which is not a character record." };
+
+  const sheet = readRecordSheet(await file.text(), { player: user.username });
+  if (!sheet.rows.length) return { error: sheet.problems[0] ?? "No characters in the file.", problems: sheet.problems };
+
+  const result = applyRecord(user.id, sheet.rows, listAllLeagues());
+  revalidatePath(`/players/${user.username}`);
+  revalidatePath("/players");
+  revalidatePath("/");
+  return { ok: true, result, problems: sheet.problems };
+}
 
 /** The upload itself, or the staged copy of one already looked at. */
 async function readUpload(formData: FormData): Promise<{ exported: AccountExport; token: string }> {
