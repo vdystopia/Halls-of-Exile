@@ -7,7 +7,14 @@ import {
   ascendancyIcon as ascendancyIconFor,
   ascendancyPortrait as ascendancyPortraitFor,
 } from "../src/lib/games/ascendancy";
-import { ascendancyIcon, ascendancyPortrait } from "../src/lib/games/poe1/ascendancy";
+import { ASCENDANCIES } from "../src/lib/leagues";
+import {
+  ALTERNATE_ASCENDANCIES,
+  ascendancyAvatar,
+  ascendancyIcon,
+  ascendancyPortrait,
+} from "../src/lib/games/poe1/ascendancy";
+import { TREE_DATA } from "../src/lib/games/poe1/tree-data";
 import { ASCENDANCIES as POE2_ASCENDANCIES } from "../src/lib/games/poe2/classes";
 
 test("an ascendancy resolves to a crop of the sheet", () => {
@@ -78,6 +85,57 @@ test("no ascendancy and an unknown one both resolve to no portrait", () => {
   assert.equal(ascendancyPortrait(null), null);
   assert.equal(ascendancyPortrait(""), null);
   assert.equal(ascendancyPortrait("Witch"), null, "a base class is not an ascendancy");
+  assert.equal(ascendancyAvatar("Witch"), null);
+  assert.equal(ascendancyIcon("Witch"), null);
+});
+
+/**
+ * The Phrecia-style events replace every ascendancy with one the game draws no
+ * emblem for and the wiki holds no art for, so a Bog Shaman is shown as the
+ * Witch it is. The table of which class each belongs to is the wiki's
+ * (Legacy of Phrecia, "Ascendancy classes"); the alternate tree data lists the
+ * same nineteen names, each in the slot of the ascendancy it replaced, and the
+ * two must agree about the class.
+ */
+test("every event ascendancy is in the table, under the class of the ascendancy it replaced", () => {
+  const replaced = TREE_DATA["3.28.alternate"].ascendancies as Record<string, string>;
+  const classOf = (ascendancy: string) =>
+    Object.entries(ASCENDANCIES).find(([, list]) => list.includes(ascendancy))?.[0];
+  assert.equal(Object.keys(replaced).length, 19);
+  assert.deepEqual(Object.keys(ALTERNATE_ASCENDANCIES).sort(), Object.keys(replaced).sort());
+  for (const [name, original] of Object.entries(replaced)) {
+    assert.equal(ALTERNATE_ASCENDANCIES[name], classOf(original), `${name} replaced ${original}`);
+  }
+});
+
+test("an event ascendancy is drawn as its class, in every size", () => {
+  for (const [name, className] of Object.entries(ALTERNATE_ASCENDANCIES)) {
+    const portrait = ascendancyPortrait(name);
+    const avatar = ascendancyAvatar(name);
+    const icon = ascendancyIcon(name);
+    assert.ok(portrait && avatar && icon, `no picture for ${name}`);
+    assert.equal(portrait.src, `/ascendancy/class/${className.toLowerCase()}.webp`);
+    assert.deepEqual(avatar, portrait, "the class picture is already a close crop of the face");
+    const file = path.join(process.cwd(), "public", portrait.src.replace(/^\//, ""));
+    assert.ok(fs.existsSync(file), `${portrait.src} is indexed but not on disk`);
+    // No emblem exists, so the card crops the centre square of the same picture.
+    assert.equal(icon.src, portrait.src);
+    assert.equal(icon.w, icon.h);
+    assert.equal(icon.w, Math.min(portrait.width, portrait.height));
+    assert.ok(icon.x >= 0 && icon.x + icon.w <= icon.sheetWidth);
+    assert.ok(icon.y >= 0 && icon.y + icon.h <= icon.sheetHeight);
+  }
+  assert.equal(ascendancyPortrait("Bog Shaman")?.src, "/ascendancy/class/witch.webp");
+  // Through the per-game dispatch, and never for the other game.
+  assert.equal(ascendancyPortraitFor("poe1", "Scavenger")?.src, "/ascendancy/class/scion.webp");
+  assert.equal(ascendancyPortraitFor("poe2", "Scavenger"), null);
+});
+
+/** A real ascendancy never falls through to a class picture. */
+test("a regular ascendancy keeps its own art", () => {
+  assert.equal(ascendancyPortrait("Necromancer")?.src, "/ascendancy/necromancer.webp");
+  assert.equal(ascendancyAvatar("Necromancer")?.src, "/ascendancy/avatar/necromancer.webp");
+  assert.equal(ascendancyIcon("Necromancer")?.src, "/ascendancy.webp");
 });
 
 /**

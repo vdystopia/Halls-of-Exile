@@ -1,0 +1,39 @@
+{
+  "portraits": {
+    "Duelist": {
+      "slug": "duelist",
+      "width": 137,
+      "height": 105
+    },
+    "Marauder": {
+      "slug": "marauder",
+      "width": 137,
+      "height": 105
+    },
+    "Ranger": {
+      "slug": "ranger",
+      "width": 137,
+      "height": 105
+    },
+    "Scion": {
+      "slug": "scion",
+      "width": 137,
+      "height": 105
+    },
+    "Shadow": {
+      "slug": "shadow",
+      "width": 137,
+      "height": 105
+    },
+    "Templar": {
+      "slug": "templar",
+      "width": 137,
+      "height": 105
+    },
+    "Witch": {
+      "slug": "witch",
+      "width": 137,
+      "height": 105
+    }
+  }
+}

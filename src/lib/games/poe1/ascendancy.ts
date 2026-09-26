@@ -1,6 +1,60 @@
 import index from "./ascendancy-icons.json";
 import avatarIndex from "./ascendancy-avatars.json";
 import portraitIndex from "./ascendancy-portraits.json";
+import classIndex from "./class-portraits.json";
+
+/**
+ * The Legacy of Phrecia ascendancies, by the class each belongs to.
+ *
+ * The Phrecia-style events (Legacy of Phrecia, its second run, Return of the
+ * Ancestors) replace all nineteen ascendancies with these. The game draws no
+ * emblem for them on the tree and the wiki holds no key art for them, so a
+ * character from one of those events is shown as its base class instead: a
+ * Bog Shaman is a Witch, and gets the Witch's picture. The table is the wiki's,
+ * https://www.poewiki.net/wiki/Legacy_of_Phrecia#Ascendancy_classes, and agrees
+ * with Path of Building's alternate tree data, where each of these occupies
+ * the slot of the ascendancy it replaced (`tree-data/3.28.alternate.json`).
+ *
+ * A name is looked up here only after the regular ascendancies, so nothing
+ * here can shadow a real one.
+ */
+export const ALTERNATE_ASCENDANCIES: Record<string, string> = {
+  Antiquarian: "Marauder",
+  Behemoth: "Marauder",
+  "Ancestral Commander": "Marauder",
+  Gambler: "Duelist",
+  Paladin: "Duelist",
+  Aristocrat: "Duelist",
+  "Servant of Arakaali": "Shadow",
+  Surfcaster: "Shadow",
+  "Blind Prophet": "Shadow",
+  "Daughter of Oshabi": "Ranger",
+  Whisperer: "Ranger",
+  Wildspeaker: "Ranger",
+  Harbinger: "Witch",
+  Herald: "Witch",
+  "Bog Shaman": "Witch",
+  "Architect of Chaos": "Templar",
+  Polytheist: "Templar",
+  Puppeteer: "Templar",
+  Scavenger: "Scion",
+};
+
+const CLASS_PORTRAITS = classIndex.portraits as Record<string, { slug: string; width: number; height: number }>;
+
+/**
+ * The base class's own picture, "<Class> character class.png" on the wiki: a
+ * 137x105 close crop of the face, the same shape as an avatar, fetched by
+ * `npm run ascendancy:art -- --game poe1-class` into public/ascendancy/class/.
+ * Only an alternate ascendancy reaches it; a base class named on its own is
+ * still not an ascendancy and resolves to nothing.
+ */
+function classPortrait(ascendancy: string): AscendancyPortrait | null {
+  const className = ALTERNATE_ASCENDANCIES[ascendancy];
+  const entry = className ? CLASS_PORTRAITS[className] : undefined;
+  if (!entry) return null;
+  return { src: `/ascendancy/class/${entry.slug}.webp`, width: entry.width, height: entry.height };
+}
 
 /** Where the emblem sits on the sheet, and how big the sheet is. */
 export type AscendancyIcon = {
@@ -25,9 +79,23 @@ const ICONS = index.icons as Record<string, { x: number; y: number; w: number; h
  * has no emblem to show, and neither does a name the tree does not carry.
  */
 export function ascendancyIcon(ascendancy?: string | null): AscendancyIcon | null {
-  const box = ascendancy ? ICONS[ascendancy.trim()] : undefined;
-  if (!box) return null;
-  return { src: ASCENDANCY_SHEET, ...box, sheetWidth: index.sheetWidth, sheetHeight: index.sheetHeight };
+  const name = ascendancy?.trim();
+  const box = name ? ICONS[name] : undefined;
+  if (box) return { src: ASCENDANCY_SHEET, ...box, sheetWidth: index.sheetWidth, sheetHeight: index.sheetHeight };
+  // An event ascendancy has no emblem on the sheet, so its card shows the
+  // centre square of its class's picture, as a Path of Exile 2 card does.
+  const portrait = name ? classPortrait(name) : null;
+  if (!portrait) return null;
+  const side = Math.min(portrait.width, portrait.height);
+  return {
+    src: portrait.src,
+    x: Math.round((portrait.width - side) / 2),
+    y: Math.round((portrait.height - side) / 2),
+    w: side,
+    h: side,
+    sheetWidth: portrait.width,
+    sheetHeight: portrait.height,
+  };
 }
 
 export function ascendancySheetUrl(): string {
@@ -60,8 +128,9 @@ const PORTRAITS = portraitIndex.portraits as Record<string, { slug: string; widt
  * Path of Building that exported it. Both resolve to the one file.
  */
 export function ascendancyPortrait(ascendancy?: string | null): AscendancyPortrait | null {
-  const entry = ascendancy ? PORTRAITS[ascendancy.trim()] : undefined;
-  if (!entry) return null;
+  const name = ascendancy?.trim();
+  const entry = name ? PORTRAITS[name] : undefined;
+  if (!entry) return name ? classPortrait(name) : null;
   return { src: `/ascendancy/${entry.slug}.webp`, width: entry.width, height: entry.height };
 }
 
@@ -73,7 +142,9 @@ const AVATARS = avatarIndex.portraits as Record<string, { slug: string; width: n
  * size. Indexed under both of a renamed ascendancy's names, like the others.
  */
 export function ascendancyAvatar(ascendancy?: string | null): AscendancyPortrait | null {
-  const entry = ascendancy ? AVATARS[ascendancy.trim()] : undefined;
-  if (!entry) return null;
+  const name = ascendancy?.trim();
+  const entry = name ? AVATARS[name] : undefined;
+  // The class picture is already a close crop of the face, so it is the avatar too.
+  if (!entry) return name ? classPortrait(name) : null;
   return { src: `/ascendancy/avatar/${entry.slug}.webp`, width: entry.width, height: entry.height };
 }

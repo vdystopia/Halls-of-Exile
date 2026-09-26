@@ -331,8 +331,14 @@ and its payload is stored in `characters.source_payload` for the same reason.
   A build names its ascendancy as the game shows it and the tree marks passives by id — Bog
   Shaman is `Necromancer`'s slot there, and on 3.29 Warden is `Raider` while `Warden` is the
   Warden of the Maji — so each version's tree data carries `ascendancies` (name → id) and
-  `treeAscendancy(name, drawnVersion)` reveals the id. Alternate ascendancies have no portrait
-  or emblem; the header draws none.
+  `treeAscendancy(name, drawnVersion)` reveals the id. **An alternate ascendancy is drawn as its
+  base class.** The game has no emblem for them and the wiki no key art, so `ALTERNATE_ASCENDANCIES`
+  in `poe1/ascendancy.ts` (the wiki's table on the Legacy of Phrecia page; a test checks it against
+  the alternate tree data, where each sits in the slot of the ascendancy it replaced) maps each to
+  its class, and the class's own wiki picture — `npm run ascendancy:art -- --game poe1-class`, a
+  137x105 face crop into `public/ascendancy/class/`, committed — serves as portrait, avatar and
+  card icon (centre square), the way a Path of Exile 2 portrait does. A base class named on its
+  own is still no ascendancy and draws nothing.
 - **Passives are placed by one shared rule, `tree-geometry.ts`, and 16- and 40-slot orbits are
   uneven.** Since 3.17 the game puts a 16-slot orbit's passives at every 30 and 45 degrees and a
   40-slot orbit's at every 10 and 45 — Path of Building's `CalcOrbitAngles`, from the export's own

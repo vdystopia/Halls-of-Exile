@@ -5,7 +5,7 @@
  *   npm run ascendancy:art                 # fetch anything missing
  *   npm run ascendancy:art -- --force      # re-download everything
  *   npm run ascendancy:art -- --dry-run    # list what would be fetched
- *   npm run ascendancy:art -- --game poe2  # one game only (poe1, poe1-avatar, poe2)
+ *   npm run ascendancy:art -- --game poe2  # one set only (poe1, poe1-avatar, poe1-class, poe2)
  *
  * This is the wide key art the game shows on the ascendancy selection screen —
  * not the round emblem in `ascendancy-icons.json`. The emblem is cropped out of
@@ -35,6 +35,14 @@
  * for the emblem on a character card. Because the sizes differ, every index
  * records each file's own size and the header draws each at its own shape.
  *
+ * Path of Exile 1's seven base classes have a picture of their own on the wiki,
+ * "<Class> character class.png", a 137x105 close crop of the face. It is what
+ * stands in for a Legacy of Phrecia ascendancy — Bog Shaman, Surfcaster,
+ * Scavenger and the rest, which the wiki draws no art for at all — so a
+ * character from one of those events is shown as the class its ascendancy
+ * belongs to (`ALTERNATE_ASCENDANCIES` in poe1/ascendancy.ts). One file serves
+ * as portrait, avatar and emblem, the way a Path of Exile 2 portrait does.
+ *
  * Path of Exile 1 also has an avatar per ascendancy, "<Ascendancy> avatar.png":
  * a 135x105 close crop of the face, the same shape as Path of Exile 2's
  * portraits, which a compact character banner draws where the header draws the
@@ -51,6 +59,7 @@ import path from "node:path";
 import sharp from "sharp";
 import icons from "../src/lib/games/poe1/ascendancy-icons.json";
 import { ASCENDANCIES as POE2_ASCENDANCIES } from "../src/lib/games/poe2/classes";
+import { CLASSES as POE1_CLASSES } from "../src/lib/leagues";
 
 type Source = {
   api: string;
@@ -78,6 +87,14 @@ const GAMES: Record<string, Source> = {
     suffix: /_avatar$/i,
     output: path.join(process.cwd(), "public", "ascendancy", "avatar"),
     index: path.join(process.cwd(), "src", "lib", "games", "poe1", "ascendancy-avatars.json"),
+  },
+  "poe1-class": {
+    api: "https://www.poewiki.net/w/api.php",
+    names: [...POE1_CLASSES].sort(),
+    title: (name) => `File:${name} character class.png`,
+    suffix: /_character_class$/i,
+    output: path.join(process.cwd(), "public", "ascendancy", "class"),
+    index: path.join(process.cwd(), "src", "lib", "games", "poe1", "class-portraits.json"),
   },
   poe2: {
     api: "https://www.poe2wiki.net/api.php",
