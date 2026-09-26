@@ -1,5 +1,4 @@
-import { SOCKET_COLOR_CLASS } from "@/lib/games/poe1/items";
-import type { SectionKind, TooltipLine, TooltipSection } from "@/lib/games/poe1/tooltip";
+import { SOCKET_COLOR_CLASS, type SectionKind, type TooltipLine, type TooltipSection } from "@/lib/games/shared/display";
 import type { ParsedItem } from "@/lib/types";
 
 const RARITY_COLOUR: Record<string, string> = {

@@ -288,7 +288,8 @@ export function parseItem(raw: string, id: number): ParsedItem {
 }
 
 /** A stored mod split back into its text and the tags the parser wrote on it. */
-export type ModParts = { text: string; tags: string[] };
+export type { ModParts } from "../shared/display";
+import type { ModParts } from "../shared/display";
 
 /**
  * Mods are stored as strings; a tagged one carries its tags after a "·"
@@ -363,25 +364,4 @@ export const PAPER_DOLL: DollCell[] = [
 
 export const FLASK_SLOTS = ["Flask 1", "Flask 2", "Flask 3", "Flask 4", "Flask 5"];
 
-export const SOCKET_COLOR_CLASS: Record<string, string> = {
-  R: "bg-socket-r",
-  G: "bg-socket-g",
-  B: "bg-socket-b",
-  W: "bg-socket-w",
-  A: "bg-socket-a",
-  D: "bg-socket-d",
-};
-
-export function rarityClass(rarity: string): string {
-  switch (rarity.toUpperCase()) {
-    case "UNIQUE":
-    case "RELIC":
-      return "text-rarity-unique";
-    case "RARE":
-      return "text-rarity-rare";
-    case "MAGIC":
-      return "text-rarity-magic";
-    default:
-      return "text-rarity-normal";
-  }
-}
+export { rarityClass, SOCKET_COLOR_CLASS } from "../shared/display";

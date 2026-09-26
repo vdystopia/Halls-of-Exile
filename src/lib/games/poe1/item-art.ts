@@ -1,19 +1,7 @@
 import index from "./item-art-index.json";
 
-export type ItemArt = {
-  /** Path under public/, e.g. /items/Art/2DItems/Rings/AmethystRing.png */
-  src: string;
-  /** Inventory footprint, which is the aspect the art is drawn at. */
-  width: number;
-  height: number;
-  /**
-   * Flask art ships as a horizontal sheet of three layers — glass, metal frame
-   * and liquid — that the game composites into one flask. Every flask image is
-   * such a sheet and nothing else is, verified against all 512 downloaded
-   * images. Anything else is a single frame.
-   */
-  frames: number;
-};
+export type { ItemArt } from "../shared/display";
+import type { ItemArt } from "../shared/display";
 
 /** A unique adds nothing to its base but its own picture. */
 export type UniqueEntry = { art: string; w: number; h: number };

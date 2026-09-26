@@ -1,4 +1,4 @@
-import { attributeRequirementPercent, splitMod, type ModParts } from "./items";
+import { attributeRequirementPercent, splitMod } from "./items";
 import { findItemBase } from "./item-art";
 import type { ParsedItem } from "../../types";
 
@@ -13,20 +13,8 @@ import type { ParsedItem } from "../../types";
  * Item level, base percentiles and the "Fractured Item" label are deliberately
  * never shown.
  */
-export type SectionKind =
-  | "quality"
-  | "anoint"
-  | "special"
-  | "defences"
-  | "sockets"
-  | "requires"
-  | "implicit"
-  | "enchant"
-  | "explicit"
-  | "footer";
-
-export type TooltipLine = ModParts;
-export type TooltipSection = { kind: SectionKind; lines: TooltipLine[] };
+export type { SectionKind, TooltipLine, TooltipSection } from "../shared/display";
+import type { SectionKind, TooltipLine, TooltipSection } from "../shared/display";
 
 const SECTION_ORDER: SectionKind[] = [
   "quality",

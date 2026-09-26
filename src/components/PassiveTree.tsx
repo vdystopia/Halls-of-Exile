@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { ClusterLayout } from "@/lib/games/poe1/clusters";
+import type { ClusterLayout } from "@/lib/games/gear";
 import type { NodeOverride } from "@/lib/types";
 
 /**

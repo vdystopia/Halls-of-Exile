@@ -33,14 +33,7 @@ export const GEM_COLOR_CLASS: Record<GemColor, string> = {
   w: "text-socket-w",
 };
 
-/**
- * Active gems first, supports after them, each in the order the build lists
- * them. Path of Building has no notion of a group's primary skill, and a group
- * of four golems has four equal actives, so nothing is promoted.
- */
-export function orderGems<T extends { support: boolean }>(gems: T[]): T[] {
-  return [...gems.filter((gem) => !gem.support), ...gems.filter((gem) => gem.support)];
-}
+export { orderGems } from "../shared/display";
 
 const ART = artIndex.art as Record<string, string>;
 /**
@@ -95,8 +88,8 @@ export function gemArt(skill?: string | null): GemArt | null {
   return null;
 }
 
-/** The picture, and how many frames are stacked to draw it. */
-export type GemArt = { src: string; name: string; frames: number };
+export type { GemArt } from "../shared/display";
+import type { GemArt } from "../shared/display";
 
 function found(artPath: string, name: string): GemArt {
   return { src: `/items/${artPath}.png`, name, frames: SINGLE_FRAME.has(artPath) ? 1 : 3 };

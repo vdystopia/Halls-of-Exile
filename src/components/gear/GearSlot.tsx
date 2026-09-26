@@ -2,9 +2,7 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { rarityClass } from "@/lib/games/poe1/items";
-import type { ItemArt } from "@/lib/games/poe1/item-art";
-import type { TooltipSection } from "@/lib/games/poe1/tooltip";
+import { rarityClass, type ItemArt, type TooltipSection } from "@/lib/games/shared/display";
 import type { ParsedItem } from "@/lib/types";
 import { ItemTooltip } from "./ItemTooltip";
 import { SlotIcon, type SlotShape } from "./SlotIcon";

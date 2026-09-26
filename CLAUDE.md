@@ -231,9 +231,17 @@ and its payload is stored in `characters.source_payload` for the same reason.
   connects on first use. `next build` imports every route module across one worker per core;
   connecting eagerly raced on the WAL lock and failed the build on machines with enough
   cores. `tests/db.test.ts` fails if importing the query layer creates the file.
-- **Every game's own code lives in `src/lib/games/<game>/`, behind `GameModule`.** The registry
-  in `src/lib/games/index.ts` hands a page or component the module for a game; nothing outside
-  that folder branches on which game it is. Path of Exile and Path of Exile 2 share a vocabulary
+- **Every game's own code lives in `src/lib/games/<game>/`, and pages reach it only through the
+  dispatch modules.** `gear.ts` (drawing a build: doll, art, tooltip, gem colour, stat panels and
+  lists, the tree asset and its layers — clusters, allocation, masteries — and stat labels),
+  `builds.ts` (parsing), `exports.ts` (account exports), `skills.ts`, `classes.ts`,
+  `ascendancy.ts`, `class-colors.ts`: each is keyed by game, and nothing outside `games/` branches
+  on which game it is. Shapes both games are drawn in (art, tooltip sections, stat formatting,
+  gem order, rarity and socket classes) live in `games/shared/`. `tests/game-separation.test.ts`
+  fails if a page or component imports `games/poe1/` or `games/poe2/` directly: the character page
+  once ran Path of Exile 1's cluster, mastery and tree-data code on every Path of Exile 2 build,
+  harmless only because none of it matched. The old `GameModule` registry was never wired up and
+  is gone. Path of Exile and Path of Exile 2 share a vocabulary
   and almost no mechanics, and the subtlest logic here — the implicit boundary, a shield's block,
   attribute scaling — is exactly where one game's rules would silently corrupt the other's
   characters. `PARSER_VERSION` is per game for the same reason.

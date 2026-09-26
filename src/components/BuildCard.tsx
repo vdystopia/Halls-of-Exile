@@ -1,6 +1,6 @@
 import { SkillIcon } from "@/components/SkillIcon";
 import { formatPlayed } from "@/lib/format";
-import type { GemArt } from "@/lib/games/poe1/gems";
+import type { GemArt } from "@/lib/games/shared/display";
 import type { Rollup } from "@/lib/metrics";
 
 /**

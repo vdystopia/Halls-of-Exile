@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { AscendancyIcon } from "@/components/AscendancyIcon";
 import { classLine } from "@/lib/format";
-import { formatNumber } from "@/lib/games/poe1/stats";
+import { formatNumber } from "@/lib/games/shared/stats";
 import type { GameId } from "@/lib/games/types";
 import type { Character } from "@/lib/types";
 

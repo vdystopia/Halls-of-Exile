@@ -1,13 +1,11 @@
 import {
-  ATTRIBUTE_STATS,
-  CHARGE_STATS,
   formatStat,
-  RESISTANCES,
   resolvePanel,
   resolvePanels,
+  type StatDef,
   type StatPanel,
   type StatTone,
-} from "@/lib/games/poe1/stats";
+} from "@/lib/games/shared/stats";
 
 const TONE_CLASS: Record<StatTone, string> = {
   life: "text-life",
@@ -50,8 +48,15 @@ export function StatColumn({
   );
 }
 
-export function ResistanceBar({ stats }: { stats: Record<string, number> }) {
-  const rows = RESISTANCES.map((res) => ({
+/** `resistances` is the game's own list, from `gearFor(game)`. */
+export function ResistanceBar({
+  stats,
+  resistances,
+}: {
+  stats: Record<string, number>;
+  resistances: { key: string; label: string; tone: string }[];
+}) {
+  const rows = resistances.map((res) => ({
     ...res,
     value: stats[res.key],
     over: stats[`${res.key}OverCap`],
@@ -77,9 +82,18 @@ export function ResistanceBar({ stats }: { stats: Record<string, number> }) {
   );
 }
 
-export function AttributeStrip({ stats }: { stats: Record<string, number> }) {
-  const attributes = resolvePanel(stats, ATTRIBUTE_STATS);
-  const charges = resolvePanel(stats, CHARGE_STATS);
+/** The attribute and charge lists are the game's own, from `gearFor(game)`. */
+export function AttributeStrip({
+  stats,
+  attributeStats,
+  chargeStats,
+}: {
+  stats: Record<string, number>;
+  attributeStats: StatDef[];
+  chargeStats: StatDef[];
+}) {
+  const attributes = resolvePanel(stats, attributeStats);
+  const charges = resolvePanel(stats, chargeStats);
   if (!attributes.length && !charges.length) return null;
 
   return (

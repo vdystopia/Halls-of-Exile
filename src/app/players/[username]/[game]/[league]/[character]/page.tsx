@@ -16,11 +16,7 @@ import { leagueModifierLabel, leagueModifierTitle } from "@/lib/league-modifiers
 import { getCharacter, getLeague, getUser, hasStoredExport, listAllLeagues } from "@/lib/queries";
 import { ascendanciesFor } from "@/lib/games/classes";
 import { buildSkill, skillArt, skillNamesFor } from "@/lib/games/skills";
-import { clusterLayout, drawnAllocation } from "@/lib/games/poe1/clusters";
-import { chosenMasteries } from "@/lib/games/poe1/masteries";
-import { TREE_DATA } from "@/lib/games/poe1/tree-data";
 import { gearFor } from "@/lib/games/gear";
-import { humanizeStatKey } from "@/lib/games/poe1/stats";
 
 export const dynamic = "force-dynamic";
 
@@ -66,10 +62,7 @@ export default async function CharacterPage({ params }: Props) {
   // Clusters are laid out here, against the tree actually being drawn, and
   // handed to the client as finished geometry: the tree data they need stays on
   // the server, the rule the art and gem indexes follow.
-  const treeData = treeArt ? TREE_DATA[treeArt.version] : undefined;
-  const clusters = clusterLayout(tree, treeData);
-  const litNodes = tree ? drawnAllocation(tree, clusters, treeData) : [];
-  const masteries = chosenMasteries(tree, treeData);
+  const { clusters, allocation: litNodes, masteries } = gear.treeLayers(tree, treeArt?.version);
   // Path of Building keeps a runegraft or tattoo on a node after the node is
   // refunded, and an override on a passive the character does not hold does
   // nothing — so only the allocated ones reach the tree, tooltip and colour alike.
@@ -182,8 +175,8 @@ export default async function CharacterPage({ params }: Props) {
             {hasStats ? (
               <>
                 <StatColumn title="Defence" panels={gear.defencePanels} stats={stats} />
-                <ResistanceBar stats={stats} />
-                <AttributeStrip stats={stats} />
+                <ResistanceBar stats={stats} resistances={gear.resistances} />
+                <AttributeStrip stats={stats} attributeStats={gear.attributeStats} chargeStats={gear.chargeStats} />
               </>
             ) : null}
             {/* The game's own export computes nothing, so a character read from it
@@ -304,7 +297,7 @@ export default async function CharacterPage({ params }: Props) {
               <div className="space-y-1 p-4 text-xs">
                 {build.config.map((entry) => (
                   <div key={entry.name} className="flex justify-between gap-3">
-                    <span className="text-muted">{humanizeStatKey(entry.name)}</span>
+                    <span className="text-muted">{gear.statLabel(entry.name)}</span>
                     <span className="text-right">{entry.value === "true" ? "yes" : entry.value}</span>
                   </div>
                 ))}

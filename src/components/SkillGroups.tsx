@@ -1,5 +1,5 @@
 import { GEM_COLOR_CLASS, gearFor } from "@/lib/games/gear";
-import { orderGems } from "@/lib/games/poe1/gems";
+import { orderGems } from "@/lib/games/shared/display";
 import type { GameId } from "@/lib/games/types";
 import type { Gem, SkillGroup } from "@/lib/types";
 

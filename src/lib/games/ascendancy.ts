@@ -3,9 +3,8 @@ import * as poe2 from "./poe2/ascendancy";
 import type { GameId } from "./types";
 
 /**
- * Ascendancy art by game. Path of Exile 2 has no full `GameModule` yet, but its
- * characters are listed and have pages, and two ascendancy names — Deadeye and
- * Pathfinder — exist in both games as different classes. So the art is looked
+ * Ascendancy art by game. Two ascendancy names — Deadeye and Pathfinder —
+ * exist in both games as different classes. So the art is looked
  * up through the character's game here rather than by name alone, and this
  * folder stays the only place that knows which game is which.
  */
