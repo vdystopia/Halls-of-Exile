@@ -162,11 +162,22 @@ test("gear from a code alone finds Path of Exile 2 pictures", async () => {
   }
 });
 
-/** Each game's code is current against its own parser's version. */
-test("each game has its own parser version", async () => {
-  const { parserVersionFor } = await import("../src/lib/games/builds");
-  const { PARSER_VERSION } = await import("../src/lib/games/poe1/pob");
-  const { POE2_PARSER_VERSION } = await import("../src/lib/games/poe2/pob");
-  assert.equal(parserVersionFor("poe1"), PARSER_VERSION);
-  assert.equal(parserVersionFor("poe2"), POE2_PARSER_VERSION);
+/**
+ * Everything a Path of Exile 2 code equips has a cell on Path of Exile 2's
+ * paper doll, or a flask or charm slot. Only the weapon swap set is drawn in
+ * the row beneath, as extras: a main slot landing there would mean the doll and
+ * the parser disagree on its name.
+ */
+test("every slot a Path of Exile 2 code equips has its place on the doll", async () => {
+  const { parsePob2 } = await import("../src/lib/games/poe2/pob");
+  const { gearFor } = await import("../src/lib/games/gear");
+  const gear = gearFor("poe2");
+  const places = new Set([...gear.doll.map((cell) => cell.slot), ...gear.flaskSlots]);
+  const dir = path.join(process.cwd(), "tests", "fixtures");
+  const homeless = new Set<string>();
+  for (const file of fs.readdirSync(dir).filter((name) => /^poe2-pob-.*\.txt$/.test(name))) {
+    const build = parsePob2(fs.readFileSync(path.join(dir, file), "utf8").trim());
+    for (const slot of Object.keys(build.slots)) if (!places.has(slot) && !/Swap/.test(slot)) homeless.add(slot);
+  }
+  assert.deepEqual([...homeless], []);
 });

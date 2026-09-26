@@ -167,7 +167,6 @@ test("Path of Exile 2 gear never borrows Path of Exile 1's art or arithmetic", a
   assert.notEqual(poe2Art?.src, poe1Art.src);
   const sections = gearFor("poe2").tooltip(ring);
   assert.ok(!sections.some((section) => section.lines.some((line) => /Block/i.test(line.text))));
-  assert.deepEqual(gearFor("poe2").doll.length, gearFor("poe1").doll.length);
   assert.deepEqual([...gearFor("poe2").flaskSlots], ["Flask 1", "Flask 2", "Charm 1", "Charm 2", "Charm 3"]);
 });
 

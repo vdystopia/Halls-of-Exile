@@ -411,11 +411,6 @@ export async function deleteCharacterAction(formData: FormData): Promise<void> {
 }
 
 /**
- * Removing a player takes their characters and league records with them: both
- * tables declare ON DELETE CASCADE and the connection runs with foreign keys
- * on. There is no undo, which is why the button asks first.
- */
-/**
  * Rename a player, or change the name shown beside their handle. The username
  * is the archive's URL for them, so this moves every one of their pages —
  * characters and league records travel by id and are untouched.
@@ -462,6 +457,11 @@ export async function renamePlayerAction(_prev: ActionState, formData: FormData)
   redirect(`/players/${username}`);
 }
 
+/**
+ * Removing a player takes their characters and league records with them: both
+ * tables declare ON DELETE CASCADE and the connection runs with foreign keys
+ * on. There is no undo, which is why the button asks first.
+ */
 export async function deletePlayerAction(formData: FormData): Promise<void> {
   const username = text(formData, "username");
   const user = getUser(username);

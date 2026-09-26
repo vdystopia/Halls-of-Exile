@@ -24,8 +24,9 @@ import { classFromId } from "./classes";
  * What it does not give: the passive tree, the skill gems in a character's own
  * skill slots, weapon-set passives and tree jewels. The site has no endpoint for
  * any of those. They come from a Path of Building 2 share code instead, which
- * reads them from the official API; a character can hold both, and each source
- * rewrites only what it owns.
+ * reads them from the official API. A character can hold both, and then the code
+ * is the whole build (`composePoe2Build`); this export stays underneath as the
+ * record of the game's own figures and last login.
  *
  * Like Path of Exile 1's endpoints, this computes nothing: no life, no
  * resistances, no damage. A character imported this way shows its gear and no

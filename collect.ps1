@@ -9,6 +9,10 @@
     gems, tree jewels and passives filled in; its league, memories, /played time
     and main skill are left alone.
 
+    Path of Exile only. Path of Exile 2's characters are behind a login, so they
+    are exported in the browser with tools\poe2-char-export and uploaded on the
+    import page, or added from a Path of Building 2 code.
+
     It never touches a character that already holds a build. An archived
     character is a record of what it was, and an old one has since had its gear
     stripped for the next build - overwriting it would replace the record with

@@ -1,6 +1,6 @@
 # Halls of Exile
 
-An archive for a Path of Exile player's entire back catalogue of characters.
+An archive for a Path of Exile and Path of Exile 2 player's entire back catalogue of characters.
 
 Leagues end every few months, characters get migrated to Standard, and nobody ever opens them
 again. This keeps them: sorted by league, with the gear, gems, passive tree and every computed
@@ -12,8 +12,14 @@ were built in.
 - **Public player profiles.** A username and a first name. No password, no email, no sessions —
   every archive here is meant to be browsed by anyone.
 - **A player directory** at `/players`, listing everyone with their character and league counts.
-- **A league index per player** (`/players/<username>`) covering every patch from 1.0 Domination /
-  Nemesis to the current league, with league dates, characters archived, and challenge progress.
+- **Both games, kept apart.** Path of Exile and Path of Exile 2 share class, skill and item names
+  and almost nothing behind them, so each has its own leagues, parser, item and gem art, paper
+  doll, stat panels and passive trees (Path of Exile 2's drawn for every version from 0.1 to 0.5).
+- **Player metrics**: classes rolled up into ascendancies, most-played builds by skill, the most
+  played characters and every level 100.
+- **A league index per player** (`/players/<username>`) covering every patch of both games, from
+  1.0 Domination / Nemesis to the current league, with league dates, characters archived, and
+  challenge progress, sortable and filterable.
 - **A league page** (`/players/<username>/<game>/<league>`) with that league's characters, the player's
   challenge completion (`32/40`), the league window and a note about how the league went.
 - **Per-character `/played` time**, typed in by hand — no export carries it — summed into the
@@ -23,9 +29,12 @@ were built in.
   mod, the gem setup by socket group, the passive tree summary, the build configuration, and a
   dump of every stat Path of Building computed.
 
-Characters are added by pasting a **Path of Building export code** (or a pobb.in / pastebin /
-poe.ninja link), by **importing a whole account** from the game's own character endpoints, or by
-hand for characters whose build export is long gone and who are no longer on the account.
+Characters are added by pasting a **Path of Building or Path of Building 2 export code** (or a
+pobb.in / pastebin / poe.ninja link for Path of Exile), by **importing a whole account** — Path of
+Exile's from the game's character endpoints via `collect.ps1`, Path of Exile 2's from the browser
+snippet in `tools/poe2-char-export/` — or by hand for characters whose build export is long gone.
+A name belongs to one character per game; adding one that is already archived asks whether to
+overwrite it.
 
 ## Stack
 
@@ -36,7 +45,7 @@ handful of server actions.
 ## Running it on a home server (Docker)
 
 ```bash
-git clone <this repo> && cd Halls-of-the-Champions
+git clone <this repo> && cd Halls-of-Exile
 cp .env.example .env        # optional: change the port or timezone
 docker compose up -d --build
 ```
@@ -73,7 +82,8 @@ the current archive first, stops the app, copies the file in through a one-off c
 same service — which mounts the same volume — removing SQLite's `-wal`/`-shm` files with it, and
 starts the app again. Restoring the wrong one is undone the same way, from the backup it took first.
 
-**Health.** `GET /api/health` returns `{"status":"ok", users, characters, leagues, uptime}` and is
+**Health.** `GET /api/health` returns `{"status":"ok", users, characters, leagues, catalogue, uptime}` (`leagues` counts
+leagues holding a character, `catalogue` every league row) and is
 wired to Docker's healthcheck, so `docker compose ps` shows `healthy` only when the app can read
 the database. Point Uptime Kuma or similar at it if you run one.
 
@@ -360,8 +370,9 @@ what their fan content policy covers.
 challenge total. Challenge totals are 40 for 2.6 onwards, 32–36 for the 2.x cycle and 8 for the
 1.x cycle. Anything the catalogue is missing — a league released after this was written, a private
 league, an event such as Legacy of Phrecia — can be added from **Add a league** on any player
-page; user-added leagues are marked as custom and are never overwritten when the built-in
-catalogue is refreshed. Per-player challenge totals can also be overridden on the league page.
+page, where it can also be edited or deleted. User-added leagues are marked as custom and are never
+overwritten when the built-in catalogue is refreshed — unless the catalogue gains the same league,
+which then takes the hand-added row over, characters and all. Per-player challenge totals can also be overridden on the league page.
 
 ## Data model
 
@@ -376,17 +387,27 @@ catalogue is refreshed. Per-player challenge totals can also be overridden on th
 
 ```
 src/app/                       routes (home, players, league index, league, character sheet)
-src/components/                UI: forms, gear grid, item tooltips, stat panels, skill groups
-src/lib/db.ts                  SQLite connection, schema, league catalogue sync
-src/lib/pob.ts                 PoB code decoding and XML parsing
-src/lib/items.ts               PoB item-text parser and the paper-doll layout
-src/lib/stats.ts               which stats are shown, in what order, formatted how
-src/lib/actions.ts             server actions (create player, add/update/delete character, …)
+src/components/                UI: forms, gear grid, item tooltips, stat panels, skill groups,
+                               the passive tree; never imports a game's own folder
+src/lib/db.ts                  SQLite connection, schema, migrations, league catalogue sync
+src/lib/leagues.ts             the league catalogue for both games
+src/lib/games/poe1/            Path of Exile: PoB parser, account-export mapper, items, tooltip,
+                               art, gems, cluster jewels, masteries, tree
+src/lib/games/poe2/            Path of Exile 2: PoB2 parser, site-export mapper, classes, art,
+                               gems, trees; see its README
+src/lib/games/*.ts             per-game dispatch: gear.ts, builds.ts, exports.ts, skills.ts, …
+src/lib/games/shared/          shapes and formatting both games are drawn with
+src/lib/import.ts              applying an account export (upload page and /api/import/poe)
+src/lib/actions.ts             server actions (players, characters, leagues, league records, import)
 src/app/api/health/route.ts    health probe used by the Docker healthcheck
 scripts/seed-demo.ts           demo archive, imported through the real parser
 scripts/backup.mjs             consistent online backup of the SQLite archive
 Dockerfile, docker-compose.yml self-hosting setup
-update.ps1                     safe deploy: backup, pull, build, health-check, rollback
+update.ps1                     safe deploy: backup (also copied to .\backups), pull, fetch art,
+                               build, health-check, rollback
+restore.ps1                    put a backup back in place of the live archive
+watch.ps1                      deploys green commits and runs collect.ps1 on a schedule
+collect.ps1                    fills in Path of Exile characters from their accounts
 CLAUDE.md                      architecture notes and invariants for future sessions
 ROADMAP.md                     working backlog
 .github/workflows/ci.yml       typecheck, lint, tests, build, container smoke test

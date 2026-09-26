@@ -67,13 +67,19 @@ src/app/api/import/poe/route.ts  unattended ingest for collect.ps1
 src/components/               UI; forms are client components, everything else is server
 src/lib/db.ts                 connection, schema, migrations, league catalogue sync
 src/lib/leagues.ts            the league catalogue itself
-src/lib/games/index.ts        the game registry; GameModule is in games/types.ts
+src/lib/games/types.ts        GameId, and where each game's code is reached from
 src/lib/games/poe1/           everything Path of Exile 1 specific: pob, poe-api, items,
-                              stats, tooltip, item art, gem colours, ascendancy emblems
-src/lib/games/poe2/           Path of Exile 2: classes, gems, the site-export mapper,
-                              paper doll and tooltip; see its README
+                              stats, tooltip, item art, gem colours, ascendancy emblems,
+                              cluster jewels, masteries, the tree
+src/lib/games/poe2/           Path of Exile 2: PoB2 parser, site-export mapper, classes,
+                              gems, art, paper doll, tooltip, trees; see its README
+src/lib/games/shared/         shapes and formatting both games are drawn with
 src/lib/games/exports.ts      reads either game's account export and picks its mapper
-src/lib/games/gear.ts         per-game paper doll, item art, tooltip and gem colour
+src/lib/games/builds.ts       parses a code with its game's parser; composes a build
+src/lib/games/gear.ts         per-game paper doll, item art, tooltip, gem colour, stat
+                              panels, the tree asset and its layers
+src/lib/usernames.ts          reserved usernames (pages under /players/)
+src/lib/league-filter.ts      the league index's filters
 src/lib/queries.ts            reads
 src/lib/actions.ts            writes — server actions only
 src/lib/import.ts             applying an account export, shared by the upload
@@ -270,8 +276,8 @@ and its payload is stored in `characters.source_payload` for the same reason.
   `Intangibility: 19%` and `Memory Strands: 41`, and `…BasePercentile` figures. A key the parser
   does not recognise falls through to the mod list, which shifts the `Implicits: N` boundary and
   pushes the item's real implicit into its explicits. Add unknown header keys to `META_KEYS` in
-  `src/lib/items.ts` rather than letting them through.
-- **Every item tooltip renders through `buildTooltip`** in `src/lib/tooltip.ts`, which fixes one
+  `src/lib/games/poe1/items.ts` rather than letting them through.
+- **Every item tooltip renders through `buildTooltip`** in `src/lib/games/poe1/tooltip.ts`, which fixes one
   order for all items — quality, anoint, defences, sockets, special, requires, implicit, enchant,
   explicit, footer, the order the game itself uses — and drops empty sections. Item level, base percentiles and the "Fractured
   Item" label are never shown. Add new lines to that module, not to the component.
@@ -388,7 +394,7 @@ and its payload is stored in `characters.source_payload` for the same reason.
   A character's items are parsed once, at import, and written to `characters.data` as JSON;
   the archive went on rendering base percentiles as mods for days after the parser stopped
   reading them that way. When a parser change makes older stored builds wrong, bump
-  `PARSER_VERSION` in `src/lib/pob.ts`: `migrate()` re-parses every character whose
+  `PARSER_VERSION` in `src/lib/games/poe1/pob.ts` (`POE2_PARSER_VERSION` in `poe2/pob.ts`): `migrate()` re-parses every character whose
   `parser_version` is lower and that still has its share code. A character with no code, or
   one whose code no longer parses, keeps the build it has.
 - **Ascendancy emblems are one sprite sheet, cropped in CSS.** Grinding Gear Games' own

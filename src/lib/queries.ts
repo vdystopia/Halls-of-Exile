@@ -62,7 +62,6 @@ function mapCharacter(row: Row): Character {
     isFavorite: row.is_favorite,
     pobCode: row.pob_code,
     pobUrl: row.pob_url,
-    retiredAt: null,
     createdAt: row.created_at,
     data,
   };

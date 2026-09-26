@@ -8,7 +8,9 @@ export const dynamic = "force-dynamic";
 
 /**
  * Unattended ingest: `collect.ps1` posts an export here and any archived
- * character that is still empty gets its gear, gems and passives filled in.
+ * character that is still empty gets filled in — gear, gems and passives from a
+ * Path of Exile export, gear alone from a Path of Exile 2 one, whose site serves
+ * no tree and no skill gems.
  *
  * It only ever *fills*. Two things it will not do, both because there is nobody
  * here to ask:

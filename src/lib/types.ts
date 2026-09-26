@@ -317,7 +317,6 @@ export type Character = {
   isFavorite: number;
   pobCode: string | null;
   pobUrl: string | null;
-  retiredAt: string | null;
   createdAt: string;
   data: BuildData;
 };
