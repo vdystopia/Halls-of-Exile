@@ -3,37 +3,44 @@
     "Duelist": {
       "slug": "duelist",
       "width": 137,
-      "height": 105
+      "height": 105,
+      "accent": "#cfad81"
     },
     "Marauder": {
       "slug": "marauder",
       "width": 137,
-      "height": 105
+      "height": 105,
+      "accent": "#cf9c81"
     },
     "Ranger": {
       "slug": "ranger",
       "width": 137,
-      "height": 105
+      "height": 105,
+      "accent": "#cf9d81"
     },
     "Scion": {
       "slug": "scion",
       "width": 137,
-      "height": 105
+      "height": 105,
+      "accent": "#cf9d81"
     },
     "Shadow": {
       "slug": "shadow",
       "width": 137,
-      "height": 105
+      "height": 105,
+      "accent": "#80cad1"
     },
     "Templar": {
       "slug": "templar",
       "width": 137,
-      "height": 105
+      "height": 105,
+      "accent": "#b581cf"
     },
     "Witch": {
       "slug": "witch",
       "width": 137,
-      "height": 105
+      "height": 105,
+      "accent": "#cf9d81"
     }
   }
 }

@@ -3,42 +3,50 @@
     "Druid": {
       "slug": "druid",
       "width": 184,
-      "height": 144
+      "height": 144,
+      "accent": "#cf9e81"
     },
     "Huntress": {
       "slug": "huntress",
       "width": 184,
-      "height": 144
+      "height": 144,
+      "accent": "#cfa281"
     },
     "Mercenary": {
       "slug": "mercenary",
       "width": 182,
-      "height": 141
+      "height": 141,
+      "accent": "#cf8881"
     },
     "Monk": {
       "slug": "monk",
       "width": 182,
-      "height": 141
+      "height": 141,
+      "accent": "#cf9b81"
     },
     "Ranger": {
       "slug": "ranger",
       "width": 182,
-      "height": 141
+      "height": 141,
+      "accent": "#cf9e81"
     },
     "Sorceress": {
       "slug": "sorceress",
       "width": 182,
-      "height": 141
+      "height": 141,
+      "accent": "#7387dd"
     },
     "Warrior": {
       "slug": "warrior",
       "width": 182,
-      "height": 141
+      "height": 141,
+      "accent": "#cf8b81"
     },
     "Witch": {
       "slug": "witch",
       "width": 182,
-      "height": 141
+      "height": 141,
+      "accent": "#699ae8"
     }
   }
 }

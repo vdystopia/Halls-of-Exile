@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { PlayerTile } from "@/components/PlayerTile";
+import { playerAccent } from "@/lib/avatars";
 import { listUsers } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = { title: "Players · Halls of Exile" };
 
-export default function PlayersPage() {
+export default async function PlayersPage() {
   const players = listUsers();
+  const accents = await Promise.all(players.map((player) => playerAccent(player.id)));
 
   return (
     <div className="space-y-8">
@@ -34,8 +36,8 @@ export default function PlayersPage() {
         </div>
       ) : (
         <div className="grid gap-4 xl:grid-cols-2">
-          {players.map((player) => (
-            <PlayerTile key={player.id} player={player} />
+          {players.map((player, index) => (
+            <PlayerTile key={player.id} player={player} accent={accents[index]} />
           ))}
         </div>
       )}

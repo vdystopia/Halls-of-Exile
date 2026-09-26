@@ -35,6 +35,7 @@ export function AscendancyPortrait({
   height,
   variant = "portrait",
   className = "",
+  framed = false,
 }: {
   game: GameId;
   variant?: "portrait" | "avatar";
@@ -44,19 +45,23 @@ export function AscendancyPortrait({
   /** In CSS pixels. */
   height: number;
   className?: string;
+  /** A frame in the picture's own strongest colour, the way the profile header frames a player's picture. */
+  framed?: boolean;
 }) {
   const portrait = (variant === "avatar" ? ascendancyAvatar : ascendancyPortrait)(game, ascendancy, characterClass);
   if (!portrait) return null;
   const label = ascendancy || characterClass || undefined;
+  const frame = framed && portrait.accent ? `0 0 0 2px ${portrait.accent}, 0 0 14px -2px ${portrait.accent}` : undefined;
 
   return (
     <span
       aria-label={label}
       title={label}
-      className={`block shrink-0 overflow-hidden rounded-sm bg-black/40 ring-1 ring-line ${className}`}
+      className={`block shrink-0 overflow-hidden rounded-sm bg-black/40 ${frame ? "" : "ring-1 ring-line"} ${className}`}
       style={{
         height,
         width: Math.round((height * portrait.width) / portrait.height),
+        boxShadow: frame,
         backgroundImage: `url(${portrait.src})`,
         backgroundSize: "cover",
         backgroundPosition: "center",

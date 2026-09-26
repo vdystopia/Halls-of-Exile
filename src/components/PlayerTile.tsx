@@ -11,7 +11,9 @@ import type { UserSummary } from "@/lib/queries";
  * by; there is no display name.
  *
  * Set in the type the rest of the archive uses — `eyebrow` for a label and
- * `display` for a figure — so the tile reads like the profile header it opens.
+ * `display` for a figure — so the tile reads like the profile header it opens,
+ * and coloured as that header is: border, picture frame, username and figures
+ * in the player's picture's own strongest colour, labels in the muted gold.
  *
  * The whole tile is clickable, but only the username is the link: its
  * `after:` pseudo-element stretches over the card. A browser set to underline
@@ -19,7 +21,8 @@ import type { UserSummary } from "@/lib/queries";
  * site CSS cannot turn off) then underlines the username and nothing else,
  * instead of every figure and label on the card.
  */
-export function PlayerTile({ player }: { player: UserSummary }) {
+export function PlayerTile({ player, accent }: { player: UserSummary; accent: string | null }) {
+  const figure = accent ? { color: accent } : undefined;
   const picture = avatarUrl(player.username, player.avatarVersion);
   // Whole hours, rounded the way the profile header rounds them, so the two agree.
   const played = formatPlayedTotal(player.playedMinutes);
@@ -31,23 +34,24 @@ export function PlayerTile({ player }: { player: UserSummary }) {
     : undefined;
 
   return (
-    <div className="panel group relative border-gold/45 p-4 transition-colors hover:border-gold sm:p-5">
+    <div className="panel group relative border-gold/45 p-4 transition-colors hover:border-gold sm:p-5" style={accent ? { borderColor: accent } : undefined}>
       <div className="flex gap-4 sm:gap-5">
-        <PlayerPicture username={player.username} src={picture} className="size-24 sm:size-36" />
+        <PlayerPicture username={player.username} src={picture} className="size-24 sm:size-36" accent={accent} />
         <div className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-x-6 gap-y-4">
           <h2 className="display min-w-0 pt-1 text-2xl break-words sm:text-3xl">
             <Link
               href={`/players/${player.username}`}
               className="after:absolute after:inset-0 after:content-[''] group-hover:text-gold"
+              style={figure}
             >
               {player.username}
             </Link>
           </h2>
           <dl className="grid grid-cols-[auto_auto] items-baseline gap-x-6 gap-y-2 sm:pt-2">
             <dt className="eyebrow whitespace-nowrap">Total levels</dt>
-            <dd className="display text-right text-xl tabular-nums">{player.totalLevels}</dd>
+            <dd className="display text-right text-xl tabular-nums" style={figure}>{player.totalLevels}</dd>
             <dt className="eyebrow whitespace-nowrap">Total challenges</dt>
-            <dd className="display text-right text-xl tabular-nums">{player.challengesDone}</dd>
+            <dd className="display text-right text-xl tabular-nums" style={figure}>{player.challengesDone}</dd>
           </dl>
         </div>
       </div>
@@ -57,15 +61,15 @@ export function PlayerTile({ player }: { player: UserSummary }) {
       <dl className="mt-4 grid grid-cols-3 items-start gap-2 text-center">
         <div>
           <dt className="eyebrow">Exiles</dt>
-          <dd className="display mt-1 text-2xl tabular-nums">{player.characterCount}</dd>
+          <dd className="display mt-1 text-2xl tabular-nums" style={figure}>{player.characterCount}</dd>
         </div>
         <div>
           <dt className="eyebrow">Leagues</dt>
-          <dd className="display mt-1 text-2xl tabular-nums">{player.leagueCount}</dd>
+          <dd className="display mt-1 text-2xl tabular-nums" style={figure}>{player.leagueCount}</dd>
         </div>
         <div>
           <dt className="eyebrow">/played</dt>
-          <dd className="display mt-1 text-2xl whitespace-nowrap tabular-nums" title={coverage}>
+          <dd className="display mt-1 text-2xl whitespace-nowrap tabular-nums" title={coverage} style={figure}>
             {played ? played.hours : "—"}
             {partial ? <span className="text-muted">*</span> : null}
           </dd>

@@ -2,8 +2,8 @@ import type { AscendancyIcon, AscendancyPortrait } from "../poe1/ascendancy";
 import portraitIndex from "./ascendancy-portraits.json";
 import classIndex from "./class-portraits.json";
 
-const PORTRAITS = portraitIndex.portraits as Record<string, { slug: string; width: number; height: number }>;
-const CLASS_PORTRAITS = classIndex.portraits as Record<string, { slug: string; width: number; height: number }>;
+const PORTRAITS = portraitIndex.portraits as Record<string, { slug: string; width: number; height: number; accent?: string | null }>;
+const CLASS_PORTRAITS = classIndex.portraits as Record<string, { slug: string; width: number; height: number; accent?: string | null }>;
 
 /**
  * The base class's own portrait, "<Class> portrait.png" on the Path of Exile 2
@@ -14,7 +14,7 @@ const CLASS_PORTRAITS = classIndex.portraits as Record<string, { slug: string; w
 export function classPortrait(className?: string | null): AscendancyPortrait | null {
   const entry = className ? CLASS_PORTRAITS[className.trim()] : undefined;
   if (!entry) return null;
-  return { src: `/ascendancy/poe2/class/${entry.slug}.webp`, width: entry.width, height: entry.height };
+  return { src: `/ascendancy/poe2/class/${entry.slug}.webp`, width: entry.width, height: entry.height, accent: entry.accent ?? null };
 }
 
 /**
@@ -36,7 +36,7 @@ export function ascendancyPortrait(ascendancy?: string | null, className?: strin
   const name = ascendancy?.trim();
   const entry = name ? PORTRAITS[name] : undefined;
   if (!entry) return name ? null : classPortrait(className);
-  return { src: `/ascendancy/poe2/${entry.slug}.webp`, width: entry.width, height: entry.height };
+  return { src: `/ascendancy/poe2/${entry.slug}.webp`, width: entry.width, height: entry.height, accent: entry.accent ?? null };
 }
 
 /**

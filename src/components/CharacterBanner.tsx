@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AscendancyPortrait } from "@/components/AscendancyPortrait";
+import { ascendancyAvatar } from "@/lib/games/ascendancy";
 import { LeagueLogo } from "@/components/LeagueLogo";
 import { SkillIcon } from "@/components/SkillIcon";
 import { classLine, formatPlayed } from "@/lib/format";
@@ -33,13 +34,17 @@ export function CharacterBanner({
   const art = skill ? skillArt(game, skill) : null;
   const nameStyle = classNameStyle(game, character.className);
   const played = formatPlayed(character.playedMinutes);
+  // The banner's border takes its picture's strongest colour, as the profile
+  // header takes the player's; a picture with no colour, or none, keeps the line.
+  const accent = ascendancyAvatar(game, character.ascendancy, character.className)?.accent ?? null;
 
   return (
     <Link
       href={href}
       className="panel group flex flex-wrap items-center gap-x-5 gap-y-3 p-3 transition-colors hover:border-gold/60"
+      style={accent ? { borderColor: accent } : undefined}
     >
-      <AscendancyPortrait game={game} ascendancy={character.ascendancy} characterClass={character.className} height={HEIGHT} variant="avatar" />
+      <AscendancyPortrait game={game} ascendancy={character.ascendancy} characterClass={character.className} height={HEIGHT} variant="avatar" framed />
       <div className="min-w-[11rem] flex-1">
         <div className="flex items-baseline gap-2">
           <h3 className={`display truncate text-2xl ${nameStyle ? "gem-name" : ""}`} style={nameStyle}>

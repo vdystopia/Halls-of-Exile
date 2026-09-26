@@ -3,112 +3,134 @@
     "Ascendant": {
       "slug": "ascendant",
       "width": 135,
-      "height": 105
+      "height": 105,
+      "accent": "#d7b07a"
     },
     "Assassin": {
       "slug": "assassin",
       "width": 134,
-      "height": 105
+      "height": 105,
+      "accent": "#81b5cf"
     },
     "Berserker": {
       "slug": "berserker",
       "width": 135,
-      "height": 105
+      "height": 105,
+      "accent": "#cf9d81"
     },
     "Champion": {
       "slug": "champion",
       "width": 135,
-      "height": 105
+      "height": 105,
+      "accent": "#cf818c"
     },
     "Chieftain": {
       "slug": "chieftain",
       "width": 135,
-      "height": 105
+      "height": 105,
+      "accent": "#dd8573"
     },
     "Deadeye": {
       "slug": "deadeye",
       "width": 135,
-      "height": 105
+      "height": 105,
+      "accent": "#cfa381"
     },
     "Elementalist": {
       "slug": "elementalist",
       "width": 135,
-      "height": 105
+      "height": 105,
+      "accent": "#7e8ad2"
     },
     "Gladiator": {
       "slug": "gladiator",
       "width": 135,
-      "height": 105
+      "height": 105,
+      "accent": "#cf9f81"
     },
     "Guardian": {
       "slug": "guardian",
       "width": 135,
-      "height": 105
+      "height": 105,
+      "accent": "#cf9e81"
     },
     "Hierophant": {
       "slug": "hierophant",
       "width": 135,
-      "height": 105
+      "height": 105,
+      "accent": "#d4997d"
     },
     "Inquisitor": {
       "slug": "inquisitor",
       "width": 135,
-      "height": 105
+      "height": 105,
+      "accent": "#cf9a81"
     },
     "Juggernaut": {
       "slug": "juggernaut",
       "width": 135,
-      "height": 105
+      "height": 105,
+      "accent": "#81a1cf"
     },
     "Luminary": {
       "slug": "luminary",
       "width": 134,
-      "height": 104
+      "height": 104,
+      "accent": "#cfa281"
     },
     "Necromancer": {
       "slug": "necromancer",
       "width": 135,
-      "height": 105
+      "height": 105,
+      "accent": "#818ecf"
     },
     "Occultist": {
       "slug": "occultist",
       "width": 135,
-      "height": 105
+      "height": 105,
+      "accent": "#81a0cf"
     },
     "Pathfinder": {
       "slug": "pathfinder",
       "width": 135,
-      "height": 105
+      "height": 105,
+      "accent": "#cf9e81"
     },
     "Raider": {
       "slug": "warden",
       "width": 135,
-      "height": 105
+      "height": 105,
+      "accent": "#cfa081"
     },
     "Reliquarian": {
       "slug": "reliquarian",
       "width": 134,
-      "height": 104
+      "height": 104,
+      "accent": "#d79c79"
     },
     "Saboteur": {
       "slug": "saboteur",
       "width": 135,
-      "height": 105
+      "height": 105,
+      "accent": "#cf9c81"
     },
     "Slayer": {
       "slug": "slayer",
       "width": 135,
-      "height": 105
+      "height": 105,
+      "accent": "#cf8e81"
     },
     "Trickster": {
       "slug": "trickster",
       "width": 135,
-      "height": 105
+      "height": 105,
+      "accent": "#7bb1d5"
     },
     "Warden": {
       "slug": "warden",
       "width": 135,
-      "height": 105
+      "height": 105,
+      "accent": "#cfa081"
     }
   }
 }

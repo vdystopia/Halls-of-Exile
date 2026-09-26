@@ -40,7 +40,7 @@ export const ALTERNATE_ASCENDANCIES: Record<string, string> = {
   Scavenger: "Scion",
 };
 
-const CLASS_PORTRAITS = classIndex.portraits as Record<string, { slug: string; width: number; height: number }>;
+const CLASS_PORTRAITS = classIndex.portraits as Record<string, { slug: string; width: number; height: number; accent?: string | null }>;
 
 /**
  * The base class's own picture, "<Class> character class.png" on the wiki: a
@@ -50,7 +50,7 @@ const CLASS_PORTRAITS = classIndex.portraits as Record<string, { slug: string; w
 export function classPortrait(className?: string | null): AscendancyPortrait | null {
   const entry = className ? CLASS_PORTRAITS[className.trim()] : undefined;
   if (!entry) return null;
-  return { src: `/ascendancy/class/${entry.slug}.webp`, width: entry.width, height: entry.height };
+  return { src: `/ascendancy/class/${entry.slug}.webp`, width: entry.width, height: entry.height, accent: entry.accent ?? null };
 }
 
 /**
@@ -118,9 +118,11 @@ export type AscendancyPortrait = {
   src: string;
   width: number;
   height: number;
+  /** The picture's strongest colour, read once by the art script; null for a colourless one. */
+  accent: string | null;
 };
 
-const PORTRAITS = portraitIndex.portraits as Record<string, { slug: string; width: number; height: number }>;
+const PORTRAITS = portraitIndex.portraits as Record<string, { slug: string; width: number; height: number; accent?: string | null }>;
 
 /**
  * The ascendancy's key art, as the game draws it on the selection screen.
@@ -142,10 +144,10 @@ export function ascendancyPortrait(ascendancy?: string | null, className?: strin
   const name = ascendancy?.trim();
   const entry = name ? PORTRAITS[name] : undefined;
   if (!entry) return fallbackPortrait(name, className);
-  return { src: `/ascendancy/${entry.slug}.webp`, width: entry.width, height: entry.height };
+  return { src: `/ascendancy/${entry.slug}.webp`, width: entry.width, height: entry.height, accent: entry.accent ?? null };
 }
 
-const AVATARS = avatarIndex.portraits as Record<string, { slug: string; width: number; height: number }>;
+const AVATARS = avatarIndex.portraits as Record<string, { slug: string; width: number; height: number; accent?: string | null }>;
 
 /**
  * The ascendancy's avatar: a 135x105 close crop of the face, for a compact
@@ -157,5 +159,5 @@ export function ascendancyAvatar(ascendancy?: string | null, className?: string 
   const entry = name ? AVATARS[name] : undefined;
   // The class picture is already a close crop of the face, so it is the avatar too.
   if (!entry) return fallbackPortrait(name, className);
-  return { src: `/ascendancy/avatar/${entry.slug}.webp`, width: entry.width, height: entry.height };
+  return { src: `/ascendancy/avatar/${entry.slug}.webp`, width: entry.width, height: entry.height, accent: entry.accent ?? null };
 }

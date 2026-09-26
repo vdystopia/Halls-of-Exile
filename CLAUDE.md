@@ -468,6 +468,14 @@ and its payload is stored in `characters.source_payload` for the same reason.
   are names in both games and different classes in each, so art is looked up through
   `src/lib/games/ascendancy.ts` by game and never by name alone. The wiki's files are small, so
   the header portrait is slightly soft on a high-DPI screen.
+  **Every ascendancy and class picture carries its accent in its index**: `npm run
+  ascendancy:art` reads each saved file through `imageAccent` (`src/lib/accent.ts`, the same
+  extractor the profile header uses on a player's picture) and writes `accent` beside its size,
+  so `ascendancyAvatar(...)?.accent` costs nothing at request time. `CharacterBanner` (Most
+  played, Level 100, Pinned & most recent) draws its border and the picture's frame in that
+  colour, and `PlayerTile` takes the profile header's whole treatment — border, picture frame,
+  username and figures — from `playerAccent`, which the front page and the players list await
+  per player. Labels stay muted gold everywhere.
   **A third picture, the avatar, is for the compact banner.** The player page's character lists
   (Most played, Level 100, Pinned & most recent) draw `CharacterBanner`, the character header compressed: at 96px the wide painting is mostly
   background, so it draws Path of Exile 1's `File:<Ascendancy> avatar.png` (135x105, a close crop

@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { PlayerTile } from "@/components/PlayerTile";
+import { playerAccent } from "@/lib/avatars";
 import { getArchiveTotals, listUsers } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
-export default function HomePage() {
+export default async function HomePage() {
   const totals = getArchiveTotals();
   const players = listUsers().slice(0, 6);
+  const accents = await Promise.all(players.map((player) => playerAccent(player.id)));
 
   return (
     <div className="space-y-14">
@@ -51,8 +53,8 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="grid gap-4 xl:grid-cols-2">
-            {players.map((player) => (
-              <PlayerTile key={player.id} player={player} />
+            {players.map((player, index) => (
+              <PlayerTile key={player.id} player={player} accent={accents[index]} />
             ))}
           </div>
         </section>

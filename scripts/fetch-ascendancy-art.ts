@@ -63,6 +63,7 @@ import path from "node:path";
 import sharp from "sharp";
 import icons from "../src/lib/games/poe1/ascendancy-icons.json";
 import { ASCENDANCIES as POE2_ASCENDANCIES, CLASSES as POE2_CLASSES } from "../src/lib/games/poe2/classes";
+import { imageAccent } from "../src/lib/accent";
 import { CLASSES as POE1_CLASSES } from "../src/lib/leagues";
 
 type Source = {
@@ -234,7 +235,7 @@ async function fetchGame(game: string, source: Source) {
 
   // One file can serve two names, so the downloads are deduplicated by slug
   // while the index keeps an entry for every name a build might carry.
-  const portraits: Record<string, { slug: string; width: number; height: number }> = {};
+  const portraits: Record<string, { slug: string; width: number; height: number; accent?: string | null }> = {};
   const bySlug = new Map<string, ImageInfo>();
   for (const [name, info] of resolved) {
     const slug = slugFor(info, source);
@@ -253,6 +254,14 @@ async function fetchGame(game: string, source: Source) {
   }
 
   if (!dryRun && failed === 0 && bySlug.size) {
+    // Each picture's strongest colour, read once here so a character banner can
+    // take its class picture's colour without decoding anything at request time.
+    const accents = new Map<string, string | null>();
+    for (const slug of bySlug.keys()) {
+      const file = path.join(source.output, `${slug}.webp`);
+      accents.set(slug, fs.existsSync(file) ? await imageAccent(fs.readFileSync(file)) : null);
+    }
+    for (const entry of Object.values(portraits)) entry.accent = accents.get(entry.slug) ?? null;
     const sorted = Object.fromEntries(Object.entries(portraits).sort(([a], [b]) => a.localeCompare(b)));
     fs.writeFileSync(source.index, `${JSON.stringify({ portraits: sorted }, null, 2)}\n`);
   }

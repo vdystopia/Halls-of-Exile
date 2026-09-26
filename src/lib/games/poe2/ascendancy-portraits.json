@@ -3,117 +3,140 @@
     "Abyssal Lich": {
       "slug": "abyssal-lich",
       "width": 184,
-      "height": 144
+      "height": 144,
+      "accent": "#cfc481"
     },
     "Acolyte of Chayula": {
       "slug": "acolyte-of-chayula",
       "width": 182,
-      "height": 141
+      "height": 141,
+      "accent": "#cf81ad"
     },
     "Amazon": {
       "slug": "amazon",
       "width": 184,
-      "height": 144
+      "height": 144,
+      "accent": "#cf9981"
     },
     "Blood Mage": {
       "slug": "blood-mage",
       "width": 182,
-      "height": 141
+      "height": 141,
+      "accent": "#e5c895"
     },
     "Chronomancer": {
       "slug": "chronomancer",
       "width": 182,
-      "height": 141
+      "height": 141,
+      "accent": "#818bcf"
     },
     "Deadeye": {
       "slug": "deadeye",
       "width": 182,
-      "height": 141
+      "height": 141,
+      "accent": "#819fcf"
     },
     "Disciple of Varashta": {
       "slug": "disciple-of-varashta",
       "width": 184,
-      "height": 144
+      "height": 144,
+      "accent": "#cfa381"
     },
     "Gemling Legionnaire": {
       "slug": "gemling-legionnaire",
       "width": 182,
-      "height": 141
+      "height": 141,
+      "accent": "#cfa181"
     },
     "Infernalist": {
       "slug": "infernalist",
       "width": 182,
-      "height": 141
+      "height": 141,
+      "accent": "#d5887b"
     },
     "Invoker": {
       "slug": "invoker",
       "width": 182,
-      "height": 141
+      "height": 141,
+      "accent": "#cf8f81"
     },
     "Lich": {
       "slug": "lich",
       "width": 184,
-      "height": 144
+      "height": 144,
+      "accent": "#8b81cf"
     },
     "Martial Artist": {
       "slug": "martial-artist",
       "width": 136,
-      "height": 108
+      "height": 108,
+      "accent": "#abd9f1"
     },
     "Oracle": {
       "slug": "oracle",
       "width": 184,
-      "height": 144
+      "height": 144,
+      "accent": "#8981cf"
     },
     "Pathfinder": {
       "slug": "pathfinder",
       "width": 182,
-      "height": 141
+      "height": 141,
+      "accent": "#cfb381"
     },
     "Ritualist": {
       "slug": "ritualist",
       "width": 184,
-      "height": 144
+      "height": 144,
+      "accent": "#819ecf"
     },
     "Shaman": {
       "slug": "shaman",
       "width": 184,
-      "height": 144
+      "height": 144,
+      "accent": "#da8477"
     },
     "Smith of Kitava": {
       "slug": "smith-of-kitava",
       "width": 184,
-      "height": 144
+      "height": 144,
+      "accent": "#819ecf"
     },
     "Spirit Walker": {
       "slug": "spirit-walker",
       "width": 136,
-      "height": 108
+      "height": 108,
+      "accent": "#cf8d81"
     },
     "Stormweaver": {
       "slug": "stormweaver",
       "width": 182,
-      "height": 141
+      "height": 141,
+      "accent": "#9e81cf"
     },
     "Tactician": {
       "slug": "tactician",
       "width": 184,
-      "height": 144
+      "height": 144,
+      "accent": "#d3a27d"
     },
     "Titan": {
       "slug": "titan",
       "width": 182,
-      "height": 141
+      "height": 141,
+      "accent": "#cf9f81"
     },
     "Warbringer": {
       "slug": "warbringer",
       "width": 182,
-      "height": 141
+      "height": 141,
+      "accent": "#cf9d81"
     },
     "Witchhunter": {
       "slug": "witchhunter",
       "width": 182,
-      "height": 141
+      "height": 141,
+      "accent": "#81b4cf"
     }
   }
 }
