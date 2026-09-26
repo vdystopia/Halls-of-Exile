@@ -59,23 +59,25 @@ test("the newest tree is picked by version order, not by string order", () => {
  * The page lights a node with `#n<id>` and a connection with `#c<a>-<b>`, both
  * derived from ids alone, so the shapes of those ids are load-bearing.
  */
-test("the generated tree names its nodes and connections the way the page expects", () => {
-  const svg = fs.readFileSync(path.join(process.cwd(), "public", "trees", `${versions[0]}.svg`), "utf8");
-  const nodeIds = [...svg.matchAll(/<circle id="([^"]+)"/g)].map((match) => match[1]);
-  const edgeIds = [...svg.matchAll(/<(?:line|path) [^>]*id="([^"]+)"/g)].map((match) => match[1]);
+test("every generated tree names its nodes and connections the way the page expects", () => {
+  for (const version of versions) {
+    const svg = fs.readFileSync(path.join(process.cwd(), "public", "trees", `${version}.svg`), "utf8");
+    const nodeIds = [...svg.matchAll(/<circle id="([^"]+)"/g)].map((match) => match[1]);
+    const edgeIds = [...svg.matchAll(/<(?:line|path) [^>]*id="([^"]+)"/g)].map((match) => match[1]);
 
-  assert.ok(nodeIds.length > 2000, `only ${nodeIds.length} nodes — is the tree complete?`);
-  assert.ok(edgeIds.length > 2000, `only ${edgeIds.length} connections`);
-  for (const id of nodeIds) assert.match(id, /^n\d+$/);
-  for (const id of edgeIds) assert.match(id, /^c\d+-\d+$/);
+    assert.ok(nodeIds.length > 2000, `only ${nodeIds.length} nodes on ${version} — is the tree complete?`);
+    assert.ok(edgeIds.length > 2000, `only ${edgeIds.length} connections on ${version}`);
+    for (const id of nodeIds) assert.match(id, /^n\d+$/);
+    for (const id of edgeIds) assert.match(id, /^c\d+-\d+$/);
 
-  // Both ends of every connection have to exist, or it can never light up.
-  const known = new Set(nodeIds);
-  const dangling = edgeIds.filter((id) => {
-    const [a, b] = id.slice(1).split("-");
-    return !known.has(`n${a}`) || !known.has(`n${b}`);
-  });
-  assert.deepEqual(dangling, [], "a connection points at a node that is not drawn");
+    // Both ends of every connection have to exist, or it can never light up.
+    const known = new Set(nodeIds);
+    const dangling = edgeIds.filter((id) => {
+      const [a, b] = id.slice(1).split("-");
+      return !known.has(`n${a}`) || !known.has(`n${b}`);
+    });
+    assert.deepEqual(dangling, [], `a connection on ${version} points at a node that is not drawn`);
+  }
 });
 
 test("no node is drawn twice, which would double the ids the page selects on", () => {
@@ -289,4 +291,56 @@ test("only the jewel sockets that are really on the tree are drawn", () => {
   for (const inside of ["Small Jewel Socket", "Medium Jewel Socket"]) {
     assert.equal(names.has(inside), false, `${inside} only exists inside a cluster jewel`);
   }
+});
+
+/**
+ * The Phrecia-style events ran on an alternate tree Grinding Gear Games never
+ * exported, so it comes from Path of Building's own Lua copy. A Bog Shaman from
+ * Return of the Ancestors (3.28) has to land on it whole, and reveal the
+ * cluster its passives are in: the tree marks them `Necromancer`, the slot Bog
+ * Shaman replaces, while the build names the ascendancy as the game shows it.
+ */
+test("a build on the 3.28 alternate tree is drawn on it, ascendancy and all", async () => {
+  const { parsePob } = await import("../src/lib/games/poe1/pob");
+  const { gearFor } = await import("../src/lib/games/gear");
+  const code = fs.readFileSync(path.join(process.cwd(), "tests", "fixtures", "pob-3.28-alternate.txt"), "utf8").trim();
+  const build = parsePob(code);
+  const [tree] = build.trees;
+  const nodes = tree.nodes ?? [];
+  assert.equal(tree.treeVersion, "3.28.alternate");
+  assert.equal(build.ascendClassName, "Bog Shaman");
+
+  const asset = treeAsset(tree.treeVersion);
+  assert.ok(asset);
+  assert.equal(asset.exact, true);
+  assert.equal(asset.src, "/trees/3.28.alternate.svg");
+
+  const svg = fs.readFileSync(path.join(process.cwd(), "public", "trees", "3.28.alternate.svg"), "utf8");
+  const circle = (node: number) => svg.match(new RegExp(`<circle id="n${node}"[^>]*>`))?.[0];
+  assert.deepEqual(nodes.filter((node) => !circle(node)), [], "every allocated passive is on the alternate tree");
+
+  const revealed = gearFor("poe1").treeAscendancy(build.ascendClassName, asset.version);
+  assert.equal(revealed, "Necromancer");
+  const ascendancy = nodes.filter((node) => / ascendancy |class="ascendancy /.test(circle(node) ?? ""));
+  assert.ok(ascendancy.length >= 8, `only ${ascendancy.length} ascendancy passives found`);
+  for (const node of ascendancy) {
+    assert.match(circle(node)!, new RegExp(`asc-${revealed}"`), `n${node} is outside the revealed cluster`);
+  }
+});
+
+test("an alternate tree is never the fallback for an ungenerated version", () => {
+  for (const version of [undefined, "3.11"]) {
+    const asset = treeAsset(version);
+    assert.ok(asset);
+    assert.doesNotMatch(asset.version, /alternate/);
+  }
+});
+
+/** On 3.29 `Warden` is the Warden of the Maji's id; a Warden build is `Raider`'s. */
+test("an ascendancy saved under its display name reveals the tree's own id", async () => {
+  const { gearFor } = await import("../src/lib/games/gear");
+  const gear = gearFor("poe1");
+  assert.equal(gear.treeAscendancy("Warden", "3.29"), "Raider");
+  assert.equal(gear.treeAscendancy("Occultist", "3.29"), "Occultist");
+  assert.equal(gear.treeAscendancy(null, "3.29"), null);
 });

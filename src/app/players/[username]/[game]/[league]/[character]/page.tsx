@@ -335,7 +335,7 @@ export default async function CharacterPage({ params }: Props) {
               weaponSets={tree?.weaponSets}
               choices={gear.choices(tree?.nodes, treeArt.version)}
               attributeChoices={tree?.attributeChoices}
-              ascendancy={gear.treeAscendancy(character.ascendancy)}
+              ascendancy={gear.treeAscendancy(character.ascendancy, treeArt.version)}
               allocatedCount={tree?.nodeCount ?? treeNodes.length}
               treeVersion={tree?.treeVersion || treeArt.version}
               className="h-[max(420px,min(calc(100svh_-_8rem),calc(100vw_-_4.5rem)))]"

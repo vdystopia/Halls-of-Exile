@@ -54,6 +54,12 @@ export type TreeData = {
   clusterNodes: Record<string, { stats: string[]; keystone?: true }>;
   /** Every mastery effect's text, by effect id. */
   masteryEffects: Record<string, string[]>;
+  /**
+   * The tree's id for an ascendancy saved under another name (Bog Shaman is
+   * `Necromancer` on the alternate tree, Warden is `Raider` on 3.29). Absent
+   * from data generated before it was recorded.
+   */
+  ascendancies?: Record<string, string>;
 };
 
 type JewelDef = {

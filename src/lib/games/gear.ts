@@ -52,7 +52,7 @@ type Gear = {
    */
   choices: (nodes: number[] | undefined, drawnVersion: string | undefined) => Record<string, { name: string; stats: string[] }> | undefined;
   /** The ascendancy whose passives the drawn tree reveals for a character of this one. */
-  treeAscendancy: (ascendancy: string | null | undefined) => string | null;
+  treeAscendancy: (ascendancy: string | null | undefined, drawnVersion: string | undefined) => string | null;
   /**
    * What the drawn tree adds to the empty one for this build, laid out on the
    * server against the version being drawn: Path of Exile 1's cluster jewels
@@ -83,7 +83,10 @@ const GEAR: Record<GameId, Gear> = {
     offencePanels: POE1_OFFENCE,
     treeAsset: poe1TreeAsset,
     choices: () => undefined,
-    treeAscendancy: (ascendancy) => ascendancy ?? null,
+    // The drawn tree marks passives by ascendancy id, and a build names its
+    // ascendancy as the game displays it; the two differ on the alternate trees.
+    treeAscendancy: (ascendancy, version) =>
+      ascendancy ? ((version ? POE1_TREE_DATA[version]?.ascendancies?.[ascendancy] : undefined) ?? ascendancy) : null,
     treeLayers: (tree, version) => {
       const data = version ? POE1_TREE_DATA[version] : undefined;
       const clusters = clusterLayout(tree, data);

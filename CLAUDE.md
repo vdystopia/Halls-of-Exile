@@ -313,13 +313,24 @@ and its payload is stored in `characters.source_payload` for the same reason.
   taller than it is wide, and at least 420px.
 - **A build is drawn on the tree it was made on.** Node ids are stable between versions but
   positions are not — about a third of an old build's nodes sit somewhere else on a current
-  tree — so `treeAsset` matches `treeVersion` to a generated SVG. Only `3.29` is generated;
-  adding one is `npm run tree:svg -- 3.25`, and the script finds the commit itself by reading
+  tree — so `treeAsset` matches `treeVersion` to a generated SVG. Adding one is `npm run tree:svg -- 3.25`, and the script finds the commit itself by reading
   the export repository's history, since that repo has two branches and marks versions by
   commit message. A version that has not been generated falls back to the newest and the page
   **says so** rather than drawing a wrong tree quietly. A build from the game's own endpoints
   carries no version at all and is drawn on the newest, which is exact: the API reports what a
   character has allocated today.
+  **An event's alternate tree is its own version.** The Phrecia-style events (Legacy of
+  Phrecia, Return of the Ancestors) replace every ascendancy and add bloodlines, and Path of
+  Building saves such a build as `treeVersion="3_28_alternate"`, read as `3.28.alternate`.
+  Grinding Gear Games never exported those trees, so a version ending `.alternate` is read from
+  Path of Building's own `src/TreeData/<ver>/tree.lua`, a Lua table `scripts/lua-table.ts` turns
+  into `data.json`'s shape; everything after that is the same generator. `3.29` and
+  `3.28.alternate` are generated. An alternate tree is never the fallback for another version.
+  A build names its ascendancy as the game shows it and the tree marks passives by id — Bog
+  Shaman is `Necromancer`'s slot there, and on 3.29 Warden is `Raider` while `Warden` is the
+  Warden of the Maji — so each version's tree data carries `ascendancies` (name → id) and
+  `treeAscendancy(name, drawnVersion)` reveals the id. Alternate ascendancies have no portrait
+  or emblem; the header draws none.
 - **Passives are placed by one shared rule, `tree-geometry.ts`, and 16- and 40-slot orbits are
   uneven.** Since 3.17 the game puts a 16-slot orbit's passives at every 30 and 45 degrees and a
   40-slot orbit's at every 10 and 45 — Path of Building's `CalcOrbitAngles`, from the export's own

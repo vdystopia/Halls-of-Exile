@@ -18,9 +18,17 @@ export type TreeAsset = {
 
 const VERSIONS = (index.versions as { version: string }[]).map((entry) => entry.version);
 
-/** Numeric, so 3.9 sorts below 3.16 rather than above it. */
+/**
+ * Numeric, so 3.9 sorts below 3.16 rather than above it. An event's alternate
+ * tree ("3.28.alternate") is never the fallback: its ascendancies are not the
+ * game's, and "3.29.alternate" would otherwise sort above "3.29".
+ */
 function newest(): string | null {
-  return [...VERSIONS].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).pop() ?? null;
+  return (
+    VERSIONS.filter((version) => /^[\d.]+$/.test(version))
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+      .pop() ?? null
+  );
 }
 
 /**

@@ -4,6 +4,7 @@
  *   npm run tree:svg                 # every version the archive needs
  *   npm run tree:svg -- 3.29 3.25    # just these
  *   npm run tree:svg -- --list       # what is on disk now
+ *   npm run tree:svg -- 3.28.alternate   # an event's alternate-ascendancy tree
  *
  * Grinding Gear Games publish the tree as `data.json` in their own
  * `skilltree-export` repository — 6.7 MB of nodes, groups, stats and sprite
@@ -33,6 +34,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
+import { parseLuaTable } from "./lua-table";
 import { arcPath, NODE_RADIUS, type NodeKind, orbitAngle, orbitPoint } from "../src/lib/games/poe1/tree-geometry";
 
 /**
@@ -41,13 +43,22 @@ import { arcPath, NODE_RADIUS, type NodeKind, orbitAngle, orbitPoint } from "../
  * played. When a build from an older version is archived, add its number and
  * re-run; nothing else has to change.
  */
-const VERSIONS = ["3.29"];
+const VERSIONS = ["3.29", "3.28.alternate"];
 
 const OUTPUT_ROOT = path.join(process.cwd(), "public", "trees");
 /** Server-side data per version, beside the code that reads it. */
 const DATA_ROOT = path.join(process.cwd(), "src", "lib", "games", "poe1", "tree-data");
 const REPO = "grindinggear/skilltree-export";
 const RAW = (sha: string) => `https://raw.githubusercontent.com/${REPO}/${sha}/data.json`;
+/**
+ * Path of Building's own copy of each tree, for the ones Grinding Gear Games
+ * never exported. The Phrecia-style events (Legacy of Phrecia, Return of the
+ * Ancestors) ran on an alternate tree whose ascendancies and bloodlines are
+ * absent from `skilltree-export`, and Path of Building writes such a build's
+ * version as `3_28_alternate`, which the parser reads as "3.28.alternate".
+ */
+const POB_REPO = "PathOfBuildingCommunity/PathOfBuilding";
+const POB_TREE = (version: string) => `src/TreeData/${version.replace(/\./g, "_")}/tree.lua`;
 
 /** Where every ascendancy cluster is moved to, in tree units. */
 const ASCENDANCY_ORIGIN = { x: 7000, y: -7700 };
@@ -83,6 +94,8 @@ type Node = {
 type Group = { x: number; y: number; orbits?: number[]; nodes?: string[]; isProxy?: boolean };
 
 type Tree = {
+  /** Each class's ascendancies, by id and by the name a build is saved with. */
+  classes?: { name: string; ascendancies?: { id: string; name: string }[] }[];
   nodes: Record<string, Node>;
   groups: Record<string, Group>;
   constants: { orbitRadii: number[]; skillsPerOrbit: number[] };
@@ -208,7 +221,30 @@ async function commitFor(version: string): Promise<string> {
   throw new Error(`no commit in ${REPO} names version "${version}"`);
 }
 
+/** The newest commit of Path of Building's that touched a file. */
+async function pobCommitFor(file: string): Promise<string> {
+  const response = await fetch(`https://api.github.com/repos/${POB_REPO}/commits?path=${encodeURIComponent(file)}&per_page=1`, {
+    headers: {
+      accept: "application/vnd.github+json",
+      ...(process.env.GITHUB_TOKEN ? { authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}),
+    },
+  });
+  if (!response.ok) throw new Error(`the commit list returned HTTP ${response.status}`);
+  const [commit] = (await response.json()) as { sha: string }[];
+  if (!commit) throw new Error(`Path of Building has no ${file}`);
+  return commit.sha;
+}
+
 async function fetchTree(version: string): Promise<{ tree: Tree; sha: string }> {
+  if (version.endsWith(".alternate")) {
+    const file = POB_TREE(version);
+    const sha = await pobCommitFor(file);
+    const url = `https://raw.githubusercontent.com/${POB_REPO}/${sha}/${file}`;
+    process.stdout.write(`  ${url}\n`);
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Path of Building's tree returned HTTP ${response.status}`);
+    return { tree: parseLuaTable(await response.text()) as Tree, sha };
+  }
   const sha = await commitFor(version);
   process.stdout.write(`  ${RAW(sha)}\n`);
   const response = await fetch(RAW(sha));
@@ -471,9 +507,24 @@ function clusterSupport(tree: Tree, version: string, sha: string) {
     }
   }
 
+  // A build is saved with its ascendancy's display name, and the tree marks
+  // passives with the id: the alternate tree's Bog Shaman is `Necromancer`'s
+  // slot, and on 3.29 the Warden is `Raider` while `Warden` is Warden of the
+  // Maji. Only names that differ from their id are kept, and the first class
+  // to claim a name keeps it: the alternate tree calls both of the Scion's
+  // slots Scavenger, and only Ascendant's has passives there.
+  const ascendancies: Record<string, string> = {};
+  for (const one of tree.classes ?? []) {
+    for (const ascendancy of one.ascendancies ?? []) {
+      if (!ascendancy.name || ascendancy.name === ascendancy.id || ascendancy.name in ascendancies) continue;
+      ascendancies[ascendancy.name] = ascendancy.id;
+    }
+  }
+
   return {
     version,
     commit: sha,
+    ascendancies,
     orbitRadii: tree.constants.orbitRadii,
     skillsPerOrbit: tree.constants.skillsPerOrbit,
     jewelSlots: tree.jewelSlots ?? [],
