@@ -9,7 +9,9 @@ The archive's import page (`/players/<you>/import`) reads that file.
    (`/my-account/characters`). Opening this page is what gives the session access to character data.
 2. Open DevTools and go to Sources → Snippets → New snippet. Paste `poe2-char-export.js` and run it
    with Ctrl+Enter. It saves `poe2-characters-<account>-<date>.json` to Downloads, pausing 8 seconds
-   between requests. Thirteen characters take about two minutes.
+   between requests. Thirteen characters take about two minutes. The file names the account it came
+   from, which is how the archive knows whose characters they are; if the site does not give the
+   account name, the script asks for it (`Name#1234`) and exports nothing without one.
 3. Upload that file on the archive's import page. Characters already in the archive get their gear
    filled in. A character the archive has never seen needs a league picked for it.
 

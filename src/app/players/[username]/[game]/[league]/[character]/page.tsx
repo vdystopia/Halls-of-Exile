@@ -13,7 +13,8 @@ import { AllStatsTable, AttributeStrip, ResistanceBar, StatColumn } from "@/comp
 import { classNameStyle } from "@/lib/games/class-colors";
 import { classLine, formatPlayed, formatPlayedExact, leagueTitle, leagueWindow } from "@/lib/format";
 import { leagueModifierLabel, leagueModifierTitle } from "@/lib/league-modifiers";
-import { getCharacter, getLeague, getUser } from "@/lib/queries";
+import { getCharacter, getLeague, getUser, hasStoredExport, listAllLeagues } from "@/lib/queries";
+import { ascendanciesFor } from "@/lib/games/classes";
 import { buildSkill, skillArt, skillNamesFor } from "@/lib/games/skills";
 import { clusterLayout, drawnAllocation } from "@/lib/games/poe1/clusters";
 import { chosenMasteries } from "@/lib/games/poe1/masteries";
@@ -374,6 +375,15 @@ export default async function CharacterPage({ params }: Props) {
         slug={character.slug}
         name={character.name}
         level={character.level}
+        className={character.className}
+        ascendancy={character.ascendancy}
+        ascendancies={ascendanciesFor(league.game)}
+        mainSkill={character.mainSkill}
+        leagues={listAllLeagues()
+          .filter((option) => option.game === league.game)
+          .map((option) => ({ slug: option.slug, title: leagueTitle(option) }))}
+        hasCode={Boolean(character.pobCode)}
+        hasExport={hasStoredExport(character.id)}
         skillGem={character.skillGem}
         leagueModifiers={character.leagueModifiers}
         skills={skillNamesFor(league.game)}

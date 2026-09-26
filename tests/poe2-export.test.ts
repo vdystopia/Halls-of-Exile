@@ -242,3 +242,56 @@ test("each export source is replayed against its own mapper's version", async ()
   assert.ok(isExportSource("poe2-site") && isExportSource("poe-api"));
   assert.ok(!isExportSource("pob") && !isExportSource("manual"));
 });
+
+/**
+ * When a character's code outranks the export, the row's columns follow the
+ * code: its level, class and main skill head the build it shows. The export's
+ * are the character today, and the payload is still stored underneath.
+ */
+test("an overwrite onto a character with a code records the code's facts, not the export's", async () => {
+  const { applyImport } = await import("../src/lib/import");
+  const { db } = await import("../src/lib/db");
+  const userId = db
+    .prepare(`INSERT INTO users (username, first_name) VALUES ('poe2-code-overwrite', 'Test')`)
+    .run().lastInsertRowid as number;
+  const league = db.prepare(`SELECT id FROM leagues WHERE game = 'poe2' AND slug = '0.2'`).get() as { id: number };
+  const code = fs.readFileSync(path.join(process.cwd(), "tests", "fixtures", "poe2-pob-0.2.txt"), "utf8").trim();
+  db.prepare(
+    `INSERT INTO characters (user_id, league_id, slug, name, class_name, pob_code, data, parser_version)
+     VALUES (?, ?, 'vsxvxrv', 'vSXVXRv', 'Warrior', ?, '{"source":"pob","items":[]}', 0)`,
+  ).run(userId, league.id, code);
+
+  const result = applyImport({ id: userId, username: "poe2-code-overwrite" }, await read(), {
+    include: (name) => name === "vSXVXRv",
+    leagueFor: () => null,
+    overwrite: () => true,
+  });
+  assert.deepEqual(result.written, ["vSXVXRv"]);
+  const row = db
+    .prepare(`SELECT level, ascendancy, skill_gem, source_payload, data FROM characters WHERE user_id = ?`)
+    .get(userId) as { level: number; ascendancy: string; skill_gem: string; source_payload: string | null; data: string };
+  assert.equal(row.level, 92, "the code's level, not the export's 97");
+  assert.equal(row.ascendancy, "Smith of Kitava");
+  assert.equal(row.skill_gem, "Boneshatter");
+  assert.equal(JSON.parse(row.data).level, 92);
+  assert.ok(row.source_payload, "the export is kept underneath");
+});
+
+/**
+ * A character the account holds nothing for is left out and named: importing
+ * it would write an empty build and mark it archived, so every later import
+ * would skip it as finished.
+ */
+test("a character with nothing equipped is left out of the import, and named", async () => {
+  const { readAccountExport } = await import("../src/lib/games/exports");
+  const file = JSON.parse(fs.readFileSync(FIXTURE, "utf8"));
+  const stripped = file.characters[1];
+  stripped.raw.items.data.equipment = [];
+  const exported = readAccountExport(JSON.stringify(file));
+  const name = String(stripped.raw.items.data.name ?? stripped.name);
+  assert.deepEqual(exported.emptyCharacters, [name]);
+  assert.ok(!exported.characters.some((character) => character.name === name));
+  const whole = readAccountExport(fs.readFileSync(FIXTURE, "utf8"));
+  assert.equal(exported.characters.length, whole.characters.length - 1);
+  assert.deepEqual(whole.emptyCharacters, []);
+});

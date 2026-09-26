@@ -530,7 +530,10 @@ and its payload is stored in `characters.source_payload` for the same reason.
   stamped current, rebuilt or not, so none is re-read every boot; a build the site's export made is
   still rebuilt from it when the row also holds a code that no longer reads.
   `parseCodeFor(game, code)` refuses the other game's code by name. A code carries no character
-  name, so the add form requires one rather than falling back to the main skill. Gear from a
+  name, so the add form requires one rather than falling back to the main skill. When an import
+  onto a character with a code is ticked, the row's level, class, ascendancy and main skill
+  follow the code's build, since that is the build it shows; the export's are today's character
+  and only its payload is kept. Gear from a
   code is drawn from Path of Exile 2's own item-art index (`npm run art:poe2`, from repoe-fork's
   `/poe2/` bases and uniques; single-frame WebP that `art:fetch` downloads into
   `public/items/poe2/`), and a test fails if any equipped item in the fixture code has no picture.
@@ -636,6 +639,23 @@ and its payload is stored in `characters.source_payload` for the same reason.
   finished character should be replaced. So `applyImport` is given a `leagueFor` that always
   returns null and an `overwrite` that always returns false, and the response names what it
   skipped for each reason. Both need the upload page.
+  **A character the export holds nothing for is never imported**, attended or not: no items, no
+  skills and no allocated passives (`isEmptyBuild`) — stripped for the next league, or never
+  geared. Writing one would record an empty build as archived, and every later import would skip
+  it as finished. `readAccountExport` drops them into `emptyCharacters`, and the upload page names
+  them. The Path of Exile 2 exporter has no fallback account either: it asks, or exports nothing,
+  since the account in the file decides whose characters they are.
+- **Editing a character: typed fields are the last word, and a code fills what was left alone.**
+  The form is pre-filled, so a field still holding its saved value is one nobody changed: a code
+  pasted in the same save fills those (class, ascendancy, level) and never one that was edited.
+  The build description (`main_skill`, prose) is only ever filled by a code when empty. A pasted
+  raw code clears the old link. Level is bounded on the server, not just by the field. Changing the
+  name or the league gives the character a new slug in its new place and redirects there; the
+  league list is the character's own game's. The stored code can be removed only when an account
+  export sits underneath to fall back to, and it rebuilds from that; with nothing else the build
+  could never be re-derived, so it is refused. **The form is keyed on the saved values** so it
+  remounts after a save: React resets a form after its action, but a select resets to the option
+  it was first rendered with, so the form showed the old class and a second save wrote it back.
 - **A red or unproven build is never deployed, and a watcher that cannot tell says so.**
   `watch.ps1` reads the commit's check runs before handing over to `update.ps1`, and treats
   four states separately: green deploys, red refuses, pending waits, and unreachable waits but

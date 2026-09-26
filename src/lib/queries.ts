@@ -319,3 +319,8 @@ export function getArchiveTotals() {
     catalogue: row.catalogue as number,
   };
 }
+
+/** Whether a character holds an account export underneath its build, for the build to fall back to. */
+export function hasStoredExport(characterId: number): boolean {
+  return Boolean(db.prepare(`SELECT 1 FROM characters WHERE id = ? AND source_payload IS NOT NULL`).get(characterId));
+}

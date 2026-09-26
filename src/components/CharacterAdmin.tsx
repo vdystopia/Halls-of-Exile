@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { deleteCharacterAction, updateCharacterAction, type ActionState } from "@/lib/actions";
 import { LEAGUE_MODIFIERS, type LeagueModifierId } from "@/lib/league-modifiers";
 import { FormError, FormSuccess } from "./FormError";
@@ -16,6 +16,13 @@ export function CharacterAdmin({
   slug,
   name,
   level,
+  className,
+  ascendancy,
+  ascendancies,
+  mainSkill,
+  leagues,
+  hasCode,
+  hasExport,
   skillGem,
   leagueModifiers,
   skills,
@@ -29,6 +36,17 @@ export function CharacterAdmin({
   slug: string;
   name: string;
   level: number | null;
+  className: string;
+  ascendancy: string | null;
+  /** This game's classes and their ascendancies. */
+  ascendancies: Record<string, string[]>;
+  /** The record's own words for the build. */
+  mainSkill: string | null;
+  /** This game's leagues, newest first, for moving the character. */
+  leagues: { slug: string; title: string }[];
+  hasCode: boolean;
+  /** Whether an account export is stored underneath, for the build to fall back to. */
+  hasExport: boolean;
   skillGem: string | null;
   leagueModifiers: LeagueModifierId[];
   /** Every active skill gem, read on the server. See `SkillSelect`. */
@@ -38,6 +56,27 @@ export function CharacterAdmin({
   isFavorite: boolean;
 }) {
   const [state, formAction] = useActionState(updateCharacterAction, INITIAL);
+  // The class picked in the form, which narrows the ascendancy list. It follows
+  // the saved value when that changes: after a save React resets the form to
+  // the new defaults, and a stale choice here would offer the old class's
+  // ascendancies — and a second save would quietly write the old class back.
+  const [chosenClass, setChosenClass] = useState(className);
+  const [savedClass, setSavedClass] = useState(className);
+  if (savedClass !== className) {
+    setSavedClass(className);
+    setChosenClass(className);
+  }
+  // A class not in the list — "Unknown", from a record that never said — is
+  // still offered, so leaving the field alone changes nothing.
+  const classes = Object.keys(ascendancies).includes(className)
+    ? Object.keys(ascendancies)
+    : [className, ...Object.keys(ascendancies)];
+  const ascendancyOptions = ascendancies[chosenClass] ?? [];
+  // The form is remounted whenever a saved value changes. React resets a form
+  // after its action, but a select resets to the option it was first rendered
+  // with, not to the saved one: the form went on showing the old class after a
+  // save, and saving again wrote the old class back.
+  const saved = JSON.stringify([name, level, className, ascendancy, mainSkill, skillGem, leagueModifiers, notes, played, isFavorite, league]);
 
   return (
     <details className="panel group">
@@ -47,7 +86,7 @@ export function CharacterAdmin({
         <span className="hidden text-xs text-muted group-open:inline">close</span>
       </summary>
       <div className="space-y-6 p-4">
-        <form action={formAction} className="space-y-4">
+        <form key={saved} action={formAction} className="space-y-4">
           <SkillOptions options={skills} />
           <input type="hidden" name="username" value={username} />
           <input type="hidden" name="game" value={game} />
@@ -74,6 +113,72 @@ export function CharacterAdmin({
                 defaultValue={level ?? ""}
               />
             </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="label" htmlFor="edit-class">
+                Class
+              </label>
+              <select
+                id="edit-class"
+                name="className"
+                className="input"
+                defaultValue={className}
+                onChange={(event) => setChosenClass(event.target.value)}
+              >
+                {classes.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="label" htmlFor="edit-ascendancy">
+                Ascendancy
+              </label>
+              <select
+                // Remounted with the class, so an ascendancy of the old class is
+                // never submitted under the new one.
+                key={chosenClass}
+                id="edit-ascendancy"
+                name="ascendancy"
+                className="input"
+                defaultValue={chosenClass === className && ascendancy ? ascendancy : ""}
+              >
+                <option value="">None</option>
+                {ascendancyOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+                {chosenClass === className && ascendancy && !ascendancyOptions.includes(ascendancy) ? (
+                  <option value={ascendancy}>{ascendancy}</option>
+                ) : null}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="label" htmlFor="edit-league">
+              League
+            </label>
+            <select id="edit-league" name="moveTo" className="input" defaultValue={league}>
+              {leagues.map((option) => (
+                <option key={option.slug} value={option.slug}>
+                  {option.title}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-muted">Choosing another league moves the character there.</p>
+          </div>
+          <div>
+            <label className="label" htmlFor="edit-main-skill">
+              The build, in your own words
+            </label>
+            <input id="edit-main-skill" name="mainSkill" className="input" defaultValue={mainSkill ?? ""} />
+            <p className="mt-1 text-xs text-muted">
+              Prose, as the record names it. A pasted code fills this only when it is empty.
+            </p>
           </div>
           <div>
             <label className="label" htmlFor="edit-skill">
@@ -141,6 +246,18 @@ export function CharacterAdmin({
               rows={3}
               className="input resize-y font-mono text-xs"
             />
+            <p className="mt-1 text-xs text-muted">
+              Replaces the build. Fields above that you have not changed take the code&apos;s class, ascendancy and
+              level; anything you changed keeps your value.
+            </p>
+            {hasCode ? (
+              <label className="mt-2 flex items-center gap-2 text-sm text-muted">
+                <input type="checkbox" name="removeCode" className="accent-[#c8aa6e]" disabled={!hasExport} />
+                {hasExport
+                  ? "Remove the stored code and show the game's own export instead"
+                  : "Remove the stored code (not possible: there is no export to fall back to)"}
+              </label>
+            ) : null}
           </div>
           <label className="flex items-center gap-2 text-sm text-muted">
             <input type="checkbox" name="favorite" defaultChecked={isFavorite} className="accent-[#c8aa6e]" />

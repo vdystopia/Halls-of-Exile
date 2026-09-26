@@ -6,7 +6,8 @@ import { db } from "./db";
 import { parseCodeFor, parserVersionFor } from "./games/builds";
 import { emptyBuild, fetchPobCode, isPobUrl, PobError } from "./games/poe1/pob";
 import type { GameId } from "./games/types";
-import { PoeExportError, readAccountExport, type AccountExport } from "./games/exports";
+import { exportVersion, PoeExportError, readAccountExport, rebuildFromStored, type AccountExport } from "./games/exports";
+import { ascendanciesFor } from "./games/classes";
 import {
   applyImport,
   planFor,
@@ -130,6 +131,8 @@ export async function addCharacterAction(_prev: ActionState, formData: FormData)
   const className = text(formData, "className") || data.className || "Unknown";
   const ascendancy = text(formData, "ascendancy") || data.ascendClassName || null;
   const level = integer(formData, "level") ?? data.level ?? null;
+  // The field's min and max are the browser's; a request can say anything.
+  if (level !== null && (level < 1 || level > 100)) return { error: "Level must be a whole number from 1 to 100." };
   const mainSkill = text(formData, "mainSkill") || data.mainSkill || null;
   // The exact gem, for the picture beside the name. A parsed build names one and
   // spells it the way the game does; the field beside it takes the owner's own
@@ -191,76 +194,166 @@ export async function updateCharacterAction(_prev: ActionState, formData: FormDa
 
   const existing = db
     .prepare(`SELECT * FROM characters WHERE user_id = ? AND league_id = ? AND slug = ?`)
-    .get(user.id, league.id, slug) as { id: number; data: string; source_payload: string | null } | undefined;
+    .get(user.id, league.id, slug) as
+    | {
+        id: number;
+        name: string;
+        class_name: string;
+        ascendancy: string | null;
+        level: number | null;
+        pob_code: string | null;
+        source_payload: string | null;
+      }
+    | undefined;
   if (!existing) return { error: "Character not found." };
 
+  // Moving a character is choosing another league of the same game: the league
+  // is always picked by hand, so a wrong pick has to be correctable without
+  // deleting the character and adding it again.
+  const targetSlug = text(formData, "moveTo") || league.slug;
+  const target = targetSlug === league.slug ? league : getLeague(league.game, targetSlug);
+  if (!target) return { error: "That league is not in the archive." };
+
   const input = text(formData, "pobInput");
+  const removeCode = formData.get("removeCode") === "on";
   let data: BuildData | null = null;
-  let code: string | null = null;
-  let url: string | null = null;
+  let code: string | null = existing.pob_code;
+  let url: string | null | undefined;
+  let parserVersion: number | null = null;
+  let apiVersion: number | null = null;
 
   if (input) {
     try {
-      url = isPobUrl(input) ? input : null;
-      code = url ? await fetchPobCode(url) : input;
+      const link = isPobUrl(input) ? input : null;
+      code = link ? await fetchPobCode(link) : input;
       data = parseCodeFor(league.game, code);
+      // A raw code has no link, so the old one goes: "Source" would otherwise
+      // point at the build this one replaced.
+      url = link;
+      parserVersion = parserVersionFor(league.game);
       // A code is the whole build in both games. For Path of Exile 2 that means
       // it replaces everything the site's export brought, gear included; the
       // export's payload stays on the row underneath (see `composePoe2Build`).
     } catch (error) {
       return { error: error instanceof Error ? error.message : "Could not read that build." };
     }
+  } else if (removeCode && existing.pob_code) {
+    // Without its code a character falls back to what the game's own export
+    // said, when it has one. With nothing else to build from, removing the code
+    // would leave a build no source could ever re-derive, so it is refused.
+    if (!existing.source_payload) {
+      return {
+        error:
+          "This character has no other source: removing the code would leave a build nothing can re-derive. Paste a replacement code instead.",
+      };
+    }
+    try {
+      data = rebuildFromStored(JSON.parse(existing.source_payload));
+    } catch {
+      return { error: "The stored export no longer reads, so the code cannot be removed." };
+    }
+    code = null;
+    url = null;
+    apiVersion = exportVersion(data.source);
   }
 
-  const name = text(formData, "name");
-  const level = integer(formData, "level");
-  const notes = text(formData, "notes");
+  // Typed fields are the last word, as they are when a character is added. A
+  // build pasted in the same save fills a field only where it was left as it
+  // was: the form is pre-filled, so an untouched field still holds the old
+  // value, and a code's level replacing a level typed beside it is not a choice
+  // anyone made.
+  const typedName = text(formData, "name") || existing.name;
+  const typedLevel = text(formData, "level");
+  const level = typedLevel ? Number(typedLevel) : null;
+  if (typedLevel && (!Number.isInteger(level) || level! < 1 || level! > 100)) {
+    return { error: "Level must be a whole number from 1 to 100." };
+  }
+  const untouched = (typed: string | number | null, current: string | number | null) => typed === current;
+  const className = text(formData, "className") || existing.class_name;
+  const ascendancy = text(formData, "ascendancy") || null;
+  const classes = ascendanciesFor(league.game);
+  if (className !== existing.class_name && !(className in classes)) {
+    return { error: `${className} is not a class in this game.` };
+  }
+  const changed = className !== existing.class_name || ascendancy !== existing.ascendancy;
+  if (ascendancy && changed && !(classes[className] ?? []).includes(ascendancy)) {
+    return { error: `${ascendancy} is not an ascendancy of the ${className}.` };
+  }
+  const fromBuild = data && data.source !== "manual" ? data : null;
+  const finalClass = (fromBuild && untouched(className, existing.class_name) ? fromBuild.className : null) || className;
+  const finalAscendancy =
+    (fromBuild && untouched(ascendancy, existing.ascendancy) ? fromBuild.ascendClassName : null) || ascendancy;
+  const finalLevel = (fromBuild && untouched(level, existing.level) ? fromBuild.level : null) ?? level;
+
+  // The record's own words for the build. A code names only the gem with the
+  // most links, so it fills this when it is empty and never replaces it.
+  const mainSkill = text(formData, "mainSkill") || fromBuild?.mainSkill || null;
   // Typed in by hand, so it is the last word: emptying the field clears the gem
   // rather than restoring whatever was there before. A build pasted in at the
   // same time fills it only when the field is left blank.
-  const skillGem = text(formData, "skillGem") || data?.mainSkill || null;
+  const skillGem = text(formData, "skillGem") || fromBuild?.mainSkill || null;
   // Checkboxes, so the form states the whole set every time it is submitted and
   // unticking the last one clears the column. There is nothing to merge with:
   // an absent box means "not this", not "unknown".
   const leagueModifiers = formatLeagueModifiers(formData.getAll("leagueModifiers").map(String));
+  const notes = text(formData, "notes");
   const playedMinutes = parsePlayed(text(formData, "played"));
   const favorite = formData.get("favorite") ? 1 : 0;
 
+  // A new name or a new league is a new address. The slug follows the name, so
+  // a renamed character is not left at a URL spelling its old one.
+  const renamed = typedName !== existing.name;
+  const moved = target.id !== league.id;
+  const newSlug = renamed || moved ? uniqueSlug(user.id, target.id, slugify(typedName), existing.id) : slug;
+
   db.prepare(
     `UPDATE characters SET
-       name        = COALESCE(NULLIF(?, ''), name),
-       level       = COALESCE(?, level),
-       main_skill  = COALESCE(NULLIF(?, ''), main_skill),
+       league_id   = ?,
+       slug        = ?,
+       name        = ?,
+       level       = ?,
+       main_skill  = ?,
        skill_gem   = ?,
        league_modifiers = ?,
-       class_name  = COALESCE(NULLIF(?, ''), class_name),
-       ascendancy  = COALESCE(NULLIF(?, ''), ascendancy),
+       class_name  = ?,
+       ascendancy  = ?,
        notes          = ?,
        played_minutes = ?,
        is_favorite    = ?,
-       pob_code    = COALESCE(?, pob_code),
-       pob_url     = COALESCE(?, pob_url),
+       pob_code    = ?,
+       pob_url     = CASE WHEN ? THEN ? ELSE pob_url END,
        data        = COALESCE(?, data),
-       parser_version = COALESCE(?, parser_version)
+       parser_version = COALESCE(?, parser_version),
+       api_version    = COALESCE(?, api_version)
      WHERE id = ?`,
   ).run(
-    name,
-    data?.level ?? level,
-    data?.mainSkill ?? "",
+    target.id,
+    newSlug,
+    typedName,
+    finalLevel,
+    mainSkill,
     skillGem,
     leagueModifiers,
-    data?.className ?? "",
-    data?.ascendClassName ?? "",
+    finalClass,
+    finalAscendancy,
     notes || null,
     playedMinutes,
     favorite,
     code,
-    url,
+    url !== undefined ? 1 : 0,
+    url ?? null,
     data ? JSON.stringify(data) : null,
-    data ? parserVersionFor(league.game) : null,
+    parserVersion,
+    apiVersion,
     existing.id,
   );
 
+  revalidatePath(`/players/${username}`);
+  revalidatePath(`/players/${username}/${game}/${leagueSlug}`);
+  if (newSlug !== slug || moved) {
+    revalidatePath(`/players/${username}/${game}/${target.slug}`);
+    redirect(`/players/${username}/${game}/${target.slug}/${newSlug}`);
+  }
   revalidatePath(`/players/${username}/${game}/${leagueSlug}/${slug}`);
   return { ok: true };
 }

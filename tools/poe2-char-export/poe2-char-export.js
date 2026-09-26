@@ -20,8 +20,6 @@
 //
 // Nothing is renamed or dropped: each response is stored exactly as it arrived, under `raw`.
 (async () => {
-  // Used only when the account cannot be read off the site (see accountName below).
-  const FALLBACK_ACCOUNT = 'zxBlasphemy#5164';
   const BASE = 'https://pathofexile2.com';
   const MIN_GAP_MS = 8000;
   const REQUESTS = [];
@@ -100,8 +98,14 @@
     } catch (error) {
       console.warn('Could not read the account name:', error.message);
     }
-    console.warn(`Using the fallback account ${FALLBACK_ACCOUNT}. Edit FALLBACK_ACCOUNT if that is not yours.`);
-    return FALLBACK_ACCOUNT;
+    // No built-in fallback: an export names the account it came from, and the
+    // archive files it under whichever player holds that account. A default
+    // would file anyone else's characters under that player.
+    const typed = (window.prompt('Could not read your account name from the site. Type it, as Name#1234:') || '').trim();
+    if (!/^.{2,}#\d{4}$/.test(typed)) {
+      throw new Error('No account name, so nothing was exported: every export has to name the account it came from.');
+    }
+    return typed;
   }
 
   const account = await accountName();

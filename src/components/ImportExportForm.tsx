@@ -122,6 +122,12 @@ export function ImportExportForm({
               {plan.skippedCharacters.join(", ")}. Export again to include them.
             </p>
           ) : null}
+          {plan.emptyCharacters.length ? (
+            <p className="border-b border-line px-4 py-2.5 text-xs text-muted">
+              Left out, because the account holds nothing for them — no gear, no skills, no passives:{" "}
+              {plan.emptyCharacters.join(", ")}. Archiving one would record an empty build as finished.
+            </p>
+          ) : null}
           <ul className="divide-y divide-line">
             {plan.rows.map((row) => (
               <li key={rowKey(row)} className="flex flex-wrap items-center gap-3 px-4 py-2.5 text-sm">

@@ -77,6 +77,8 @@ export type ImportPlan = {
   account: string;
   /** Characters in the file that could not be read, named so the page can say so. */
   skippedCharacters: string[];
+  /** Characters the file holds nothing for, left out rather than archived empty. */
+  emptyCharacters: string[];
   generatedAt: string | null;
   rows: ImportRow[];
   /** The staged upload this plan was read from; see `stageExport`. */
@@ -252,6 +254,7 @@ export function planFor(userId: number, exported: AccountExport, token: string):
     game: exported.game,
     account: exported.account,
     skippedCharacters: exported.skippedCharacters,
+    emptyCharacters: exported.emptyCharacters,
     generatedAt: exported.generatedAt,
     rows,
     token,
@@ -377,12 +380,17 @@ export function applyImport(
         // stored underneath. Path of Exile 1 keeps its rule: the export is the build.
         const composed =
           composeBuild(exported.game, { pobCode: existing.pob_code, sitePayload: stored, fallback: build }) ?? build;
+        // The row's columns describe the build it shows. When the code's build
+        // wins, its level, class and main skill are the ones to record: the
+        // export's are the character today, and heading a build saved at level
+        // 89 with "Level 97" is two sources' facts presented as one.
+        const fromCode = composed !== build;
         update.run(
-          character.baseClass ?? known(existing.class_name) ?? "Unknown",
-          character.ascendancy ?? known(existing.ascendancy),
-          character.level,
-          known(existing.main_skill) ?? build.mainSkill ?? null,
-          chosen ?? known(existing.skill_gem) ?? build.mainSkill ?? null,
+          (fromCode ? composed.className : character.baseClass) ?? known(existing.class_name) ?? "Unknown",
+          (fromCode ? composed.ascendClassName : character.ascendancy) ?? known(existing.ascendancy),
+          (fromCode ? composed.level : null) ?? character.level,
+          known(existing.main_skill) ?? composed.mainSkill ?? null,
+          chosen ?? known(existing.skill_gem) ?? composed.mainSkill ?? null,
           JSON.stringify(composed),
           payload,
           version,

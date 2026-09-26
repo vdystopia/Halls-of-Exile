@@ -35,6 +35,13 @@ export type AccountExport = PoeExport & {
   game: GameId;
   /** Characters in the file that could not be read, by name, so the page can say so. */
   skippedCharacters: string[];
+  /**
+   * Characters the file holds nothing for — no items, no skills, no passives:
+   * a character stripped for the next league, or one never geared. Importing
+   * one would write an empty build and mark it as archived, and every later
+   * import would then skip it as finished. So they are left out, and named.
+   */
+  emptyCharacters: string[];
 };
 
 export { PoeExportError };
@@ -46,8 +53,24 @@ export function readAccountExport(text: string): AccountExport {
   } catch {
     throw new PoeExportError("That file is not JSON.");
   }
-  if ((parsed as { game?: unknown })?.game === "poe2") return { ...readPoe2Export(parsed), game: "poe2" };
-  return { ...readPoeExport(text), game: "poe1", skippedCharacters: [] };
+  const read: Omit<AccountExport, "emptyCharacters"> =
+    (parsed as { game?: unknown })?.game === "poe2"
+      ? { ...readPoe2Export(parsed), game: "poe2" }
+      : { ...readPoeExport(text), game: "poe1", skippedCharacters: [] };
+  const exported: AccountExport = { ...read, emptyCharacters: [] };
+  const kept = exported.characters.filter((character) => !isEmptyBuild(buildFromExport(character, exported)));
+  exported.emptyCharacters = exported.characters.filter((character) => !kept.includes(character)).map((c) => c.name);
+  exported.characters = kept;
+  return exported;
+}
+
+/** A build that records nothing: no item, no skill and no allocated passive. */
+export function isEmptyBuild(build: BuildData): boolean {
+  return (
+    build.items.length === 0 &&
+    build.skillGroups.length === 0 &&
+    !build.trees.some((tree) => (tree.nodes?.length ?? 0) > 0)
+  );
 }
 
 export function buildFromExport(character: PoeExportCharacter, exported: AccountExport): BuildData {
