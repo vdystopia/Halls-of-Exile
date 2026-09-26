@@ -522,11 +522,22 @@ and its payload is stored in `characters.source_payload` for the same reason.
   2026-09-26 and too few skills repeat for "Most built" to say anything). **The Classes panel is
   two halves** (`ClassBreakdown`): a pie by class on the left, the table on the right. The pie
   is by class, never by ascendancy — its hover/focus flyout is where the ascendancies and their
-  counts are. Geometry is `src/lib/pie.ts` (twelve o'clock, clockwise, a lone slice is a circle,
-  a zero takes no slice; tested), colours are each class's own from `classSwatch` (a hybrid runs
-  its attributes into each other, Unknown is stone), resolved on the server so the client
-  component only draws. Because the game's class hues sit close for some pairs, identity never
-  rests on colour: slices are parted by a 2px hair of surface, a slice carries its name when
+  counts are. **It is a map of the tree, not a ranking**: `classRingOrder` puts the classes in
+  the passive tree's clockwise order — Witch centred on twelve o'clock, then Shadow, Ranger,
+  Duelist, Marauder, Templar, with Scion and Unknown last — by each class's attributes on the
+  ring int → dex/int → dex → str/dex → str → int/str, so Path of Exile 2 takes the same places
+  (Witch and Sorceress share the top). The owner asked for this order explicitly; the first
+  version ranked by count and read as nothing. Geometry is `src/lib/pie.ts` (twelve o'clock,
+  clockwise, an `offset` centres the top group, a lone slice is a circle, a zero takes no slice;
+  tested). **It is drawn as a stained-glass wheel in the game's keystone ring**
+  (`keystoneFrame(game)`, the frames now saved at the wiki's native 216/220px, never enlarged,
+  because 160px was blurry at 380px): a solid class is its gem lit mid-depth and dark at hub and
+  rim (radial gradient), a hybrid runs along its arc from the neighbour before it into the one
+  after (`classFill`; Shadow is blue → green) so the disc is one continuous wheel, over which
+  sit a gloss from the upper left and a fractal-noise grain (SVG filter, soft-light), with a
+  gold-over-black hairline between panes and a hub at the centre. The owner called the first,
+  flat-colour version appalling; keep the texture and the ring. Because the game's class hues
+  sit close for some pairs, identity never rests on colour: a slice carries its name when
   the name fits the room its wedge offers at the label point (`room` in `pie.ts`: the chord
   across an upright wedge, more for one pointing sideways) and no placed label would overprint
   it, and the legend lists all with counts and shares. Slice labels and legend text wear text

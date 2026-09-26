@@ -44,7 +44,7 @@ const round = (value: number) => Math.round(value * 100) / 100;
 export function pieSlices<T>(
   items: T[],
   value: (item: T) => number,
-  geometry: { cx: number; cy: number; radius: number; labelRadius?: number } = { cx: 120, cy: 120, radius: 100 },
+  geometry: { cx: number; cy: number; radius: number; labelRadius?: number; offset?: number } = { cx: 120, cy: 120, radius: 100 },
 ): PieSlice<T>[] {
   const { cx, cy, radius } = geometry;
   const labelRadius = geometry.labelRadius ?? radius * 0.66;
@@ -53,7 +53,9 @@ export function pieSlices<T>(
   if (!total) return [];
 
   const slices: PieSlice<T>[] = [];
-  let start = 0;
+  // Where the first slice begins, in degrees from twelve o'clock: negative to
+  // centre a leading group on the top, the way the class ring centres Witch.
+  let start = geometry.offset ?? 0;
   for (const entry of kept) {
     const sweep = (entry.value / total) * 360;
     const end = start + sweep;

@@ -66,3 +66,12 @@ test("a point at a bearing lands where a clock hand would", () => {
   assert.deepEqual(pointAt(0, 0, 10, 180), { x: 0, y: 10 });
   assert.deepEqual(pointAt(0, 0, 10, 270), { x: -10, y: 0 });
 });
+
+/** The class ring: an offset lets a leading group be centred on the top, the way Witch is. */
+test("an offset starts the wheel before twelve o'clock so the first slice is centred on it", () => {
+  const slices = pieSlices([{ n: 25 }, { n: 25 }, { n: 50 }], (item) => item.n, { ...geometry, offset: -45 });
+  assert.equal(slices[0].start, -45);
+  assert.equal(slices[0].end, 45, "a quarter slice straddles the top evenly");
+  assert.equal(slices[2].end, 315);
+  assert.deepEqual(slices[0].label, pointAt(120, 120, 66, 0), "and its label sits straight up");
+});

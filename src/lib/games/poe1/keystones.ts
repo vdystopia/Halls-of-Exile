@@ -29,3 +29,8 @@ export function keystoneIcon(name?: string | null): KeystoneIcon | null {
     frame: { src: "/keystones/poe1/frame.webp", size: index.frame.size, window: index.frame.window },
   };
 }
+
+/** The frame alone — the carved ring every keystone sits in — for anything else drawn in it. */
+export function keystoneFrame(): KeystoneIcon["frame"] {
+  return { src: `/keystones/poe1/frame.webp`, size: index.frame.size, window: index.frame.window };
+}

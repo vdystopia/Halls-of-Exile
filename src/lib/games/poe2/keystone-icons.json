@@ -1,8 +1,8 @@
 {
   "size": 96,
   "frame": {
-    "size": 160,
-    "window": 0.463
+    "size": 224,
+    "window": 0.46
   },
   "icons": {
     "Ancestral Bond": {

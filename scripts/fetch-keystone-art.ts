@@ -144,11 +144,13 @@ async function download(info: ImageInfo, destination: string): Promise<"saved" |
 /**
  * The frame every keystone sits in, one per game ("Keystone passive frame.png"
  * on each wiki: a carved ring with a transparent window in its middle), saved
- * with its alpha at `FRAME_SIZE` and measured: the window's width as a fraction
+ * with its alpha at the wiki's own size — 216px and 220px, never enlarged; the
+ * class wheel draws it at 380px and it is the largest copy there is — and
+ * measured: the window's width as a fraction
  * of the frame's, read along the middle row, is what the panel sizes the icon
  * to, so the picture fills the window and its corners tuck under the ring.
  */
-const FRAME_SIZE = 160;
+const FRAME_SIZE = 224;
 const FRAME_TITLE = "File:Keystone passive frame.png";
 
 async function fetchFrame(source: Source): Promise<{ size: number; window: number } | null> {
@@ -162,7 +164,10 @@ async function fetchFrame(source: Source): Promise<{ size: number; window: numbe
     fs.mkdirSync(source.output, { recursive: true });
     fs.writeFileSync(
       destination,
-      await sharp(buffer).resize(FRAME_SIZE, FRAME_SIZE, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } }).webp({ quality: QUALITY }).toBuffer(),
+      await sharp(buffer)
+        .resize(FRAME_SIZE, FRAME_SIZE, { fit: "contain", withoutEnlargement: true, background: { r: 0, g: 0, b: 0, alpha: 0 } })
+        .webp({ quality: QUALITY })
+        .toBuffer(),
     );
   }
   const { data, info: raw } = await sharp(destination).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
@@ -173,7 +178,7 @@ async function fetchFrame(source: Source): Promise<{ size: number; window: numbe
   while (cx + right < raw.width && alpha(cx + right, cy) < 40) right += 1;
   let left = 0;
   while (cx - left >= 0 && alpha(cx - left, cy) < 40) left += 1;
-  return { size: FRAME_SIZE, window: Math.round(((left + right) / raw.width) * 1000) / 1000 };
+  return { size: raw.width, window: Math.round(((left + right) / raw.width) * 1000) / 1000 };
 }
 
 async function fetchGame(game: string, source: Source) {
