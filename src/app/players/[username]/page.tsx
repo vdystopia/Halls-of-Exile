@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { AddLeagueForm } from "@/components/AddLeagueForm";
 import { BuildCard } from "@/components/BuildCard";
 import { BuildRanking } from "@/components/BuildRanking";
-import { ClassBreakdown } from "@/components/ClassBreakdown";
+import { ClassRollup } from "@/components/ClassRollup";
 import { CharacterBanner } from "@/components/CharacterBanner";
 import { CharacterMatrix, type MatrixRow } from "@/components/CharacterMatrix";
 import { LeagueIndex } from "@/components/LeagueIndex";
@@ -224,7 +224,7 @@ export default async function PlayerPage({ params, searchParams }: Props) {
           }
           aside={<span className="text-muted">open a class for its ascendancies</span>}
         >
-          <ClassBreakdown game={game} classes={classes} />
+          <ClassRollup game={game} classes={classes} />
         </Section>
       ))}
 

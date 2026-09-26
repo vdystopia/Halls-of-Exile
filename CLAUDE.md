@@ -519,43 +519,11 @@ and its payload is stored in `characters.source_payload` for the same reason.
 - **The player page's metrics are computed in `src/lib/metrics.ts`, per game.** Classes roll up
   into ascendancies (characters, leagues, /played, average and highest level; the rollup still
   computes `level90s` and `topSkill` but the table shows neither — the 90+ column went on
-  2026-09-26 and too few skills repeat for "Most built" to say anything). **The Classes panel is
-  two halves** (`ClassBreakdown`): a pie by class on the left, the table on the right. The pie
-  is by class, never by ascendancy — its hover/focus flyout is where the ascendancies and their
-  counts are. **It is a map of the tree, not a ranking**: `classRingOrder` puts the classes in
-  the passive tree's clockwise order — Witch centred on twelve o'clock, then Shadow, Ranger,
-  Duelist, Marauder, Templar, with Scion and Unknown last — by each class's attributes on the
-  ring int → dex/int → dex → str/dex → str → int/str, so Path of Exile 2 takes the same places
-  (Witch and Sorceress share the top). The owner asked for this order explicitly; the first
-  version ranked by count and read as nothing. Geometry is `src/lib/pie.ts` (twelve o'clock,
-  clockwise, an `offset` centres the top group, a lone slice is a circle, a zero takes no slice;
-  tested). **It is drawn as a stained-glass wheel with a slim gold rim** — the owner tried the
-  keystone ring as a border and found it far too thick; the frames stay at the wiki's native
-  size for the keystone tiles. **Scion is the hub**: the six ring classes are bands of a ring
-  (`innerRadius`), and Scion, the tree's centre class (`classRingOrder`'s `centre`), is a disc
-  in the middle painted at the same angles as the ring so its blue faces Witch and its green
-  Ranger, its area its share of the characters (clamped to 20–50% of the radius), with a gold
-  border between hub and ring. **"Unknown class" is not on the wheel at all**: the finished
-  archive will have none, and the table still lists it. A solid class is its gem lit mid-depth
-  and dark at the ends (radial gradient), a hybrid runs along its arc from the neighbour before
-  it into the one after (`classFill`; Shadow is blue → green) so the ring is one continuous
-  wheel, over which sit a gloss from the upper left and a fractal-noise grain (SVG filter,
-  soft-light), with a gold-over-black hairline between panes. **Every ring class's name is set
-  along its slice's radius**, reading outward from the hub (turned to read inward on the left
-  half so it stays upright), so it fits however thin the slice; Scion's alone is level in the
-  hub. The owner called the first, flat-colour, count-ordered version appalling. Because the
-  game's class hues sit close for some pairs, identity never rests on colour: a slice carries its name when
-  the name fits the room its wedge offers at the label point (`room` in `pie.ts`: the chord
-  across an upright wedge, more for one pointing sideways) and no placed label would overprint
-  it, and the legend lists all with counts and shares. Slice labels and legend text wear text
-  tokens, not the series colour. The flyout is portalled to the body (a sticky ancestor is a
-  stacking context under the site header), flips above the pointer in the lower half of the
-  window, is the focused slice's `aria-describedby`, closes on Escape and on scroll, and each
-  slice hides it on mouse leave. The pie sticks to the top of its column (`lg:top-20`, clearing
-  the 55px header) while the table grows. **The table's columns follow the table's own width**
-  (`@container` with `@md`/`@lg` variants), not the window's: sized by the window it overflowed
-  its half of the panel between 1024 and 1107px and clipped the Highest column. Its /played
-  figure is centred over its bar.
+  2026-09-26 and too few skills repeat for "Most built" to say anything). **A class pie was tried on 2026-09-26 and scrapped the same day** at the owner's request,
+  after three versions (by count, then in the tree's order in the keystone ring, then a
+  stained-glass wheel with Scion at the hub); the table alone is the Classes panel, full width,
+  with its /played figure centred over its bar and its columns following the table's own width
+  (`@container`). Do not bring the pie back.
   Builds are grouped by skill and ranked two ways, by character count (the default) or
   by /played, each breaking ties with the other; `BuildRanking` only picks which
   server-rendered grid to show. Witch and Ranger are classes in both games and skills share
