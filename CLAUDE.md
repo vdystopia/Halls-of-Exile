@@ -505,8 +505,13 @@ and its payload is stored in `characters.source_payload` for the same reason.
   there is nothing missing to remark on.
 - **The character header's left side is name, level · class, and the skill — nothing else.**
   The skill shows only as a named gem with its picture, so record prose (`mainSkill`, "chaos
-  dot") never gets a tag there; /played sits on the right under the league dates, and the bandit
-  moved to the passive tree summary. The name is coloured by its class's starting attributes
+  dot") never gets a tag there. **The right side is three boxes, league, dates and /played,
+  centred on the logo's height** (`minHeight: PORTRAIT_HEIGHT` with `justify-center`), so they
+  sit level with the middle of the header rather than hanging from its top; the bandit moved to
+  the passive tree summary. **Dates are written one way everywhere: "May 13, 2022"**, from
+  `formatDate`, full month, unpadded day, comma. The league index used to pad the day and drop
+  the comma to line dates up in a column, and the rest of the site wrote "13 May 2022"; the
+  owner asked for one format on 2026-09-26 and there is no second order left to reach for. The name is coloured by its class's starting attributes
   (`src/lib/games/class-colors.ts`, per game): str red, dex green, int blue — one attribute runs
   light to dark, a hybrid runs one colour into the other, Scion runs all three. `.gem-name` in
   `globals.css` puts a gem's gloss and facet over it. A class the map lacks keeps the gold. Path

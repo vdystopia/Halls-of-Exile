@@ -127,9 +127,12 @@ export default async function CharacterPage({ params }: Props) {
             </div>
           </div>
           {/* The league's logo closes the header on the right, at the
-              portrait's height, so the two pictures bracket it top and bottom. */}
-          <div className="flex flex-wrap items-start justify-end gap-6">
-            <div className="flex flex-col items-end gap-2 text-right">
+              portrait's height, so the two pictures bracket it top and bottom.
+              The column of tags beside it is centred on the logo's height, so
+              league, dates and /played sit level with the middle of the header
+              rather than hanging from its top edge. */}
+          <div className="flex flex-wrap items-center justify-end gap-6">
+            <div className="flex flex-col items-end justify-center gap-2 text-right" style={{ minHeight: PORTRAIT_HEIGHT }}>
               <span className="tag">{leagueTitle(league)}</span>
               {/* Which variant of that league it was played in. One league is
                   several parallel leagues, and only the character knows which. */}
@@ -142,9 +145,10 @@ export default async function CharacterPage({ params }: Props) {
                   ))}
                 </div>
               ) : null}
-              <p className="text-xs text-muted">
+              {/* In a box like the league and /played, so the three read as one column of facts. */}
+              <span className="tag">
                 {leagueWindow(league.startDate, league.endDate, Boolean(league.endDateEstimated))}
-              </p>
+              </span>
               {played ? <span className="tag">/played {played}</span> : null}
               <div className="flex flex-wrap justify-end gap-2">
                 {character.pobUrl ? (

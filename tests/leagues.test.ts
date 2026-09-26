@@ -107,12 +107,13 @@ test("a league with unconfirmed dates says so", () => {
 });
 
 test("an estimated end date is rendered as a projection", () => {
-  assert.equal(leagueWindow("2026-07-24", "2026-11-24", true), "24 Jul 2026 — ~24 Nov 2026");
-  assert.equal(leagueWindow("2026-07-24", "2026-11-24", false), "24 Jul 2026 — 24 Nov 2026");
-  assert.equal(leagueWindow("2026-07-24", null), "24 Jul 2026 — ongoing");
+  assert.equal(leagueWindow("2026-07-24", "2026-11-24", true), "July 24, 2026 — ~November 24, 2026");
+  assert.equal(leagueWindow("2026-07-24", "2026-11-24", false), "July 24, 2026 — November 24, 2026");
+  assert.equal(leagueWindow("2026-07-24", null), "July 24, 2026 — ongoing");
   assert.equal(leagueWindow(null, null), "dates unknown");
-  assert.equal(leagueWindow("2026-07-04", "2026-11-24", true, "month-first"), "Jul 04 2026 — ~Nov 24 2026");
-  assert.equal(leagueWindow("2026-07-04", null, false, "month-first"), "Jul 04 2026 — ongoing");
+  // One format everywhere, the day unpadded: "May 13, 2022", never "13 May 2022" or "May 13 2022".
+  assert.equal(leagueWindow("2022-05-13", "2022-08-16"), "May 13, 2022 — August 16, 2022");
+  assert.equal(leagueWindow("2026-07-04", null), "July 4, 2026 — ongoing");
 });
 
 test("a league is running until its end date passes", () => {
