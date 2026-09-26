@@ -63,7 +63,7 @@ export default function HomePage() {
           {
             step: "01",
             title: "Claim a name",
-            body: "A username and a first name. No password, no email — every archive here is public by design.",
+            body: "A username, nothing more. No password, no email — every archive here is public by design.",
           },
           {
             step: "02",

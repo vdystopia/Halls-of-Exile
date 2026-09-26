@@ -38,8 +38,8 @@ if (!fs.existsSync(source)) {
 }
 
 const PLAYERS = {
-  dystopia: { firstName: "Dystopia", tagline: "Every character, every league, since Bestiary." },
-  valkyrie: { firstName: "Valkyrie", tagline: "Mines, traps, and the occasional slammer." },
+  dystopia: { tagline: "Every character, every league, since Bestiary." },
+  valkyrie: { tagline: "Mines, traps, and the occasional slammer." },
 };
 
 /** The shape `mapCharacter` merges over: a manual entry with no build behind it. */
@@ -78,7 +78,7 @@ const db = new Database(source);
 db.pragma("foreign_keys = ON");
 
 const findUser = db.prepare(`SELECT id FROM users WHERE username = ? COLLATE NOCASE`);
-const addUser = db.prepare(`INSERT INTO users (username, first_name, tagline) VALUES (?, ?, ?)`);
+const addUser = db.prepare(`INSERT INTO users (username, tagline) VALUES (?, ?)`);
 const findLeague = db.prepare(`SELECT id FROM leagues WHERE game = ? AND slug = ?`);
 // A character that has been imported from anywhere holds a build this file
 // must not overwrite. Older archives predate the column, and have none.
@@ -135,7 +135,7 @@ const run = db.transaction(() => {
     }
   }
   for (const [username, profile] of Object.entries(PLAYERS)) {
-    if (!findUser.get(username)) addUser.run(username, profile.firstName, profile.tagline);
+    if (!findUser.get(username)) addUser.run(username, profile.tagline);
   }
   for (const entry of entries) {
     const user = findUser.get(entry.player);

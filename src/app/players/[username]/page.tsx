@@ -7,6 +7,7 @@ import { ClassRollup } from "@/components/ClassRollup";
 import { CharacterBanner } from "@/components/CharacterBanner";
 import { LeagueIndex } from "@/components/LeagueIndex";
 import { PlayerAdmin } from "@/components/PlayerAdmin";
+import { PlayerPicture } from "@/components/PlayerPicture";
 import { avatarUrl } from "@/lib/avatars";
 import { Section } from "@/components/Section";
 import { formatPlayedTotal } from "@/lib/format";
@@ -84,13 +85,17 @@ export default async function PlayerPage({ params, searchParams }: Props) {
 
   return (
     <div className="space-y-8">
+      {/* The player tile, opened up: picture hard left with the username beside
+          it, the figures on the right. */}
       <header className="panel p-6">
         <div className="flex flex-wrap items-start justify-between gap-6">
-          <div>
-            <p className="eyebrow">Archive of</p>
-            <h1 className="font-display mt-2 text-3xl tracking-wide text-forest">{user.username}</h1>
-            <p className="mt-1 text-sm text-aubergine">{user.firstName}</p>
-            {user.tagline ? <p className="mt-3 max-w-xl text-sm text-parchment/75 italic">“{user.tagline}”</p> : null}
+          <div className="flex min-w-0 items-center gap-5">
+            <PlayerPicture username={user.username} src={avatarUrl(user.username, user.avatarVersion)} className="size-24 sm:size-28" />
+            <div className="min-w-0">
+              <p className="eyebrow">Archive of</p>
+              <h1 className="display mt-2 text-3xl break-words sm:text-4xl">{user.username}</h1>
+              {user.tagline ? <p className="mt-2 max-w-xl text-sm text-parchment/75 italic">“{user.tagline}”</p> : null}
+            </div>
           </div>
           {/* Columns as wide as their contents, not four equal shares: the /played
               figure is the widest, and equal columns spread every stat apart to
@@ -99,7 +104,8 @@ export default async function PlayerPage({ params, searchParams }: Props) {
             {[
               { label: "Characters", value: totals.characters },
               { label: "Leagues played", value: totals.leagues },
-              { label: "Highest level", value: totals.highestLevel ?? "—" },
+              // Every character's level added up: 90 + 91 + 100 reads 281.
+              { label: "Total levels", value: totals.totalLevels },
               {
                 label: "Total /played",
                 value: total ? (
@@ -205,7 +211,6 @@ export default async function PlayerPage({ params, searchParams }: Props) {
 
       <PlayerAdmin
         username={user.username}
-        firstName={user.firstName}
         tagline={user.tagline}
         poeAccount={user.poeAccount}
         avatar={avatarUrl(user.username, user.avatarVersion)}

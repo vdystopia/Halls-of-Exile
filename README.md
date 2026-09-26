@@ -9,7 +9,7 @@ were built in.
 
 ## What it does
 
-- **Public player profiles.** A username and a first name. No password, no email, no sessions —
+- **Public player profiles.** A username, and nothing else to identify a player by. No password, no email, no sessions —
   every archive here is meant to be browsed by anyone.
 - **A player directory** at `/players`, listing everyone with their character and league counts.
 - **Both games, kept apart.** Path of Exile and Path of Exile 2 share class, skill and item names
@@ -378,7 +378,7 @@ which then takes the hand-added row over, characters and all. Per-player challen
 
 | Table | What it holds |
 | --- | --- |
-| `users` | username (unique, case-insensitive), first name, optional tagline |
+| `users` | username (unique, case-insensitive), optional tagline and Path of Exile account |
 | `leagues` | patch, name, expansion, start/end dates, challenge total, custom flag |
 | `league_records` | one row per player per league: challenges completed, total override, notes |
 | `characters` | name, slug, class, ascendancy, level, main skill, memories, `/played` time, the PoB code or the account-export payload it was built from, and the parsed build JSON |

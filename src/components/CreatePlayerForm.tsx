@@ -29,12 +29,6 @@ export function CreatePlayerForm() {
         </p>
       </div>
       <div>
-        <label className="label" htmlFor="firstName">
-          First name
-        </label>
-        <input id="firstName" name="firstName" className="input" autoComplete="off" required />
-      </div>
-      <div>
         <label className="label" htmlFor="tagline">
           Tagline <span className="text-muted/60">(optional)</span>
         </label>

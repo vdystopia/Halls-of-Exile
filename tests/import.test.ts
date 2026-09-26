@@ -17,7 +17,7 @@ process.env.ARCHIVE_DB = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "halls-
 async function setup(username: string, account: string | null) {
   const { db } = await import("../src/lib/db");
   const user = db
-    .prepare(`INSERT INTO users (username, first_name, poe_account) VALUES (?, 'Test', ?)`)
+    .prepare(`INSERT INTO users (username, poe_account) VALUES (?, ?)`)
     .run(username, account).lastInsertRowid as number;
   return { db, user: { id: user, username } };
 }

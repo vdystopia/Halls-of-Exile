@@ -15,14 +15,12 @@ const INITIAL: ActionState = {};
  */
 export function PlayerAdmin({
   username,
-  firstName,
   tagline,
   poeAccount,
   avatar,
   characters,
 }: {
   username: string;
-  firstName: string;
   tagline: string | null;
   poeAccount: string | null;
   /** The player's picture URL, if they have one. */
@@ -41,36 +39,21 @@ export function PlayerAdmin({
 
       <form action={renameAction} className="mt-4 space-y-4 border-t border-line pt-4">
         <input type="hidden" name="username" value={username} />
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className="label" htmlFor="newUsername">
-              Username
-            </label>
-            <input
-              id="newUsername"
-              name="newUsername"
-              className="input"
-              defaultValue={username}
-              autoComplete="off"
-              required
-            />
-            <p className="mt-1 text-xs text-muted">
-              3–24 characters. Their pages move to /players/&lt;this&gt;, so old links stop working.
-            </p>
-          </div>
-          <div>
-            <label className="label" htmlFor="firstName">
-              Display name
-            </label>
-            <input
-              id="firstName"
-              name="firstName"
-              className="input"
-              defaultValue={firstName}
-              autoComplete="off"
-              required
-            />
-          </div>
+        <div>
+          <label className="label" htmlFor="newUsername">
+            Username
+          </label>
+          <input
+            id="newUsername"
+            name="newUsername"
+            className="input"
+            defaultValue={username}
+            autoComplete="off"
+            required
+          />
+          <p className="mt-1 text-xs text-muted">
+            3–24 characters. Their pages move to /players/&lt;this&gt;, so old links stop working.
+          </p>
         </div>
         <div>
           <label className="label" htmlFor="tagline">

@@ -113,12 +113,10 @@ function slugify(value: string): string {
 const PLAYERS = [
   {
     username: "zizaran",
-    firstName: "Ziz",
     tagline: "Ten years of exile, one Righteous Fire character per league.",
   },
   {
     username: "quinnsplains",
-    firstName: "Quinn",
     tagline: "Only plays the meta three weeks after everyone else has quit.",
   },
 ];
@@ -906,10 +904,10 @@ function main() {
   }
 
   const insertUser = db.prepare(
-    `INSERT INTO users (username, first_name, tagline) VALUES (?, ?, ?)
-     ON CONFLICT(username) DO UPDATE SET first_name = excluded.first_name, tagline = excluded.tagline`,
+    `INSERT INTO users (username, tagline) VALUES (?, ?)
+     ON CONFLICT(username) DO UPDATE SET tagline = excluded.tagline`,
   );
-  for (const player of PLAYERS) insertUser.run(player.username, player.firstName, player.tagline);
+  for (const player of PLAYERS) insertUser.run(player.username, player.tagline);
 
   const userId = (username: string) =>
     (db.prepare(`SELECT id FROM users WHERE username = ?`).get(username) as { id: number }).id;

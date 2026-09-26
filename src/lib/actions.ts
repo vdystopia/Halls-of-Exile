@@ -70,14 +70,10 @@ function uniqueSlug(userId: number, leagueId: number, base: string, ignoreId?: n
 
 export async function createPlayerAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const username = text(formData, "username");
-  const firstName = text(formData, "firstName");
   const tagline = text(formData, "tagline");
 
   const problem = usernameProblem(username);
   if (problem) return { error: problem };
-  if (!firstName || firstName.length > 40) {
-    return { error: "First name is required (40 characters max)." };
-  }
   if (db.prepare(`SELECT 1 FROM users WHERE username = ? COLLATE NOCASE`).get(username)) {
     return { error: `The name "${username}" is already in the archive.` };
   }
@@ -86,8 +82,8 @@ export async function createPlayerAction(_prev: ActionState, formData: FormData)
 
   db.transaction(() => {
     const { lastInsertRowid } = db
-      .prepare(`INSERT INTO users (username, first_name, tagline) VALUES (?, ?, ?)`)
-      .run(username, firstName, tagline || null);
+      .prepare(`INSERT INTO users (username, tagline) VALUES (?, ?)`)
+      .run(username, tagline || null);
     if (avatar) saveAvatar(Number(lastInsertRowid), avatar);
   })();
 
@@ -415,14 +411,14 @@ export async function deleteCharacterAction(formData: FormData): Promise<void> {
 }
 
 /**
- * Rename a player, or change the name shown beside their handle. The username
- * is the archive's URL for them, so this moves every one of their pages —
- * characters and league records travel by id and are untouched.
+ * Rename a player, or change their tagline, account or picture. The username
+ * is the archive's URL for them and the one name they go by, so a rename moves
+ * every one of their pages — characters and league records travel by id and
+ * are untouched.
  */
 export async function renamePlayerAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const current = text(formData, "username");
   const username = text(formData, "newUsername");
-  const firstName = text(formData, "firstName");
   const tagline = text(formData, "tagline") || null;
   const poeAccount = text(formData, "poeAccount") || null;
 
@@ -430,9 +426,6 @@ export async function renamePlayerAction(_prev: ActionState, formData: FormData)
   if (!user) return { error: "That player is no longer in the archive." };
   const problem = usernameProblem(username);
   if (problem) return { error: problem };
-  if (!firstName || firstName.length > 40) {
-    return { error: "Display name is required (40 characters max)." };
-  }
   // COLLATE NOCASE, so "Dystopia" does not collide with the row's own "dystopia".
   const clash = db
     .prepare(`SELECT 1 FROM users WHERE username = ? COLLATE NOCASE AND id <> ?`)
@@ -452,9 +445,8 @@ export async function renamePlayerAction(_prev: ActionState, formData: FormData)
   if (typeof avatar === "string") return { error: avatar };
 
   db.transaction(() => {
-    db.prepare(`UPDATE users SET username = ?, first_name = ?, tagline = ?, poe_account = ? WHERE id = ?`).run(
+    db.prepare(`UPDATE users SET username = ?, tagline = ?, poe_account = ? WHERE id = ?`).run(
       username,
-      firstName,
       tagline,
       poeAccount,
       user.id,

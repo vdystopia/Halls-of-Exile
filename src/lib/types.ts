@@ -4,7 +4,6 @@ import type { LeagueModifierId } from "./league-modifiers";
 export type User = {
   id: number;
   username: string;
-  firstName: string;
   /**
    * The Path of Exile account their characters are on, as "Name#1234". Set by
    * hand; it is what lets an export find its player without being told.

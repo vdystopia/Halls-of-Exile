@@ -187,7 +187,7 @@ test("an import only ever matches characters in its own game", async () => {
   const { applyImport, planFor } = await import("../src/lib/import");
   const { db } = await import("../src/lib/db");
   const userId = db
-    .prepare(`INSERT INTO users (username, first_name) VALUES ('poe2-tester', 'Test')`)
+    .prepare(`INSERT INTO users (username) VALUES ('poe2-tester')`)
     .run().lastInsertRowid as number;
   const poe1 = db.prepare(`SELECT id FROM leagues WHERE game = 'poe1' AND slug = '3.25'`).get() as { id: number };
   const poe2 = db.prepare(`SELECT id FROM leagues WHERE game = 'poe2' AND slug = '0.2'`).get() as { id: number };
@@ -251,7 +251,7 @@ test("an overwrite onto a character with a code records the code's facts, not th
   const { applyImport } = await import("../src/lib/import");
   const { db } = await import("../src/lib/db");
   const userId = db
-    .prepare(`INSERT INTO users (username, first_name) VALUES ('poe2-code-overwrite', 'Test')`)
+    .prepare(`INSERT INTO users (username) VALUES ('poe2-code-overwrite')`)
     .run().lastInsertRowid as number;
   const league = db.prepare(`SELECT id FROM leagues WHERE game = 'poe2' AND slug = '0.2'`).get() as { id: number };
   const code = fs.readFileSync(path.join(process.cwd(), "tests", "fixtures", "poe2-pob-0.2.txt"), "utf8").trim();

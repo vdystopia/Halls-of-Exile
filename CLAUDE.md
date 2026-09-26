@@ -497,8 +497,9 @@ and its payload is stored in `characters.source_payload` for the same reason.
   `globals.css` puts a gem's gloss and facet over it. A class the map lacks keeps the gold. Path
   of Exile 2's attributes (Huntress dex, Druid int/str) come from memory, not a source.
 - **The player page's metrics are computed in `src/lib/metrics.ts`, per game.** Classes roll up
-  into ascendancies (characters, leagues, /played, average and highest level, 90+, most-built
-  skill). Builds are grouped by skill and ranked two ways, by character count (the default) or
+  into ascendancies (characters, leagues, /played, average and highest level, 90+; the rollup
+  still computes `topSkill` but the table no longer shows a "Most built" column — too few skills
+  repeat for it to say anything). Builds are grouped by skill and ranked two ways, by character count (the default) or
   by /played, each breaking ties with the other; `BuildRanking` only picks which
   server-rendered grid to show. Witch and Ranger are classes in both games and skills share
   names across them, so nothing is summed across games. A /played total covers only characters
@@ -759,11 +760,25 @@ and its payload is stored in `characters.source_payload` for the same reason.
   first bytes — PNG, JPEG, WebP or GIF, never SVG, since it is served from the archive's own
   origin. `/api/avatars/<user>?v=<updated_at>` serves it, cached for good because a new
   picture is a new URL.
-- **The player tile (`PlayerTile`, players list and front page) follows the owner's mockup**:
-  picture, username and display name underlined, "Level 100" and "Total Challenges" (summed
-  over league records) in gold monospace beside them, then Chars, Leagues and /played in whole
-  hours, whose labels are underlined and figures are not. The /played total carries `*` when
-  some characters have none, as everywhere else. No tagline, best level or latest patch.
+- **A player goes by their username alone.** The display name (`users.first_name`) was dropped
+  on 2026-09-26: two identifiers for one person was one too many. `migrate()` has a `removals`
+  list beside `additions`, and drops the column from an older archive (SQLite 3.35+ `DROP
+  COLUMN`; it was NOT NULL, so every insert failed against it until it went). Tested against a
+  copy of the live backup and pinned by a test. Do not reintroduce a second name.
+- **The player tile (`PlayerTile`, players list and front page) follows the owner's mockup,
+  set in the archive's own type**: picture with the username beside it, "Level 100" and "Total
+  challenges" (summed over league records) on the right, then Chars, Leagues and /played in
+  whole hours. Labels are `eyebrow` and figures `display`, the pair the profile header and the
+  front page use, so nothing on the tile is underlined or monospace any more — **underlines are
+  for links only, anywhere on the site.** "Total challenges" stays on one line
+  (`whitespace-nowrap`). The /played hours come from `formatPlayedTotal`, so the tile and the
+  profile header round the same figure the same way. The /played total carries `*` when some
+  characters have none, as everywhere else. No tagline, best level or latest patch.
+  `PlayerPicture` draws the picture, or the initial where there is none, for the tile and the
+  profile header both. **The profile header is the tile opened up**: picture hard left, "Archive
+  of" and the username beside it, then Characters, Leagues played, **Total levels** (every
+  character's level added together, `getUserTotals.totalLevels`) and Total /played. Highest
+  level lives on in the class table, not the header.
 - **A player's Path of Exile account lives on the player row**, in `users.poe_account`. It is
   there so the collector script holds no configuration: it asks `/api/players` which accounts to
   read, and every export names the account it came from, so `playerForAccount` matches the two

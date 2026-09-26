@@ -12,7 +12,6 @@ function mapUser(row: Row): User {
   return {
     id: row.id,
     username: row.username,
-    firstName: row.first_name,
     poeAccount: row.poe_account ?? null,
     createdAt: row.created_at,
   };
@@ -310,7 +309,7 @@ export function getUserTotals(userId: number) {
     .prepare(
       `SELECT COUNT(*)                     AS characters,
               COUNT(DISTINCT league_id)    AS leagues,
-              MAX(level)                   AS highest_level,
+              SUM(COALESCE(level, 0))      AS total_levels,
               SUM(COALESCE(played_minutes, 0)) AS played_minutes,
               SUM(CASE WHEN played_minutes > 0 THEN 1 ELSE 0 END) AS played_recorded,
               SUM(CASE WHEN level >= 90 THEN 1 ELSE 0 END) AS level_90s
@@ -320,7 +319,8 @@ export function getUserTotals(userId: number) {
   return {
     characters: row.characters as number,
     leagues: row.leagues as number,
-    highestLevel: row.highest_level as number | null,
+    /** Every character's level added together; a character with no level adds nothing. */
+    totalLevels: (row.total_levels as number) ?? 0,
     playedMinutes: (row.played_minutes as number) ?? 0,
     /** How many characters have a /played, so the total can say what it covers. */
     playedRecorded: (row.played_recorded as number) ?? 0,

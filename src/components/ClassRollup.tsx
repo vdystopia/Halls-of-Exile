@@ -10,7 +10,7 @@ import type { Rollup } from "@/lib/metrics";
  * `sm` adds average level, and the rest wait for `md`.
  */
 const COLUMNS =
-  "grid grid-cols-[minmax(0,1fr)_2.5rem_5.5rem] sm:grid-cols-[minmax(0,1fr)_4.5rem_6.5rem_4.5rem] md:grid-cols-[minmax(11rem,1.5fr)_5.5rem_4.5rem_minmax(8rem,1fr)_5rem_4.5rem_4rem_minmax(8rem,1.2fr)] items-center gap-x-4";
+  "grid grid-cols-[minmax(0,1fr)_2.5rem_5.5rem] sm:grid-cols-[minmax(0,1fr)_4.5rem_6.5rem_4.5rem] md:grid-cols-[minmax(11rem,1.5fr)_5.5rem_4.5rem_minmax(8rem,1fr)_5rem_4.5rem_4rem] items-center gap-x-4";
 const WIDE = "hidden md:block";
 const MID = "hidden sm:block";
 
@@ -41,9 +41,6 @@ function Cells({ row, total }: { row: Rollup; total: number }) {
       <span className={`${MID} text-right tabular-nums`}>{row.averageLevel === null ? "—" : row.averageLevel.toFixed(1)}</span>
       <span className={`${WIDE} text-right tabular-nums`}>{row.highestLevel ?? "—"}</span>
       <span className={`${WIDE} text-right tabular-nums ${row.level90s ? "" : "text-muted"}`}>{row.level90s}</span>
-      <span className={`${WIDE} truncate text-rarity-gem`} title={row.topSkill ?? undefined}>
-        {row.topSkill ?? <span className="text-muted">—</span>}
-      </span>
     </>
   );
 }
@@ -67,7 +64,6 @@ export function ClassRollup({ game, classes }: { game: GameId; classes: Rollup[]
         <span className={`${MID} text-right`}>Avg level</span>
         <span className={`${WIDE} text-right`}>Highest</span>
         <span className={`${WIDE} text-right`}>90+</span>
-        <span className={WIDE}>Most built</span>
       </div>
       {classes.map((row) => (
         <details key={row.name} className="group border-b border-line last:border-b-0">

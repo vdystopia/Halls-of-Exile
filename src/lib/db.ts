@@ -18,7 +18,6 @@ const SCHEMA = `
 CREATE TABLE IF NOT EXISTS users (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
   username   TEXT NOT NULL COLLATE NOCASE UNIQUE,
-  first_name TEXT NOT NULL,
   tagline    TEXT,
   poe_account TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -120,6 +119,15 @@ function migrate(db: Database.Database) {
     const columns = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
     if (columns.some((existing) => existing.name === column)) continue;
     db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+  // A player goes by one name, the username. The display name beside it was
+  // dropped on 2026-09-26; an archive from before then still has the column,
+  // NOT NULL, and every insert would fail against it until it goes.
+  const removals: [string, string][] = [["users", "first_name"]];
+  for (const [table, column] of removals) {
+    const columns = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
+    if (!columns.some((existing) => existing.name === column)) continue;
+    db.exec(`ALTER TABLE ${table} DROP COLUMN ${column}`);
   }
   widenLeagueUniqueness(db);
   backfillAccounts(db);

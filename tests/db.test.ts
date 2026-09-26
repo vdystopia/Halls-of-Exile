@@ -75,7 +75,7 @@ Implicits: 1
   // The connection is cached across tests, so every row here is named uniquely
   // rather than assuming an empty database.
   const user = db
-    .prepare(`INSERT INTO users (username, first_name) VALUES ('reparse-tester', 'Test')`)
+    .prepare(`INSERT INTO users (username) VALUES ('reparse-tester')`)
     .run().lastInsertRowid as number;
   const league = db.prepare(`SELECT id FROM leagues LIMIT 1`).get() as { id: number };
   // The build as the old parser left it: the percentile line read as a mod,
@@ -116,7 +116,7 @@ test("a character with no share code keeps the build it has", async () => {
   const { PARSER_VERSION } = await import("../src/lib/games/poe1/pob");
 
   const user = db
-    .prepare(`INSERT INTO users (username, first_name) VALUES ('nocode-tester', 'Test')`)
+    .prepare(`INSERT INTO users (username) VALUES ('nocode-tester')`)
     .run().lastInsertRowid as number;
   const league = db.prepare(`SELECT id FROM leagues LIMIT 1`).get() as { id: number };
   const kept = JSON.stringify({ items: [], className: "Witch" });
@@ -155,7 +155,7 @@ test("a league dropped from the seed is removed, unless it holds characters", as
     .run().lastInsertRowid as number;
 
   const user = db
-    .prepare(`INSERT INTO users (username, first_name) VALUES ('prune-tester', 'Test')`)
+    .prepare(`INSERT INTO users (username) VALUES ('prune-tester')`)
     .run().lastInsertRowid as number;
   db.prepare(
     `INSERT INTO characters (user_id, league_id, slug, name, class_name) VALUES (?, ?, 'someone', 'Someone', 'Witch')`,
@@ -187,7 +187,7 @@ test("a build stored by an older mapper is re-derived from its payload", async (
   const payload = JSON.stringify(storedPayload(entry, exported));
 
   const user = db
-    .prepare(`INSERT INTO users (username, first_name) VALUES ('remap-tester', 'Test')`)
+    .prepare(`INSERT INTO users (username) VALUES ('remap-tester')`)
     .run().lastInsertRowid as number;
   const league = db.prepare(`SELECT id FROM leagues LIMIT 1`).get() as { id: number };
   // As an older mapper left it: the source is right, the build is empty.
@@ -227,7 +227,7 @@ Necrotic Armour</Item></Items></PathOfBuilding>`;
   const code = zlib.deflateSync(Buffer.from(xml)).toString("base64").replace(/\+/g, "-").replace(/\//g, "_");
 
   const user = db
-    .prepare(`INSERT INTO users (username, first_name) VALUES ('twosource-tester', 'Test')`)
+    .prepare(`INSERT INTO users (username) VALUES ('twosource-tester')`)
     .run().lastInsertRowid as number;
   const league = db.prepare(`SELECT id FROM leagues LIMIT 1`).get() as { id: number };
   const build = JSON.stringify({ source: "poe-api", items: [], slots: {}, marker: "from the game" });
@@ -254,7 +254,7 @@ test("the import columns are added to a populated archive", async () => {
     (db.prepare("PRAGMA table_info(characters)").all() as { name: string }[]).map((c) => c.name);
 
   const user = db
-    .prepare(`INSERT INTO users (username, first_name) VALUES ('precolumn-tester', 'Test')`)
+    .prepare(`INSERT INTO users (username) VALUES ('precolumn-tester')`)
     .run().lastInsertRowid as number;
   const league = db.prepare(`SELECT id FROM leagues LIMIT 1`).get() as { id: number };
   db.prepare(
@@ -282,6 +282,34 @@ test("the import columns are added to a populated archive", async () => {
 });
 
 /**
+ * A player goes by their username alone. The display name column was dropped,
+ * and an archive from before then still carries it, NOT NULL — so until the
+ * migration removes it, creating a player fails on a column nothing fills.
+ */
+test("the display name column is dropped from a populated archive, keeping its players", async () => {
+  const { db, ensureSchema } = await import("../src/lib/db");
+  const columns = () => (db.prepare("PRAGMA table_info(users)").all() as { name: string }[]).map((c) => c.name);
+
+  db.exec("ALTER TABLE users ADD COLUMN first_name TEXT NOT NULL DEFAULT ''");
+  const user = db
+    .prepare(`INSERT INTO users (username, first_name, tagline) VALUES ('dropcolumn-tester', 'Leo', 'kept')`)
+    .run().lastInsertRowid as number;
+  assert.ok(columns().includes("first_name"));
+
+  ensureSchema(db);
+
+  assert.equal(columns().includes("first_name"), false, "the column should be gone");
+  const row = db.prepare(`SELECT username, tagline FROM users WHERE id = ?`).get(user) as {
+    username: string;
+    tagline: string;
+  };
+  assert.deepEqual(row, { username: "dropcolumn-tester", tagline: "kept" }, "the player did not survive the migration");
+  // And creating a player no longer needs a value for it.
+  db.prepare(`INSERT INTO users (username) VALUES ('dropcolumn-after')`).run();
+  assert.ok(db.prepare(`SELECT 1 FROM users WHERE username = 'dropcolumn-after'`).get());
+});
+
+/**
  * The account a player plays on is already in the archive: every character
  * imported from an export carries the payload it came from, and that payload
  * names it. Asking someone to type it into a form is asking them to re-enter a
@@ -293,7 +321,7 @@ test("a player's account is worked out from what they have already imported", as
   const { db, ensureSchema } = await import("../src/lib/db");
 
   const user = db
-    .prepare(`INSERT INTO users (username, first_name) VALUES ('backfill-tester', 'Test')`)
+    .prepare(`INSERT INTO users (username) VALUES ('backfill-tester')`)
     .run().lastInsertRowid as number;
   const league = db.prepare(`SELECT id FROM leagues LIMIT 1`).get() as { id: number };
   const payload = (account: string) => JSON.stringify({ account, realm: "pc", character: { name: "x" } });
@@ -316,7 +344,7 @@ test("an account already set is left exactly as it was", async () => {
   const { db, ensureSchema } = await import("../src/lib/db");
 
   const user = db
-    .prepare(`INSERT INTO users (username, first_name, poe_account) VALUES ('byhand-tester', 'Test', 'Chosen#1111')`)
+    .prepare(`INSERT INTO users (username, poe_account) VALUES ('byhand-tester', 'Chosen#1111')`)
     .run().lastInsertRowid as number;
   const league = db.prepare(`SELECT id FROM leagues LIMIT 1`).get() as { id: number };
   db.prepare(
@@ -335,9 +363,9 @@ test("an account already set is left exactly as it was", async () => {
 test("an account another player already holds is not duplicated", async () => {
   const { db, ensureSchema } = await import("../src/lib/db");
 
-  db.prepare(`INSERT INTO users (username, first_name, poe_account) VALUES ('owner-tester', 'T', 'Shared#3333')`).run();
+  db.prepare(`INSERT INTO users (username, poe_account) VALUES ('owner-tester', 'Shared#3333')`).run();
   const other = db
-    .prepare(`INSERT INTO users (username, first_name) VALUES ('other-tester', 'Test')`)
+    .prepare(`INSERT INTO users (username) VALUES ('other-tester')`)
     .run().lastInsertRowid as number;
   const league = db.prepare(`SELECT id FROM leagues LIMIT 1`).get() as { id: number };
   db.prepare(
@@ -368,7 +396,7 @@ test("the archive's own accounts are set on boot", async () => {
   // rightly refuses to give one account to two players.
   db.prepare(`UPDATE users SET poe_account = NULL WHERE poe_account = ? COLLATE NOCASE`).run(account);
   const id = db
-    .prepare(`INSERT INTO users (username, first_name) VALUES (?, 'Test')`)
+    .prepare(`INSERT INTO users (username) VALUES (?)`)
     .run(username).lastInsertRowid as number;
 
   ensureSchema(db);
@@ -385,7 +413,7 @@ test("an account set by hand survives the seed", async () => {
   const [username] = Object.entries(ACCOUNT_SEED)[0];
   db.prepare(`DELETE FROM users WHERE username = ? COLLATE NOCASE`).run(username);
   const id = db
-    .prepare(`INSERT INTO users (username, first_name, poe_account) VALUES (?, 'Test', 'Changed#9999')`)
+    .prepare(`INSERT INTO users (username, poe_account) VALUES (?, 'Changed#9999')`)
     .run(username).lastInsertRowid as number;
 
   ensureSchema(db);
@@ -418,7 +446,7 @@ test("Path of Exile 2 rows are re-derived against their own versions", async () 
   const { POE2_SITE_VERSION, readPoe2Export, storedPoe2Payload } = await import("../src/lib/games/poe2/site-export");
 
   const user = db
-    .prepare(`INSERT INTO users (username, first_name) VALUES ('poe2-reparse', 'Test')`)
+    .prepare(`INSERT INTO users (username) VALUES ('poe2-reparse')`)
     .run().lastInsertRowid as number;
   const league = db.prepare(`SELECT id FROM leagues WHERE game = 'poe2' LIMIT 1`).get() as { id: number };
   const code = fs.readFileSync(path.join(process.cwd(), "tests", "fixtures", "poe2-pob-0.2.txt"), "utf8").trim();
@@ -464,7 +492,7 @@ test("Path of Exile 2 rows are re-derived against their own versions", async () 
 test("a player's challenge total equal to the league's is not kept as an override", async () => {
   const { db, ensureSchema } = await import("../src/lib/db");
   const user = db
-    .prepare(`INSERT INTO users (username, first_name) VALUES ('total-tester', 'Test')`)
+    .prepare(`INSERT INTO users (username) VALUES ('total-tester')`)
     .run().lastInsertRowid as number;
   const league = db
     .prepare(`SELECT id, challenge_total FROM leagues WHERE challenge_total IS NOT NULL LIMIT 1`)
@@ -510,7 +538,7 @@ test("the catalogue adopts a hand-added league it gains, and orders hand-added o
     )
     .run().lastInsertRowid as number;
   const user = db
-    .prepare(`INSERT INTO users (username, first_name) VALUES ('adopt-tester', 'Test')`)
+    .prepare(`INSERT INTO users (username) VALUES ('adopt-tester')`)
     .run().lastInsertRowid as number;
   db.prepare(
     `INSERT INTO characters (user_id, league_id, slug, name, class_name, data, parser_version)
