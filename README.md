@@ -100,9 +100,9 @@ bad push leaves the running site untouched. The previous image is kept as
 `npm run art:fetch` also downloads the ascendancy emblem sheet the character cards use.
 
 Item art is copied into the image at build time, so it has to be on disk *before* the
-deploy: run `npm run art:fetch` first, then `.\update.ps1`. Fetching afterwards changes
-nothing until the next rebuild. The script counts the images against the catalogue and says
-so if they are behind.
+build. `.\update.ps1` sees to that itself: after pulling, it checks every picture both games'
+indexes name (`npm run art:fetch -- --check`) and fetches whatever is missing, so a deploy —
+by hand or from `watch.ps1` — ships the art its code expects.
 
 Only one update runs at a time: a second one started while the first is still going exits
 immediately rather than racing it on the git index and the compose project. The lock is a held
@@ -333,7 +333,8 @@ The paper doll draws each item with the game's own artwork. Two pieces make that
 - The images themselves come from the game's image CDN, at exactly the paths RePoE records:
 
   ```bash
-  npm run art:fetch              # ~512 images; skips anything already present
+  npm run art:fetch              # ~4,500 images, both games; skips anything already present
+  npm run art:fetch -- --check   # download nothing; list what is missing (exit code 3 if any)
   npm run art:fetch -- --force   # re-download everything
   npm run art:fetch -- --dry-run # list what it would fetch
   ```

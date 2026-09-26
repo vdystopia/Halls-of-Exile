@@ -43,9 +43,14 @@ There are two ways to make even those unattended, and the first is much better:
 Deploy is `.\update.ps1` on the owner's PC, never a bare `docker compose up -d --build`:
 it backs up, pulls, rebuilds, health-checks, rolls back on failure, and holds a lock so two
 runs cannot race. `backup.mjs` keeps the newest 20 backups in a folder (`BACKUP_KEEP`). **Item art is baked into the image** (`COPY /app/public`), so `npm run
-art:fetch` has to run *before* the deploy, not after — fetching afterwards leaves the
-container serving the art it was built with. The script counts the images against the
-catalogue and warns when they are behind.
+art:fetch` has to run *before* the build, not after — fetching afterwards leaves the
+container serving the art it was built with. So `update.ps1` does it itself, after the pull and
+before the build: `npm run art:fetch -- --check` compares every picture both games' indexes
+name against where it belongs (exit code 3 when some are missing), and it fetches what is
+missing. That covers the watcher, whose deploys go through `update.ps1`. It used to count PNGs
+and only warn: Path of Exile 2's WebP was never counted, gem pictures stood in for missing
+item pictures, and nothing unattended ever fetched. A base the CDN does not serve at all is an
+empty value in `art-overrides.json` and is neither fetched nor counted.
 
 ## Shape of the code
 

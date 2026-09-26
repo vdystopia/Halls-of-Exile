@@ -137,35 +137,34 @@ try {
     }
 
     # --- art ---------------------------------------------------------------------
-# public/ is copied into the image, so the art on disk when the image is built
-# is the art the container serves. Fetching it afterwards changes nothing until
-# the next rebuild, which is exactly the trap this check exists to catch.
-$indexPath = Join-Path $PSScriptRoot 'src/lib/games/poe1/item-art-index.json'
-$artRoot = Join-Path $PSScriptRoot 'public/items'
-if (Test-Path $indexPath) {
-    $index = Get-Content $indexPath -Raw | ConvertFrom-Json
-    $paths = @($index.bases.PSObject.Properties.Value.art) + @($index.uniques.PSObject.Properties.Value.art)
-    $wanted = ($paths | Sort-Object -Unique).Count
-    # An override with an empty value is a path the image CDN does not serve at
-    # all (Ancient Skull's). Counting it would warn on every deploy forever.
-    $overridePath = Join-Path $PSScriptRoot 'src/lib/games/poe1/art-overrides.json'
-    if (Test-Path $overridePath) {
-        $overrides = Get-Content $overridePath -Raw | ConvertFrom-Json
-        $missing = @($overrides.PSObject.Properties | Where-Object { $_.Name -notlike '_*' -and -not $_.Value }).Count
-        $wanted = $wanted - $missing
-    }
-    $have = @(Get-ChildItem -Path $artRoot -Filter *.png -Recurse -ErrorAction SilentlyContinue).Count
-    if ($have -lt $wanted) {
-        Write-Bad "Item art is $($wanted - $have) images short of the catalogue ($have of $wanted)."
-        Write-Note 'Run npm run art:fetch and deploy again; the images are baked into the image at build time.'
+    # public/ is copied into the image, so the art on disk when the image is built
+    # is the art the container serves, and fetching it afterwards changes nothing
+    # until the next rebuild. The pull above may have brought new indexes, so what
+    # they name and the disk lacks is fetched here, before the build — which also
+    # covers watch.ps1, whose deploys come through this script. `art:fetch --check`
+    # compares every file against where it belongs, for both games; this used to
+    # count PNGs, which never saw Path of Exile 2's WebP and let gem pictures stand
+    # in for missing item pictures. Art is optional: trouble here warns, and the
+    # deploy carries on with silhouettes where pictures are missing.
+    if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
+        Write-Bad 'npm is not on PATH, so item art was not checked.'
     } else {
-        Write-Step "Item art is complete ($have images)"
+        Write-Step 'Checking item art'
+        npm run --silent art:fetch -- --check
+        if ($LASTEXITCODE -eq 3) {
+            Write-Step 'Fetching the missing item art'
+            npm run --silent art:fetch
+            npm run --silent art:fetch -- --check
+            if ($LASTEXITCODE -ne 0) { Write-Bad 'Some item art is still missing; those items draw a silhouette.' }
+        } elseif ($LASTEXITCODE -ne 0) {
+            Write-Bad "The art check could not run (exit code $LASTEXITCODE)."
+            Write-Note 'Run npm install --ignore-scripts, then npm run art:fetch, and deploy again.'
+        }
     }
-}
-if (-not (Test-Path (Join-Path $PSScriptRoot 'public/ascendancy.webp'))) {
-    Write-Bad 'The ascendancy emblem sheet is missing.'
-    Write-Note 'Run npm run art:fetch and deploy again; character cards show no emblem without it.'
-}
+    if (-not (Test-Path (Join-Path $PSScriptRoot 'public/ascendancy.webp'))) {
+        Write-Bad 'The ascendancy emblem sheet is missing.'
+        Write-Note 'Run npm run art:fetch and deploy again; character cards show no emblem without it.'
+    }
 
 # --- build and start ---------------------------------------------------------
     Write-Step 'Building and starting the container'

@@ -25,6 +25,7 @@ import gemArt from "../src/lib/games/poe1/gem-art-index.json";
 import poe2GemArt from "../src/lib/games/poe2/gem-art-index.json";
 import poe2ItemArt from "../src/lib/games/poe2/item-art-index.json";
 import ascendancy from "../src/lib/games/poe1/ascendancy-icons.json";
+import overrides from "../src/lib/games/poe1/art-overrides.json";
 
 // The literal type of a 2000-entry JSON file is too much for the compiler to
 // carry around, and only the art path is needed here.
@@ -117,9 +118,40 @@ async function fetchAscendancySheet(): Promise<void> {
   }
 }
 
+/**
+ * `--check`: download nothing, and say which pictures the indexes name that are
+ * not on disk. update.ps1 runs it before building, because the image bakes in
+ * whatever public/ holds at that moment. Exit code 3 means some are missing.
+ * It checks each file where this script would write it — counting files instead
+ * let gem pictures stand in for missing item pictures, and never looked at Path
+ * of Exile 2's WebP at all.
+ */
+function check(jobs: Job[]): void {
+  const missing = jobs.filter((job) => !fs.existsSync(job.destination) || fs.statSync(job.destination).size === 0);
+  const poe2 = missing.filter((job) => job.label.startsWith("poe2/")).length;
+  process.stdout.write(
+    missing.length
+      ? `missing ${missing.length} of ${jobs.length} images (${missing.length - poe2} Path of Exile 1, ${poe2} Path of Exile 2)\n` +
+          missing.slice(0, 10).map((job) => `  ${job.label}\n`).join("")
+      : `all ${jobs.length} images present\n`,
+  );
+  if (missing.length) process.exitCode = 3;
+}
+
 async function main() {
-  await fetchAscendancySheet();
-  const entries = [...Object.values(catalogue.bases), ...Object.values(catalogue.uniques)];
+  if (!flag("check")) await fetchAscendancySheet();
+  // A base the image CDN does not serve at all is marked with an empty override
+  // (Ancient Skull's). Asking for it fails on every run, and counting it would
+  // report the art as incomplete forever.
+  const unservable = new Set(
+    Object.entries(overrides as Record<string, string>)
+      .filter(([name, value]) => !name.startsWith("_") && !value)
+      .map(([name]) => (catalogue.bases[name] ?? catalogue.uniques[name])?.art)
+      .filter(Boolean),
+  );
+  const entries = [...Object.values(catalogue.bases), ...Object.values(catalogue.uniques)].filter(
+    (entry) => !unservable.has(entry.art),
+  );
   // Gem art sits under the same Art/2DItems root and is served by the same CDN,
   // so it lands beside the equipment art and needs no second output tree.
   const poe1Paths = [
@@ -134,6 +166,7 @@ async function main() {
   ].map((entry) => entry.art);
   const poe2Paths = [...new Set([...Object.values(poe2GemArt.art as Record<string, string>), ...poe2Items])];
   const paths = [...poe1Paths.map(poe1Job), ...poe2Paths.map(poe2Job)];
+  if (flag("check")) return check(paths);
   process.stdout.write(
     `${dryRun ? "would fetch" : "fetching"} ${poe1Paths.length} images from ${baseUrl} ` +
       `and ${poe2Paths.length} from ${POE2_ART_URL}\n`,
