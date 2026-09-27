@@ -2,10 +2,10 @@ import hiddenTags from "./hidden-tags.json";
 import type { GameId } from "./games/types";
 
 /**
- * Tags the header never counts, chosen by hand in `hidden-tags.json`: the
- * game's tag line says "AoE, Spell, Duration" on most gems, and a tag nearly
- * every build carries says nothing about the player. Spelled as the game shows
- * them ("AoE"), matched in any case.
+ * The block list: tags the header never counts, for any player, chosen by the
+ * owner in `hidden-tags.json`. The game's tag line says "AoE, Duration" on
+ * most gems, and a tag nearly every build carries says nothing about the
+ * player. Spelled as the game shows them ("AoE"), matched in any case.
  */
 export const HIDDEN_TAGS: ReadonlySet<string> = new Set((hiddenTags as string[]).map((tag) => tag.toLowerCase()));
 
@@ -131,36 +131,29 @@ export type TagCount = {
   name: string;
   /** How many characters were built around a skill carrying this tag. */
   characters: number;
-  /** Their /played added up, for breaking ties. */
-  playedMinutes: number;
 };
 
 /**
  * The tags a player's builds carry most often — Spell, Fire, Minion — counted
  * once per character from the tags of the skill it was built around, most
- * characters first, ties to the tag played longest, then by name. A character
- * with no skill resolved contributes nothing, and a hidden tag is never
- * counted. Tags are a vocabulary the two games share ("Fire" is "Fire" in
- * both), so unlike classes and skills they are added together across games,
- * the way the header's other totals are.
+ * characters first, ties by name. Characters are the only measure: /played has
+ * nothing to do with a tag. A character with no skill resolved contributes
+ * nothing, and a blocked tag is never counted. Tags are a vocabulary the two
+ * games share ("Fire" is "Fire" in both), so unlike classes and skills they are
+ * added together across games, the way the header's other totals are.
  */
-export function topTags(
-  characters: { tags: string[]; playedMinutes: number | null }[],
-  limit = 5,
-  hidden: ReadonlySet<string> = HIDDEN_TAGS,
-): TagCount[] {
+export function topTags(characters: { tags: string[] }[], limit = 5, hidden: ReadonlySet<string> = HIDDEN_TAGS): TagCount[] {
   const counts = new Map<string, TagCount>();
   for (const character of characters) {
     for (const name of new Set(character.tags)) {
       if (hidden.has(name.toLowerCase())) continue;
-      const entry = counts.get(name) ?? { name, characters: 0, playedMinutes: 0 };
+      const entry = counts.get(name) ?? { name, characters: 0 };
       entry.characters += 1;
-      entry.playedMinutes += character.playedMinutes ?? 0;
       counts.set(name, entry);
     }
   }
   return [...counts.values()]
-    .sort((a, b) => b.characters - a.characters || b.playedMinutes - a.playedMinutes || a.name.localeCompare(b.name))
+    .sort((a, b) => b.characters - a.characters || a.name.localeCompare(b.name))
     .slice(0, limit);
 }
 

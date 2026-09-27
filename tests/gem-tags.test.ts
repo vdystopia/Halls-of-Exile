@@ -3,7 +3,7 @@ import test from "node:test";
 import { gemTags, skillNames } from "../src/lib/games/poe1/gems";
 import { gemTags as poe2GemTags } from "../src/lib/games/poe2/gems";
 import { skillNamesFor, skillTags } from "../src/lib/games/skills";
-import { topTags } from "../src/lib/metrics";
+import { HIDDEN_TAGS, topTags } from "../src/lib/metrics";
 
 /** The game's own display names, in the game's own order: "AoE", never "area". */
 test("a skill's tags are the ones the game shows, in its order", () => {
@@ -80,40 +80,49 @@ test("Path of Exile 2 tags come from its own table with the markup stripped", ()
 
 /**
  * The header's five: counted once per character, most characters first, ties
- * to the tag played longest, then by name; a character with no skill counts
- * for nothing, and a tag a gem carries twice still counts once.
+ * by name and nothing else — /played has no bearing on a tag. A character with
+ * no skill counts for nothing, and a tag a gem carries twice still counts once.
  */
-test("the most common tags are counted once per character and ranked by characters, then /played", () => {
-  const top = topTags([
-    { tags: ["Spell", "Fire", "AoE"], playedMinutes: 100 },
-    { tags: ["Spell", "Minion", "Fire", "Fire"], playedMinutes: 500 },
-    { tags: ["Attack", "Projectile", "Bow"], playedMinutes: 10000 },
-    { tags: ["Spell", "Cold"], playedMinutes: null },
-    { tags: [], playedMinutes: 99999 },
-  ]);
-  assert.deepEqual(
-    top.map((tag) => [tag.name, tag.characters, tag.playedMinutes]),
+test("the most common tags are counted once per character and ranked by characters alone", () => {
+  const none = new Set<string>();
+  const top = topTags(
     [
-      ["Spell", 3, 600],
-      ["Fire", 2, 600],
-      ["Attack", 1, 10000],
-      ["Bow", 1, 10000],
-      ["Projectile", 1, 10000],
+      { tags: ["Spell", "Fire", "AoE"] },
+      { tags: ["Spell", "Minion", "Fire", "Fire"] },
+      { tags: ["Attack", "Projectile", "Bow"] },
+      { tags: ["Spell", "Cold"] },
+      { tags: [] },
+    ],
+    5,
+    none,
+  );
+  assert.deepEqual(
+    top.map((tag) => [tag.name, tag.characters]),
+    [
+      ["Spell", 3],
+      ["Fire", 2],
+      ["AoE", 1],
+      ["Attack", 1],
+      ["Bow", 1],
     ],
   );
-  assert.equal(topTags([{ tags: ["Spell"], playedMinutes: 1 }], 1).length, 1);
+  assert.equal(topTags([{ tags: ["Spell"] }], 1, none).length, 1);
   assert.deepEqual(topTags([]), []);
 });
 
-/** A tag hidden by hand is never counted, whatever case it was written in. */
-test("hidden tags are left out of the count", () => {
-  const characters = [
-    { tags: ["AoE", "Spell", "Fire"], playedMinutes: 10 },
-    { tags: ["AoE", "Attack"], playedMinutes: 20 },
-  ];
+/**
+ * The block list holds for every player: a tag on it is never counted,
+ * whatever case it was written in, and the owner's four are on it.
+ */
+test("blocked tags are left out of the count, for everyone", () => {
+  const characters = [{ tags: ["AoE", "Spell", "Fire"] }, { tags: ["AoE", "Attack"] }];
   assert.deepEqual(
     topTags(characters, 5, new Set(["aoe", "spell"])).map((tag) => tag.name),
     ["Attack", "Fire"],
   );
   assert.equal(topTags(characters, 5, new Set())[0].name, "AoE");
+  for (const blocked of ["AoE", "Duration", "Repeatable", "Chaining"]) {
+    assert.ok(HIDDEN_TAGS.has(blocked.toLowerCase()), `${blocked} is blocked`);
+    assert.deepEqual(topTags([{ tags: [blocked] }]), []);
+  }
 });
