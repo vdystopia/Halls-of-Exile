@@ -528,10 +528,15 @@ and its payload is stored in `characters.source_payload` for the same reason.
   into ascendancies (characters, leagues, /played, average and highest level; the rollup still
   computes `level90s` and `topSkill` but the table shows neither — the 90+ column went on
   2026-09-26 and too few skills repeat for "Most built" to say anything). **A class pie was tried on 2026-09-26 and scrapped the same day** at the owner's request,
-  after three versions (by count, then in the tree's order in the keystone ring, then a
-  stained-glass wheel with Scion at the hub); the table alone is the Classes panel, full width,
-  with its /played figure centred over its bar and its columns following the table's own width
-  (`@container`). Do not bring the pie back.
+  after three versions; do not bring it back. **The table alone is the Classes panel**, full width,
+  and it sorts: `ClassRollup` (server) resolves each class's gem colours and each ascendancy's
+  emblem into plain rows and hands them to `ClassTable` (client), which sorts in the browser
+  through `sortClassRows` in `src/lib/class-sort.ts` — every column both ways, class
+  alphabetically, default /played longest first, a class's ascendancies by the same column, and
+  a row with nothing to sort by last either way round (tested). Columns run Class, /played,
+  Characters, Leagues, Avg level, Highest, following the table's own width (`@container`); the
+  /played figure is centred over a bar filled with the class's own gem gradient (the name's
+  `--gem-fill`). **"Unknown class" is never in the table**: the finished archive will have none.
   Builds are grouped by skill and ranked two ways, by character count (the default) or
   by /played, each breaking ties with the other; `BuildRanking` only picks which
   server-rendered grid to show. Witch and Ranger are classes in both games and skills share

@@ -1,97 +1,50 @@
 import { AscendancyIcon } from "@/components/AscendancyIcon";
+import { ClassTable, type ClassRow } from "@/components/ClassTable";
 import { formatPlayed } from "@/lib/format";
 import { classNameStyle } from "@/lib/games/class-colors";
 import type { GameId } from "@/lib/games/types";
 import type { Rollup } from "@/lib/metrics";
 
-/**
- * One grid for the header, every class and every ascendancy, so the columns
- * line up through the nesting. The column set follows the table's own width
- * (a container query): under 28rem it keeps name, characters and /played, from
- * 28rem it adds average level, and leagues and highest wait for 42rem.
- */
-const COLUMNS =
-  "grid grid-cols-[minmax(0,1fr)_2.5rem_5.5rem] @md:grid-cols-[minmax(0,1fr)_4.5rem_6.5rem_4.5rem] @2xl:grid-cols-[minmax(11rem,1.5fr)_5.5rem_4.5rem_minmax(8rem,1fr)_5rem_4.5rem] items-center gap-x-4";
-const WIDE = "hidden @2xl:block";
-const MID = "hidden @md:block";
-
-function Played({ row, total }: { row: Rollup; total: number }) {
-  const played = formatPlayed(row.playedMinutes);
-  const coverage =
-    row.playedRecorded < row.characters
-      ? `recorded for ${row.playedRecorded} of ${row.characters} characters`
-      : `recorded for every character`;
-  // The figure sits centred over its bar, not flush right of the column.
-  return (
-    <div title={coverage} className="min-w-0 text-center">
-      <span className="tabular-nums">{played ?? "—"}</span>
-      {row.playedRecorded < row.characters && played ? <span className="text-muted">*</span> : null}
-      {/* Share of the player's whole /played in this game. */}
-      <div className="mt-1 hidden h-1 overflow-hidden rounded-full bg-white/5 @md:block">
-        <div className="h-full rounded-full bg-gold/60" style={{ width: `${total ? (row.playedMinutes / total) * 100 : 0}%` }} />
-      </div>
-    </div>
-  );
-}
-
-function Cells({ row, total }: { row: Rollup; total: number }) {
-  return (
-    <>
-      <span className="text-right tabular-nums">{row.characters}</span>
-      <span className={`${WIDE} text-right tabular-nums`}>{row.leagues}</span>
-      <Played row={row} total={total} />
-      <span className={`${MID} text-right tabular-nums`}>{row.averageLevel === null ? "—" : row.averageLevel.toFixed(1)}</span>
-      <span className={`${WIDE} text-right tabular-nums`}>{row.highestLevel ?? "—"}</span>
-    </>
-  );
-}
+/** The page's gold, for a row the class map does not colour. */
+const GOLD_BAR = "linear-gradient(100deg, #e8d9a8, #c8aa6e)";
 
 /**
- * A player's characters by class, opening into ascendancies. Plain
- * `<details>`, so it needs no client code and every class can be open at once.
+ * The class table's rows, resolved on the server — each class's gem colours
+ * for its name and its /played bar, each ascendancy's emblem — and handed to
+ * the client table, which only sorts and draws. Nothing from the art indexes
+ * reaches the browser.
+ *
+ * A class the record does not name is never in the table: the finished archive
+ * will have none, and a row called "Unknown class" said nothing anyone could
+ * act on. An unknown ascendancy under a known class stays, since those are real
+ * characters of that class.
  */
 export function ClassRollup({ game, classes }: { game: GameId; classes: Rollup[] }) {
-  const total = classes.reduce((sum, row) => sum + row.playedMinutes, 0);
-  return (
-    <div className="panel @container overflow-hidden text-sm">
-      <div className={`${COLUMNS} border-b border-line px-4 py-2.5 text-[0.68rem] tracking-[0.16em] text-muted uppercase`}>
-        <span>Class</span>
-        <span className="text-right">
-          <span className="@md:hidden">#</span>
-          <span className="hidden @md:inline">Characters</span>
-        </span>
-        <span className={`${WIDE} text-right`}>Leagues</span>
-        <span className="text-center">/played</span>
-        <span className={`${MID} text-right`}>Avg level</span>
-        <span className={`${WIDE} text-right`}>Highest</span>
-      </div>
-      {classes.map((row) => (
-        <details key={row.name} className="group border-b border-line last:border-b-0">
-          <summary className={`${COLUMNS} cursor-pointer list-none px-4 py-3 hover:bg-white/[0.02] [&::-webkit-details-marker]:hidden`}>
-            <span className="flex min-w-0 items-center gap-2">
-              <span className="text-[0.6rem] text-muted transition-transform group-open:rotate-90">▶</span>
-              <span
-                className={`font-display truncate text-base tracking-wide ${row.known ? "gem-name" : "text-muted"}`}
-                style={row.known ? classNameStyle(game, row.name) : undefined}
-              >
-                {row.name}
-              </span>
-            </span>
-            <Cells row={row} total={total} />
-          </summary>
-          <div className="bg-black/20 pb-1">
-            {row.children.map((child) => (
-              <div key={child.name} className={`${COLUMNS} px-4 py-2 text-parchment/85`}>
-                <span className="flex min-w-0 items-center gap-2 pl-6">
-                  {child.known ? <AscendancyIcon game={game} ascendancy={child.name} size={22} /> : null}
-                  <span className={`truncate ${child.known ? "" : "text-muted"}`}>{child.name}</span>
-                </span>
-                <Cells row={child} total={total} />
-              </div>
-            ))}
-          </div>
-        </details>
-      ))}
-    </div>
-  );
+  const toRow = (row: Rollup, bar: string, nameStyle?: React.CSSProperties, icon?: React.ReactNode): ClassRow => ({
+    name: row.name,
+    known: row.known,
+    nameStyle,
+    bar,
+    icon,
+    characters: row.characters,
+    leagues: row.leagues,
+    playedMinutes: row.playedMinutes,
+    played: formatPlayed(row.playedMinutes),
+    playedRecorded: row.playedRecorded,
+    averageLevel: row.averageLevel,
+    highestLevel: row.highestLevel,
+    children: [],
+  });
+  const rows = classes
+    .filter((row) => row.known)
+    .map((row) => {
+      const style = classNameStyle(game, row.name);
+      const bar = (style as Record<string, string> | undefined)?.["--gem-fill"] ?? GOLD_BAR;
+      const parent = toRow(row, bar, style);
+      parent.children = row.children.map((child) =>
+        toRow(child, bar, undefined, child.known ? <AscendancyIcon game={game} ascendancy={child.name} size={22} /> : undefined),
+      );
+      return parent;
+    });
+  return <ClassTable rows={rows} />;
 }
