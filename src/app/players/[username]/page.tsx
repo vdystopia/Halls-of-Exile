@@ -152,7 +152,10 @@ export default async function PlayerPage({ params, searchParams }: Props) {
                         : "recorded for every character"
                     }
                   >
-                    {total.days} <span className="text-muted">({total.hours})</span>
+                    {/* Days in the archive's gold, hours in the player's accent: the figure
+                        inherits the accent from its cell, so the days set their own colour. */}
+                    <span style={{ color: "var(--color-gold-bright)" }}>{total.days}</span>{" "}
+                    <span style={accentStyle}>({total.hours})</span>
                     {totals.playedRecorded < totals.characters ? <span className="text-muted">*</span> : null}
                   </span>
                 ) : (
