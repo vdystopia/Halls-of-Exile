@@ -117,11 +117,19 @@ export function ClassTable({ rows }: { rows: ClassRow[] }) {
     <div className="panel @container overflow-hidden text-sm">
       <div className={`${COLUMNS} border-b border-line px-4 py-2.5`}>
         <SortButton label="Class" column="class" sort={sort} onSort={onSort} />
-        <SortButton label="/played" column="played" sort={sort} onSort={onSort} className="justify-center" />
-        <SortButton label="Characters" column="characters" sort={sort} onSort={onSort} className="justify-end" />
-        <SortButton label="Leagues" column="leagues" sort={sort} onSort={onSort} className={`${WIDE} justify-end`} />
-        <SortButton label="Avg level" column="averageLevel" sort={sort} onSort={onSort} className={`${MID} justify-end`} />
-        <SortButton label="Highest" column="highestLevel" sort={sort} onSort={onSort} className={`${WIDE} justify-end`} />
+        <SortButton label="/played" column="played" sort={sort} onSort={onSort} className="mx-auto" />
+        <SortButton label="Characters" column="characters" sort={sort} onSort={onSort} className="ml-auto" />
+        {/* Wrapped rather than given `hidden` themselves: a button is `flex`, and
+            which of the two display utilities wins is a matter of stylesheet order. */}
+        <span className={WIDE}>
+          <SortButton label="Leagues" column="leagues" sort={sort} onSort={onSort} className="ml-auto" />
+        </span>
+        <span className={MID}>
+          <SortButton label="Avg level" column="averageLevel" sort={sort} onSort={onSort} className="ml-auto" />
+        </span>
+        <span className={WIDE}>
+          <SortButton label="Highest" column="highestLevel" sort={sort} onSort={onSort} className="ml-auto" />
+        </span>
       </div>
       {sorted.map((row) => (
         <details key={row.name} className="group border-b border-line last:border-b-0">
