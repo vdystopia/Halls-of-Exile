@@ -16,7 +16,7 @@ export default async function HomePage() {
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(600px_240px_at_50%_-20%,rgba(200,170,110,0.18),transparent_70%)]" />
         <h1 className="display relative text-4xl leading-tight sm:text-5xl">Halls of Exile</h1>
         {/* The owner's words, verbatim. */}
-        <p className="relative mx-auto mt-6 max-w-3xl text-parchment/80">
+        <p className="relative mx-auto mt-6 max-w-3xl text-parchment/80 italic">
           Heroes rise and fall. Glory comes and goes. In the end, we all leave this world the same way we came into
           it - alone and with nothing. We will all be forgotten. This much is certain and cannot be avoided. These
           halls were not built to change that. They cannot grant immortality, even through the preservation of
