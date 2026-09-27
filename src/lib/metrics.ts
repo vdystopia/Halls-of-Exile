@@ -118,6 +118,37 @@ export function rollupByClass(characters: MetricCharacter[]): { game: GameId; cl
   });
 }
 
+export type TagCount = {
+  name: string;
+  /** How many characters were built around a skill carrying this tag. */
+  characters: number;
+  /** Their /played added up, for breaking ties. */
+  playedMinutes: number;
+};
+
+/**
+ * The tags a player's builds carry most often — Spell, Fire, Minion — counted
+ * once per character from the tags of the skill it was built around, most
+ * characters first, ties to the tag played longest, then by name. A character
+ * with no skill resolved contributes nothing. Tags are a vocabulary the two
+ * games share ("Fire" is "Fire" in both), so unlike classes and skills they are
+ * added together across games, the way the header's other totals are.
+ */
+export function topTags(characters: { tags: string[]; playedMinutes: number | null }[], limit = 5): TagCount[] {
+  const counts = new Map<string, TagCount>();
+  for (const character of characters) {
+    for (const name of new Set(character.tags)) {
+      const entry = counts.get(name) ?? { name, characters: 0, playedMinutes: 0 };
+      entry.characters += 1;
+      entry.playedMinutes += character.playedMinutes ?? 0;
+      counts.set(name, entry);
+    }
+  }
+  return [...counts.values()]
+    .sort((a, b) => b.characters - a.characters || b.playedMinutes - a.playedMinutes || a.name.localeCompare(b.name))
+    .slice(0, limit);
+}
+
 /**
  * Builds by the skill they were built around, ranked two ways: by how many
  * characters used it, or by the hours they got — a skill tried on five

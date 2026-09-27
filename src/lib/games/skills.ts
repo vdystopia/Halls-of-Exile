@@ -2,11 +2,18 @@ import {
   canonicalSkill as poe1Canonical,
   gemArt as poe1Art,
   gemColor as poe1Color,
+  gemTags as poe1Tags,
   type GemArt,
   type GemColor,
   skillNames as poe1Names,
 } from "./poe1/gems";
-import { canonicalSkill as poe2Canonical, gemArt as poe2Art, gemColor as poe2Color, skillNames as poe2Names } from "./poe2/gems";
+import {
+  canonicalSkill as poe2Canonical,
+  gemArt as poe2Art,
+  gemColor as poe2Color,
+  gemTags as poe2Tags,
+  skillNames as poe2Names,
+} from "./poe2/gems";
 import type { GameId } from "./types";
 
 /**
@@ -16,8 +23,8 @@ import type { GameId } from "./types";
  * would be a different skill's.
  */
 const SKILLS = {
-  poe1: { canonical: poe1Canonical, art: poe1Art, color: poe1Color, names: poe1Names },
-  poe2: { canonical: poe2Canonical, art: poe2Art, color: poe2Color, names: poe2Names },
+  poe1: { canonical: poe1Canonical, art: poe1Art, color: poe1Color, names: poe1Names, tags: poe1Tags },
+  poe2: { canonical: poe2Canonical, art: poe2Art, color: poe2Color, names: poe2Names, tags: poe2Tags },
 } satisfies Record<
   GameId,
   {
@@ -25,6 +32,7 @@ const SKILLS = {
     art: (name?: string | null) => GemArt | null;
     color: (gem: { name: string }) => GemColor | null;
     names: () => string[];
+    tags: (name?: string | null) => string[];
   }
 >;
 
@@ -67,6 +75,15 @@ export function buildSkill(game: GameId, skillGem: string | null, mainSkill: str
 
 export function skillArt(game: GameId, name?: string | null): GemArt | null {
   return SKILLS[game].art(name);
+}
+
+/**
+ * The tags the game shows on a skill's gem — "Spell, AoE, Fire" — from its own
+ * game's table. Given what `buildSkill` returned, so prose and an unknown gem
+ * have none; a Path of Exile 2 Spark is tagged by Path of Exile 2's table.
+ */
+export function skillTags(game: GameId, name?: string | null): string[] {
+  return SKILLS[game].tags(name);
 }
 
 /** The active skills a form offers for a character of this game. */

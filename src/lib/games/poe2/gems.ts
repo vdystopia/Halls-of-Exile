@@ -2,6 +2,7 @@ import type { Gem } from "../../types";
 import type { GemArt, GemColor } from "../poe1/gems";
 import index from "./gem-art-index.json";
 import skills from "./skill-names.json";
+import tags from "./gem-tags.json";
 
 /**
  * Path of Exile 2's gem pictures and skill names, from `npm run gems:poe2`.
@@ -30,6 +31,18 @@ export function canonicalSkill(text?: string | null): string | null {
 
 export function skillNames(): string[] {
   return SKILLS;
+}
+
+const TAGS_BY_LOWER = new Map(Object.entries(tags as Record<string, string[]>).map(([key, value]) => [key.toLowerCase(), value]));
+
+/**
+ * The tags the game shows under a skill gem's name — "Spell, Projectile,
+ * Lightning" — from this game's own table, in its own order, with the markup
+ * already stripped by `npm run gems:poe2`. A gem the index does not know has
+ * none.
+ */
+export function gemTags(skill?: string | null): string[] {
+  return TAGS_BY_LOWER.get(skill?.trim().toLowerCase() ?? "") ?? [];
 }
 
 const COLORS = index.colors as Record<string, string>;

@@ -13,9 +13,9 @@ import { avatarUrl, playerAccent } from "@/lib/avatars";
 import { Section } from "@/components/Section";
 import { classLine, formatPlayed, formatPlayedTotal } from "@/lib/format";
 import { characterTier } from "@/lib/tier";
-import { buildSkill, skillArt } from "@/lib/games/skills";
+import { buildSkill, skillArt, skillTags } from "@/lib/games/skills";
 import { GAME_NAMES } from "@/lib/games/types";
-import { rollupByClass, rollupBySkill } from "@/lib/metrics";
+import { rollupByClass, rollupBySkill, topTags } from "@/lib/metrics";
 import { getUser, getUserTotals, listLeaguesForUser, listPlayerCharacters, listRecentCharacters } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -47,16 +47,25 @@ export default async function PlayerPage({ params, searchParams }: Props) {
   const total = formatPlayedTotal(totals.playedMinutes);
 
   const characters = listPlayerCharacters(user.id);
-  const facts = characters.map((c) => ({
-    game: c.game,
-    className: c.className,
-    ascendancy: c.ascendancy,
-    level: c.level,
-    playedMinutes: c.playedMinutes,
-    leagueId: c.leagueId,
-    skill: buildSkill(c.game, c.skillGem, c.mainSkill),
-  }));
+  const facts = characters.map((c) => {
+    const skill = buildSkill(c.game, c.skillGem, c.mainSkill);
+    return {
+      game: c.game,
+      className: c.className,
+      ascendancy: c.ascendancy,
+      level: c.level,
+      playedMinutes: c.playedMinutes,
+      leagueId: c.leagueId,
+      skill,
+      // The skill's gem tags, from its own game's table; none without a gem.
+      tags: skillTags(c.game, skill),
+    };
+  });
   const byClass = rollupByClass(facts);
+  // The five tags the player's builds carry most often, and how many builds
+  // carry any tag at all, for the header's bottom right.
+  const tags = topTags(facts);
+  const tagged = facts.filter((c) => c.tags.length).length;
   const buildGrid = (by: "characters" | "played") => {
     const top = rollupBySkill(facts, by).slice(0, 4);
     return (
@@ -131,46 +140,64 @@ export default async function PlayerPage({ params, searchParams }: Props) {
               {user.tagline ? <p className="mt-2 max-w-xl text-sm text-parchment/75 italic">“{user.tagline}”</p> : null}
             </div>
           </div>
-          {/* Columns as wide as their contents, not four equal shares: the /played
-              figure is the widest, and equal columns spread every stat apart to
-              match it instead of letting the others close up to the left. */}
-          <dl className="grid grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-[repeat(4,auto)]">
-            {[
-              { label: "Characters", value: totals.characters },
-              { label: "Leagues played", value: totals.leagues },
-              // Every character's level added up: 90 + 91 + 100 reads 281.
-              { label: "Total levels", value: totals.totalLevels },
-              {
-                label: "Total /played",
-                value: total ? (
-                  // Summed over the characters that have a /played; the rest add
-                  // nothing, so a partial total says so, as the class table does.
-                  <span
-                    title={
-                      totals.playedRecorded < totals.characters
-                        ? `recorded for ${totals.playedRecorded} of ${totals.characters} characters`
-                        : "recorded for every character"
-                    }
+          <div className="flex min-w-0 flex-col items-end gap-4">
+            {/* Columns as wide as their contents, not four equal shares: the /played
+                figure is the widest, and equal columns spread every stat apart to
+                match it instead of letting the others close up to the left. */}
+            <dl className="grid grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-[repeat(4,auto)]">
+              {[
+                { label: "Characters", value: totals.characters },
+                { label: "Leagues played", value: totals.leagues },
+                // Every character's level added up: 90 + 91 + 100 reads 281.
+                { label: "Total levels", value: totals.totalLevels },
+                {
+                  label: "Total /played",
+                  value: total ? (
+                    // Summed over the characters that have a /played; the rest add
+                    // nothing, so a partial total says so, as the class table does.
+                    <span
+                      title={
+                        totals.playedRecorded < totals.characters
+                          ? `recorded for ${totals.playedRecorded} of ${totals.characters} characters`
+                          : "recorded for every character"
+                      }
+                    >
+                      {/* Days in the archive's gold, hours in the player's accent: the figure
+                          inherits the accent from its cell, so the days set their own colour. */}
+                      <span style={{ color: "var(--color-gold-bright)" }}>{total.days}</span>{" "}
+                      <span style={accentStyle}>({total.hours})</span>
+                      {totals.playedRecorded < totals.characters ? <span className="text-muted">*</span> : null}
+                    </span>
+                  ) : (
+                    "—"
+                  ),
+                },
+              ].map((stat) => (
+                <div key={stat.label} className="text-right">
+                  <dt className="eyebrow">{stat.label}</dt>
+                  <dd className="display text-2xl" style={accentStyle}>
+                    {stat.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            {/* The five tags the player's builds carry most often — Spell, Fire,
+                Minion — each counted once per character from the gem it was built
+                around, in the same boxes the character banners draw their tags in. */}
+            {tags.length ? (
+              <ul aria-label="Most common skill tags" className="flex flex-wrap justify-end gap-1.5">
+                {tags.map((tag) => (
+                  <li
+                    key={tag.name}
+                    className="tag"
+                    title={`${tag.name}: ${tag.characters} of ${tagged} characters with a known skill`}
                   >
-                    {/* Days in the archive's gold, hours in the player's accent: the figure
-                        inherits the accent from its cell, so the days set their own colour. */}
-                    <span style={{ color: "var(--color-gold-bright)" }}>{total.days}</span>{" "}
-                    <span style={accentStyle}>({total.hours})</span>
-                    {totals.playedRecorded < totals.characters ? <span className="text-muted">*</span> : null}
-                  </span>
-                ) : (
-                  "—"
-                ),
-              },
-            ].map((stat) => (
-              <div key={stat.label} className="text-right">
-                <dt className="eyebrow">{stat.label}</dt>
-                <dd className="display text-2xl" style={accentStyle}>
-                  {stat.value}
-                </dd>
-              </div>
-            ))}
-          </dl>
+                    {tag.name}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
         </div>
       </header>
 

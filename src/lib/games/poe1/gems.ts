@@ -1,6 +1,7 @@
 import artIndex from "./gem-art-index.json";
 import colors from "./gem-colors.json";
 import skills from "./skill-names.json";
+import tags from "./gem-tags.json";
 import type { Gem } from "../../types";
 
 /**
@@ -125,4 +126,27 @@ const SKILL_BY_LOWER = new Map(SKILLS.map((name) => [name.toLowerCase(), name]))
  */
 export function canonicalSkill(text?: string | null): string | null {
   return SKILL_BY_LOWER.get(text?.trim().toLowerCase() ?? "") ?? null;
+}
+
+const TAGS_BY_LOWER = new Map(Object.entries(tags as Record<string, string[]>).map(([key, value]) => [key.toLowerCase(), value]));
+
+/**
+ * The tags the game shows under a skill gem's name — "Spell, AoE, Fire" — from
+ * `gem-tags.json`, generated beside the colours by `npm run gems:index`: the
+ * game's own display names ("AoE", not "area") in the game's own order, with
+ * the tags it never shows (the attribute, `grants_active_skill`) left out.
+ *
+ * Matching is the rule `gemArt` follows: exact and case-insensitive, so prose
+ * has no tags. Transfigured gems are their own rows in the data and are indexed
+ * under their own names; one the snapshot has not caught up with falls back to
+ * its base gem's tags, which is right for nearly all of them. An unknown gem
+ * has none.
+ */
+export function gemTags(skill?: string | null): string[] {
+  const name = skill?.trim().toLowerCase();
+  if (!name) return [];
+  const direct = TAGS_BY_LOWER.get(name);
+  if (direct) return direct;
+  const transfigured = name.match(/^(.+?) of .+$/);
+  return (transfigured && TAGS_BY_LOWER.get(transfigured[1])) || [];
 }

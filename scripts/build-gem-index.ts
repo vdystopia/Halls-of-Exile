@@ -21,12 +21,15 @@ import path from "node:path";
 import renames from "../src/lib/games/poe1/gem-renames.json";
 
 const SOURCE = "https://repoe-fork.github.io/gems.json";
+const TAGS_SOURCE = "https://repoe-fork.github.io/gem_tags.json";
 const OUTPUT = path.join(process.cwd(), "src", "lib", "games", "poe1", "gem-colors.json");
 const SKILLS_OUTPUT = path.join(process.cwd(), "src", "lib", "games", "poe1", "skill-names.json");
+const TAGS_OUTPUT = path.join(process.cwd(), "src", "lib", "games", "poe1", "gem-tags.json");
 
 type Gem = {
   color?: string;
   display_name?: string;
+  tags?: string[];
   base_item?: { id?: string; display_name?: string; release_state?: string } | null;
 };
 
@@ -46,7 +49,21 @@ async function main() {
   if (!response.ok) throw new Error(`RePoE returned HTTP ${response.status}`);
   const data = (await response.json()) as Record<string, Gem>;
 
+  /**
+   * A gem's tags — the "Spell, AoE, Fire" line under its name — come as ids
+   * (`area`, `random_element`) and the game shows them by another table: `area`
+   * is "AoE", `random_element` is "Prismatic". A tag with no display name there
+   * is one the game never shows (the attribute tags, `grants_active_skill`,
+   * `low_max_level`), so it is left out rather than printed raw.
+   */
+  process.stdout.write(`fetching ${TAGS_SOURCE}\n`);
+  const tagsResponse = await fetch(TAGS_SOURCE);
+  if (!tagsResponse.ok) throw new Error(`RePoE returned HTTP ${tagsResponse.status} for gem tags`);
+  const tagNames = (await tagsResponse.json()) as Record<string, string | null>;
+
   const colors: Record<string, string> = {};
+  // Each active skill's shown tags, in the game's own order, by the gem's name.
+  const tags: Record<string, string[]> = {};
   // Active skills only. The form this feeds asks "what was the character built
   // around", and no character was built around Increased Area of Effect. RePoE
   // has no is_support field, but the metadata id carries the answer outright —
@@ -67,7 +84,15 @@ async function main() {
 
     const id = gem.base_item?.id;
     const name = gem.base_item?.display_name ?? gem.display_name;
-    if (id?.startsWith("Metadata/Items/Gems/SkillGem") && name && !INTERNAL.test(name)) skills.add(name);
+    if (id?.startsWith("Metadata/Items/Gems/SkillGem") && name && !INTERNAL.test(name)) {
+      skills.add(name);
+      // A transfigured gem is its own row here, sharing the base gem's item and
+      // carrying its own tags ("Ice Nova of Frostbolts" under Ice Nova's id), so
+      // its tags are filed under its own name and never stand in for the base's.
+      const own = gem.display_name ?? name;
+      const shown = (gem.tags ?? []).map((tag) => tagNames[tag]).filter((tag): tag is string => Boolean(tag));
+      if (shown.length && !tags[own]) tags[own] = shown;
+    }
   }
 
   /**
@@ -81,6 +106,7 @@ async function main() {
       const value = colors[current + suffix] ?? colors[current];
       if (value && !colors[former + suffix]) colors[former + suffix] = value;
     }
+    if (tags[current] && !tags[former]) tags[former] = tags[current];
   }
 
   const sorted: Record<string, string> = {};
@@ -94,6 +120,15 @@ async function main() {
   fs.writeFileSync(SKILLS_OUTPUT, `${JSON.stringify(names, null, 0)}\n`);
   const skillSize = (fs.statSync(SKILLS_OUTPUT).size / 1024).toFixed(0);
   process.stdout.write(`wrote ${names.length} active skills to ${SKILLS_OUTPUT} (${skillSize} KB)\n`);
+
+  const sortedTags = Object.fromEntries(Object.keys(tags).sort().map((key) => [key, tags[key]]));
+  fs.writeFileSync(TAGS_OUTPUT, `${JSON.stringify(sortedTags, null, 0)}\n`);
+  const tagSize = (fs.statSync(TAGS_OUTPUT).size / 1024).toFixed(0);
+  const untagged = names.filter((name) => !tags[name]);
+  process.stdout.write(
+    `wrote tags for ${Object.keys(sortedTags).length} skills (transfigured ones included) to ${TAGS_OUTPUT} (${tagSize} KB)\n`,
+  );
+  if (untagged.length) process.stdout.write(`${untagged.length} skills show no tags: ${untagged.join(", ")}\n`);
 }
 
 main().catch((error) => {

@@ -33,12 +33,14 @@ import path from "node:path";
 const ROOT = "https://repoe-fork.github.io/poe2";
 const ART_OUTPUT = path.join(process.cwd(), "src", "lib", "games", "poe2", "gem-art-index.json");
 const SKILLS_OUTPUT = path.join(process.cwd(), "src", "lib", "games", "poe2", "skill-names.json");
+const TAGS_OUTPUT = path.join(process.cwd(), "src", "lib", "games", "poe2", "gem-tags.json");
 
 type SkillGem = {
   gem_type?: string;
   color?: string;
   crafting_types?: unknown;
   icon_dds_file?: string;
+  tags?: string[];
   base_item?: { id?: string; display_name?: string; release_state?: string } | null;
 };
 type BaseItem = { name?: string; visual_identity?: { dds_file?: string } };
@@ -52,9 +54,23 @@ async function load<T>(file: string): Promise<T> {
   return (await response.json()) as T;
 }
 
+/**
+ * A tag's display name here is written in the game's own markup — "[Fire]",
+ * "[AoESkill|AoE]" — the same `[Tag|Display]` form the item text uses, which
+ * shows the part after the bar, or the whole word when there is none. A tag
+ * with no display name at all (the attribute tags, `grants_active_skill`) is
+ * one the game never shows.
+ */
+function plainTag(name: string | null): string | null {
+  if (!name) return null;
+  const shown = name.replace(/\[([^\]|]*)\|?([^\]]*)\]/g, (_, id: string, display: string) => display || id).trim();
+  return shown || null;
+}
+
 async function main() {
   const gems = await load<Record<string, SkillGem>>("skill_gems.json");
   const bases = await load<Record<string, BaseItem>>("base_items.json");
+  const tagNames = await load<Record<string, string | null>>("gem_tags.json");
   // The two files spell the folder "Gem" and "Gems" for different rows, so a
   // base is found by either spelling, then by name.
   const baseByName = new Map(Object.values(bases).filter((b) => b.name).map((b) => [b.name as string, b]));
@@ -63,6 +79,8 @@ async function main() {
 
   const art: Record<string, string> = {};
   const colors: Record<string, string> = {};
+  // Each skill's shown tags, in the game's own order, by the gem's name.
+  const tags: Record<string, string[]> = {};
   const skills = new Set<string>();
   let unmatched = 0;
   // Gems that still drop (they carry `crafting_types`) go first, so a name two
@@ -100,6 +118,12 @@ async function main() {
     // The skill field offers only what a character can be built around today;
     // it suggests without constraining, so an older gem can still be typed.
     if (!templated && gem.crafting_types && (gem.gem_type === "active" || gem.gem_type === "spirit")) skills.add(name);
+    // Tags for everything a character can be built around, dropping or not,
+    // since an older save names gems that no longer drop.
+    if (!templated && (gem.gem_type === "active" || gem.gem_type === "spirit") && !tags[name]) {
+      const shown = (gem.tags ?? []).map((tag) => plainTag(tagNames[tag] ?? null)).filter((tag): tag is string => Boolean(tag));
+      if (shown.length) tags[name] = shown;
+    }
   }
 
   const sorted = Object.fromEntries(Object.keys(art).sort().map((key) => [key, art[key]]));
@@ -107,10 +131,14 @@ async function main() {
   fs.writeFileSync(ART_OUTPUT, `${JSON.stringify({ art: sorted, colors: sortedColors }, null, 0)}\n`);
   const names = [...skills].sort((a, b) => a.localeCompare(b));
   fs.writeFileSync(SKILLS_OUTPUT, `${JSON.stringify(names, null, 0)}\n`);
+  const sortedTags = Object.fromEntries(Object.keys(tags).sort().map((key) => [key, tags[key]]));
+  fs.writeFileSync(TAGS_OUTPUT, `${JSON.stringify(sortedTags, null, 0)}\n`);
+  const untagged = names.filter((name) => !tags[name]);
   process.stdout.write(
-    `wrote ${Object.keys(sorted).length} gem keys (${new Set(Object.values(sorted)).size} images) and ` +
-      `${names.length} skills; ${unmatched} gems had no base item art\n`,
+    `wrote ${Object.keys(sorted).length} gem keys (${new Set(Object.values(sorted)).size} images), ` +
+      `${names.length} skills and tags for ${Object.keys(sortedTags).length}; ${unmatched} gems had no base item art\n`,
   );
+  if (untagged.length) process.stdout.write(`${untagged.length} skills show no tags: ${untagged.join(", ")}\n`);
   if (unmatched) process.exitCode = 1;
 }
 

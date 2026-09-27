@@ -78,9 +78,9 @@ test("the art catalogue never reaches the browser", () => {
   );
 });
 
-/** Same reasoning: the gem colour index is 58 KB of server-side lookup. */
-test("the gem colour index never reaches the browser", () => {
-  const offenders = [...clientGraph()].filter((file) => /gem-colors\.json$/.test(file));
+/** Same reasoning: the gem colour and tag indexes are server-side lookup. */
+test("the gem colour and tag indexes never reach the browser", () => {
+  const offenders = [...clientGraph()].filter((file) => /gem-(colors|tags)\.json$/.test(file));
   assert.deepEqual(offenders.map((file) => path.relative(process.cwd(), file)), []);
 });
 

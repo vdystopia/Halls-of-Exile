@@ -563,6 +563,20 @@ and its payload is stored in `characters.source_payload` for the same reason.
   without the trailing "Support", and a transfigured gem resolves through its base gem's id.
   A socket group has no primary skill — four golems are four equal actives — so `orderGems`
   puts every active above every support and nothing is promoted to a title.
+- **A skill's tags come from the same snapshot, and the profile header wears the five most
+  common.** The "Spell, AoE, Fire" line under a gem's name is `tags` in RePoE's dump, as ids,
+  and `gem_tags.json` there gives each its display name — `area` is "AoE", `random_element` is
+  "Prismatic" — or null for one the game never shows (the attribute tags, `grants_active_skill`).
+  `npm run gems:index` writes `poe1/gem-tags.json` (transfigured gems are their own rows in the
+  data and are filed under their own names; one the snapshot lacks falls back to its base gem's)
+  and `npm run gems:poe2` writes `poe2/gem-tags.json` from that game's own table, stripping its
+  `[Tag|Display]` markup. `skillTags(game, name)` in `games/skills.ts` reads them, server-side
+  like the rest; the bundle test keeps both files out of the browser. `topTags` in `metrics.ts`
+  counts each tag once per character from the gem `buildSkill` resolved — prose and unknown gems
+  count for nothing — most characters first, ties to the tag played longest, and the player page
+  header draws the top five at its bottom right in `.tag` boxes, each titled with its count.
+  Tags **are** added across the two games, unlike classes and skills: "Fire" is one word in both,
+  and the header's other totals already span both.
 - **Gem art is a layered sheet, the way flask art is.** A gem's picture is a 143x48 strip
   holding the socket setting and the gem itself, meant to be stacked into one icon; drawn flat
   it reads as two smudges at the edges of the tile. `SkillIcon` composites it the way
