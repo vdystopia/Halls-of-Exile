@@ -95,7 +95,9 @@ export function listUsers(): UserSummary[] {
     .prepare(
       `SELECT u.*,
               (SELECT COUNT(*) FROM characters c WHERE c.user_id = u.id)                      AS character_count,
-              (SELECT COUNT(DISTINCT c.league_id) FROM characters c WHERE c.user_id = u.id)   AS league_count,
+              (SELECT COUNT(*) FROM (SELECT league_id FROM characters c WHERE c.user_id = u.id
+                                     UNION SELECT league_id FROM league_records r
+                                       WHERE r.user_id = u.id AND r.challenges_completed > 0))  AS league_count,
               (SELECT MAX(c.level) FROM characters c WHERE c.user_id = u.id)                  AS highest_level,
               (SELECT l.patch FROM characters c JOIN leagues l ON l.id = c.league_id
                  WHERE c.user_id = u.id ORDER BY l.sort_order DESC LIMIT 1)                   AS latest_patch,
@@ -315,15 +317,19 @@ export function getAdjacentLeagues(
 export function getUserTotals(userId: number) {
   const row = db
     .prepare(
+      // Leagues played: one with a character in it, or one with a challenge
+      // completed — Synthesis was played whatever became of its characters.
       `SELECT COUNT(*)                     AS characters,
-              COUNT(DISTINCT league_id)    AS leagues,
+              (SELECT COUNT(*) FROM (SELECT league_id FROM characters WHERE user_id = ?
+                                     UNION SELECT league_id FROM league_records
+                                       WHERE user_id = ? AND challenges_completed > 0)) AS leagues,
               SUM(COALESCE(level, 0))      AS total_levels,
               SUM(COALESCE(played_minutes, 0)) AS played_minutes,
               SUM(CASE WHEN played_minutes > 0 THEN 1 ELSE 0 END) AS played_recorded,
               SUM(CASE WHEN level >= 90 THEN 1 ELSE 0 END) AS level_90s
        FROM characters WHERE user_id = ?`,
     )
-    .get(userId) as Row;
+    .get(userId, userId, userId) as Row;
   return {
     characters: row.characters as number,
     leagues: row.leagues as number,

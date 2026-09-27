@@ -381,6 +381,7 @@ which then takes the hand-added row over, characters and all. Per-player challen
 | `users` | username (unique, case-insensitive), optional tagline and Path of Exile account |
 | `leagues` | patch, name, expansion, start/end dates, challenge total, custom flag |
 | `league_records` | one row per player per league: challenges completed, total override, notes |
+| `challenges` | one row per player per league per challenge, as pathofexile.com's Challenges tab lists them: position, name, progress, done, description, sub-items |
 | `characters` | name, slug, class, ascendancy, level, main skill, memories, `/played` time, the PoB code or the account-export payload it was built from, and the parsed build JSON |
 
 ## Layout

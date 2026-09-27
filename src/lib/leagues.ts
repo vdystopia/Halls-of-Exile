@@ -50,13 +50,17 @@ export const LEAGUE_SEED: LeagueSeed[] = [
   { game: "poe1", slug: "1.1", patch: "1.1", name: "Ambush / Invasion", expansion: "Sacrifice of the Vaal", startDate: "2014-03-05", endDate: "2014-08-20", challengeTotal: 8 },
   { game: "poe1", slug: "1.2", patch: "1.2", name: "Rampage / Beyond", expansion: "Forsaken Masters", startDate: "2014-08-20", endDate: "2014-12-12", challengeTotal: 8 },
   { game: "poe1", slug: "1.3", patch: "1.3", name: "Torment / Bloodlines", startDate: "2014-12-12", endDate: "2015-07-10", challengeTotal: 8 },
-  { game: "poe1", slug: "2.0", patch: "2.0", name: "Tempest / Warbands", expansion: "The Awakening", startDate: "2015-07-10", endDate: "2015-12-11", challengeTotal: 32 },
+  // Challenge totals for 2.0 and 2.4–2.6 come from the account's own Challenges
+  // tab on pathofexile.com (read 2026-09-27), which lists every league's count:
+  // 8 for Warbands/Tempest, 40 from Essence on. The 32 and 36 they replaced
+  // were secondary-source figures.
+  { game: "poe1", slug: "2.0", patch: "2.0", name: "Tempest / Warbands", expansion: "The Awakening", startDate: "2015-07-10", endDate: "2015-12-11", challengeTotal: 8 },
   { game: "poe1", slug: "2.1", patch: "2.1", name: "Talisman", startDate: "2015-12-11", endDate: "2016-03-04", challengeTotal: 32 },
   { game: "poe1", slug: "2.2", patch: "2.2", name: "Perandus", expansion: "Ascendancy", startDate: "2016-03-04", endDate: "2016-06-03", challengeTotal: 32 },
   { game: "poe1", slug: "2.3", patch: "2.3", name: "Prophecy", startDate: "2016-06-03", endDate: "2016-09-02", challengeTotal: 32 },
-  { game: "poe1", slug: "2.4", patch: "2.4", name: "Essence", expansion: "Atlas of Worlds", startDate: "2016-09-02", endDate: "2016-12-02", challengeTotal: 36 },
-  { game: "poe1", slug: "2.5", patch: "2.5", name: "Breach", startDate: "2016-12-02", endDate: "2017-03-03", challengeTotal: 36 },
-  { game: "poe1", slug: "2.6", patch: "2.6", name: "Legacy", startDate: "2017-03-03", endDate: "2017-08-04", challengeTotal: 36 },
+  { game: "poe1", slug: "2.4", patch: "2.4", name: "Essence", expansion: "Atlas of Worlds", startDate: "2016-09-02", endDate: "2016-12-02", challengeTotal: 40 },
+  { game: "poe1", slug: "2.5", patch: "2.5", name: "Breach", startDate: "2016-12-02", endDate: "2017-03-03", challengeTotal: 40 },
+  { game: "poe1", slug: "2.6", patch: "2.6", name: "Legacy", startDate: "2017-03-03", endDate: "2017-08-04", challengeTotal: 40 },
   { game: "poe1", slug: "3.0", patch: "3.0", name: "Harbinger", expansion: "The Fall of Oriath", startDate: "2017-08-04", endDate: "2017-12-08", challengeTotal: 40 },
   { game: "poe1", slug: "3.1", patch: "3.1", name: "Abyss", expansion: "War for the Atlas", startDate: "2017-12-08", endDate: "2018-03-02", challengeTotal: 40 },
   { game: "poe1", slug: "3.2", patch: "3.2", name: "Bestiary", startDate: "2018-03-02", endDate: "2018-05-28", challengeTotal: 40 },

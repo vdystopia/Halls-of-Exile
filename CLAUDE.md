@@ -206,6 +206,28 @@ and its payload is stored in `characters.source_payload` for the same reason.
   closed beta rounds are 0.0. Sorting the League column sorts by date, not by name: the
   catalogue's own order is chronological so an event sits beside the league it ran inside, and
   alphabetical order would break exactly that. Characters, best level and challenges sort too.
+- **A league's challenges come from the account page, whole, and a league with one done was played.**
+  pathofexile.com's Challenges tab is the one full league history Grinding Gear Games keep: every
+  league the account saw, each challenge's name, "n/m", tick or cross, description and sub-items.
+  It is private to the signed-in account, so it is read in a browser (the prompt from the session
+  of 2026-09-27) into one JSON file per account, uploaded on the import page (`ChallengeImportForm`
+  → `importChallengesAction` in `src/lib/challenge-actions.ts`, its own "use server" file). The
+  rules are in `src/lib/challenges.ts`: `SITE_LEAGUES` maps the site's labels ("Mercenary",
+  "Ancestor", "Warbands/Tempest") onto catalogue slugs and a label it lacks that has challenges done
+  is reported, never guessed; a league with challenges done is stored in full in the `challenges`
+  table (one row per challenge, the site's order in `position`, sub-items as JSON) and its record's
+  count is set from the site, with the total stored only where the site's differs from the
+  catalogue's, the form's own rule; zero completed is "not played" (the owner's rule) and nothing is
+  stored; Ruthless variants are never read; a re-upload replaces and keeps the player's notes. The
+  league page draws them in `ChallengeList`, the site's own look (`.challenge-row*` in
+  `globals.css`: crimson bars, gold border, tick or cross, opening to bar, description and
+  sub-items), after the characters and **even when no character is filed under the league**, and
+  **"leagues played" everywhere counts a league with a challenge completed** (`getUserTotals`,
+  `listUsers`, the player page's filter) — Synthesis was played whatever became of its characters.
+  The site also gave four catalogue totals the lie: Warbands/Tempest has 8 challenges, Essence,
+  Breach and Legacy 40; corrected in the seed on 2026-09-27 from the owner's own tab. The owner's
+  file is `collect/challenges-zxBlasphemy_5164.json`; `tests/fixtures/challenges.json` is a trimmed
+  copy plus two invented leagues, and `tests/challenges.test.ts` pins the rules.
 - **Challenges sort as a fraction, never as a count.** A league's challenge total has been 8,
   12, 32 and 40 over the years, so the raw number finished says more about which league it was
   than about how far anyone got: 7 of 8 is the better run and has to rank above 20 of 40.

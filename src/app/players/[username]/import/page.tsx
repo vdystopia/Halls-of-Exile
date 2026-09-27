@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ChallengeImportForm } from "@/components/ChallengeImportForm";
 import { ImportExportForm } from "@/components/ImportExportForm";
 import { RecordImportForm } from "@/components/RecordImportForm";
 import { skillNamesFor } from "@/lib/games/skills";
@@ -64,6 +65,17 @@ export default async function ImportPage({ params }: Props) {
         </p>
       </header>
       <RecordImportForm username={user.username} />
+
+      <header className="panel p-6">
+        <h2 className="display text-xl">Challenges, from the account page</h2>
+        <p className="mt-2 max-w-2xl text-sm text-parchment/80">
+          pathofexile.com keeps every league&rsquo;s challenges under the account&rsquo;s Challenges tab, name by
+          name and sub-item by sub-item. It is private to the signed-in account, so it is read in a browser into
+          one JSON file per account, and that file is what this takes. Each league page then shows its challenges
+          the way the site does.
+        </p>
+      </header>
+      <ChallengeImportForm username={user.username} />
     </div>
   );
 }

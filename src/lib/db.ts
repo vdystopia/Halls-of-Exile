@@ -94,6 +94,22 @@ CREATE TABLE IF NOT EXISTS characters (
   UNIQUE (user_id, league_id, slug)
 );
 
+-- A player's challenges in a league, one row each, as pathofexile.com lists
+-- them: the site's order, name, "n/m", done or not, the description and the
+-- sub-items (JSON [{text, completed}]). Written only by the challenge import.
+CREATE TABLE IF NOT EXISTS challenges (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  league_id   INTEGER NOT NULL REFERENCES leagues(id) ON DELETE CASCADE,
+  position    INTEGER NOT NULL,
+  name        TEXT NOT NULL,
+  progress    TEXT,
+  completed   INTEGER NOT NULL DEFAULT 0,
+  description TEXT,
+  subtasks    TEXT NOT NULL DEFAULT '[]',
+  UNIQUE (user_id, league_id, position)
+);
+
 CREATE INDEX IF NOT EXISTS idx_characters_user ON characters(user_id);
 CREATE INDEX IF NOT EXISTS idx_characters_league ON characters(user_id, league_id);
 `;

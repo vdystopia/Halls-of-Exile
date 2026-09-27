@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ChallengeList } from "@/components/ChallengeList";
 import { ChallengeMeter } from "@/components/ChallengeMeter";
 import { CharacterCard } from "@/components/CharacterCard";
 import { AddLeagueForm } from "@/components/AddLeagueForm";
 import { LeagueRecordForm } from "@/components/LeagueRecordForm";
 import { isLeagueRunning, leagueDuration, leagueTitle, leagueWindow } from "@/lib/format";
+import { listChallenges } from "@/lib/challenges";
 import { getCharacterCountByClass } from "@/lib/insights";
 import {
   getAdjacentLeagues,
@@ -36,6 +38,7 @@ export default async function LeaguePage({ params }: Props) {
   const duration = leagueDuration(league.startDate, league.endDate);
   const running = isLeagueRunning(league.startDate, league.endDate);
   const classes = getCharacterCountByClass(characters);
+  const challenges = listChallenges(user.id, league.id);
   const { previous, next } = getAdjacentLeagues(user.id, league.game, league.sortOrder);
 
   return (
@@ -128,6 +131,10 @@ export default async function LeaguePage({ params }: Props) {
           </div>
         )}
       </section>
+
+      {/* The site's own record of this league, challenge by challenge, where it
+          has been imported. It is here even when no character is filed above. */}
+      <ChallengeList challenges={challenges} completed={progress?.challengesCompleted ?? null} total={total} />
 
       <LeagueRecordForm
         username={user.username}

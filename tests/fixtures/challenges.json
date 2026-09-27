@@ -1,0 +1,264 @@
+{
+ "_note": "Trimmed from the owner's real file of 2026-09-27: a few rows per league, counts adjusted to the rows kept. Talisman and Flashback are invented to exercise a total that differs from the catalogue and a label the map lacks.",
+ "account": "zxBlasphemy#5164",
+ "realm": "PoE 1 PC",
+ "retrieved_at": "2026-09-27T13:13:34-06:00",
+ "dropdown_order": [
+  "Mirage Ruthless",
+  "Ultimatum",
+  "Heist",
+  "Synthesis",
+  "Archnemesis",
+  "Talisman",
+  "Flashback"
+ ],
+ "leagues": [
+  {
+   "league": "Mirage Ruthless",
+   "status": "skipped_ruthless"
+  },
+  {
+   "league": "Ultimatum",
+   "status": "played",
+   "completed": 5,
+   "total": 40,
+   "challenges": [
+    {
+     "position": 1,
+     "name": "Mastering the Basics",
+     "progress": "3/3",
+     "completed": true,
+     "description": "Equip or allocate each of the following items or passive skills.",
+     "subtasks": [
+      {
+       "text": "Coral Ring",
+       "completed": true
+      },
+      {
+       "text": "Magic Flask",
+       "completed": true
+      },
+      {
+       "text": "Keystone Passive Skill",
+       "completed": true
+      }
+     ]
+    },
+    {
+     "position": 2,
+     "name": "Complete Ultimatum Encounters I",
+     "progress": "3/3",
+     "completed": true,
+     "description": "Complete each of the following encounters.",
+     "subtasks": [
+      {
+       "text": "Apply a Modifier to an Ultimatum encounter",
+       "completed": true
+      },
+      {
+       "text": "Complete an Ultimatum encounter without completing all waves",
+       "completed": true
+      },
+      {
+       "text": "Complete all waves of an Ultimatum encounter",
+       "completed": true
+      }
+     ]
+    },
+    {
+     "position": 3,
+     "name": "Complete these Quests",
+     "progress": "5/5",
+     "completed": true,
+     "description": "Complete each of the following quests.",
+     "subtasks": [
+      {
+       "text": "A Dirty Job",
+       "completed": true
+      },
+      {
+       "text": "A Fixture of Fate",
+       "completed": true
+      },
+      {
+       "text": "The King's Feast",
+       "completed": true
+      },
+      {
+       "text": "In Memory of Greust",
+       "completed": true
+      },
+      {
+       "text": "Fastis Fortuna",
+       "completed": true
+      }
+     ]
+    },
+    {
+     "position": 4,
+     "name": "Defeat these Act Bosses I",
+     "progress": "5/5",
+     "completed": true,
+     "description": "Defeat each of the following Unique Act Bosses.",
+     "subtasks": [
+      {
+       "text": "Act 1: Merveil, the Twisted",
+       "completed": true
+      },
+      {
+       "text": "Act 2: Vaal Oversoul",
+       "completed": true
+      },
+      {
+       "text": "Act 3: Dominus, Ascendant",
+       "completed": true
+      },
+      {
+       "text": "Act 4: Malachai, The Nightmare",
+       "completed": true
+      },
+      {
+       "text": "Act 5: Kitava, the Insatiable",
+       "completed": true
+      }
+     ]
+    },
+    {
+     "position": 33,
+     "name": "Defeat The Trialmaster",
+     "progress": null,
+     "completed": true,
+     "description": null,
+     "subtasks": []
+    }
+   ],
+   "notes": "Row 33 \"Defeat The Trialmaster\": the row has no expandable detail on the page (no description text, no sub-items); description recorded as null."
+  },
+  {
+   "league": "Heist",
+   "status": "not_participated",
+   "completed": 0,
+   "total": 40
+  },
+  {
+   "league": "Synthesis",
+   "status": "played",
+   "completed": 3,
+   "total": 40,
+   "challenges": [
+    {
+     "position": 1,
+     "name": "Complete Vaal Side Areas",
+     "progress": "3/3",
+     "completed": true,
+     "description": "Complete 3 Vaal Side Areas",
+     "subtasks": []
+    },
+    {
+     "position": 2,
+     "name": "Complete Synthesis Quests",
+     "progress": "3/3",
+     "completed": true,
+     "description": "Complete each of the following quests.",
+     "subtasks": [
+      {
+       "text": "Shattered Past",
+       "completed": true
+      },
+      {
+       "text": "Into the Nexus",
+       "completed": true
+      },
+      {
+       "text": "Figments Reforged",
+       "completed": true
+      }
+     ]
+    },
+    {
+     "position": 3,
+     "name": "Complete these Quests",
+     "progress": "5/5",
+     "completed": true,
+     "description": "Complete each of the following quests.",
+     "subtasks": [
+      {
+       "text": "A Dirty Job",
+       "completed": true
+      },
+      {
+       "text": "Through Sacred Ground",
+       "completed": true
+      },
+      {
+       "text": "Fallen from Grace",
+       "completed": true
+      },
+      {
+       "text": "Fastis Fortuna",
+       "completed": true
+      },
+      {
+       "text": "No Love for Old Ghosts",
+       "completed": true
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "league": "Archnemesis",
+   "status": "played",
+   "completed": 1,
+   "total": 40,
+   "challenges": [
+    {
+     "position": 23,
+     "name": "Reach Level 90",
+     "progress": null,
+     "completed": true,
+     "description": "Attain character level 90. This challenge still counts even if your character dies afterwards.",
+     "subtasks": [
+      {
+       "text": "",
+       "completed": true
+      }
+     ]
+    }
+   ],
+   "notes": "Row 23 \"Reach Level 90\": the page lists one sub-item with empty text (ticked); recorded as an empty string."
+  },
+  {
+   "league": "Talisman",
+   "status": "played",
+   "completed": 1,
+   "total": 33,
+   "challenges": [
+    {
+     "position": 1,
+     "name": "Invented Challenge",
+     "progress": "1/1",
+     "completed": true,
+     "description": "Invented for the test.",
+     "subtasks": []
+    }
+   ]
+  },
+  {
+   "league": "Flashback",
+   "status": "played",
+   "completed": 1,
+   "total": 20,
+   "challenges": [
+    {
+     "position": 1,
+     "name": "Invented Challenge",
+     "progress": null,
+     "completed": true,
+     "description": null,
+     "subtasks": []
+    }
+   ]
+  }
+ ]
+}

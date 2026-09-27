@@ -236,3 +236,73 @@ body {
     drop-shadow(0 1px 0 rgb(0 0 0 / 0.85))
     drop-shadow(0 0 12px color-mix(in srgb, var(--gem-glow) 30%, transparent));
 }
+
+/*
+ * A league's challenges, drawn the way pathofexile.com's Challenges tab draws
+ * them: a crimson bar per challenge, gold-bordered, the name in the display
+ * face, the count and a tick or cross at the right; open, a gold progress bar
+ * over stone, the description in worn gold, and the sub-items two to a row.
+ */
+.challenge-row-bar {
+  @apply flex cursor-pointer list-none items-center gap-3 rounded-sm border px-3 py-2;
+  border-color: #6b5a34;
+  background: linear-gradient(180deg, #5a1a24 0%, #3d0f17 55%, #2a0a10 100%);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 -1px 0 rgba(0, 0, 0, 0.5) inset;
+}
+.challenge-row-bar::-webkit-details-marker { display: none; }
+.challenge-row-bar:hover { border-color: #c8aa6e; }
+.challenge-row-icon {
+  @apply relative h-7 w-7 shrink-0 rounded-sm border;
+  border-color: #8a7444;
+  background: radial-gradient(circle at 50% 40%, #3a2a16 0%, #1c1409 75%);
+}
+.challenge-row-icon::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid #d6b35c;
+  transform: translate(-50%, -40%);
+  transition: transform 150ms ease;
+}
+.group[open] > .challenge-row-bar .challenge-row-icon::before { transform: translate(-50%, -60%) rotate(180deg); }
+.challenge-row-name {
+  @apply font-display min-w-0 flex-1 truncate text-base tracking-wide;
+  color: #f1e6cf;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+.challenge-row-count {
+  @apply font-display shrink-0 text-base tabular-nums;
+  color: #f1e6cf;
+}
+.challenge-row-count-short { color: #e05c3e; }
+.challenge-row-tick,
+.challenge-row-cross {
+  @apply w-6 shrink-0 text-center text-xl leading-none font-bold;
+}
+.challenge-row-tick { color: #5ed65e; text-shadow: 0 0 6px rgba(94, 214, 94, 0.5); }
+.challenge-row-cross { color: #e0403a; text-shadow: 0 0 6px rgba(224, 64, 58, 0.5); }
+.challenge-row-body {
+  @apply space-y-3 rounded-b-sm border border-t-0 px-5 py-4;
+  border-color: #3b3020;
+  background: #0c0a09;
+}
+.challenge-row-track {
+  @apply mx-auto h-2.5 w-full max-w-lg rounded-sm border;
+  border-color: #5a4a2a;
+  background: #1a1410;
+}
+.challenge-row-fill {
+  @apply h-full rounded-sm;
+  background: linear-gradient(180deg, #e0b24a 0%, #a8781e 100%);
+}
+.challenge-row-description { @apply text-sm leading-relaxed; color: #b08a3e; }
+.challenge-row-subtasks {
+  @apply grid gap-x-8 gap-y-1 text-sm sm:grid-cols-2;
+  color: #e8d9a8;
+}
+.challenge-row-subtask-done span { color: #5ed65e; }
