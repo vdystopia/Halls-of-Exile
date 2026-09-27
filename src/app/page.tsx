@@ -14,19 +14,23 @@ export default async function HomePage() {
     <div className="space-y-14">
       <section className="panel relative overflow-hidden px-8 py-14 text-center">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(600px_240px_at_50%_-20%,rgba(200,170,110,0.18),transparent_70%)]" />
-        <p className="eyebrow relative">Every exile you have ever rolled</p>
-        <h1 className="display relative mt-4 text-4xl leading-tight sm:text-5xl">Halls of Exile</h1>
-        <p className="relative mx-auto mt-5 max-w-2xl text-parchment/80">
-          Leagues end. Characters get migrated to Standard and never touched again. This is where they keep
-          their gear, their gems, their tree and their story — sorted by league, ready for the next time you feel
-          like walking back through them.
+        <h1 className="display relative text-4xl leading-tight sm:text-5xl">Halls of Exile</h1>
+        {/* The owner's words, verbatim. */}
+        <p className="relative mx-auto mt-6 max-w-3xl text-parchment/80">
+          Heroes rise and fall. Glory comes and goes. In the end, we all leave this world the same way we came into
+          it - alone and with nothing. We will all be forgotten. This much is certain and cannot be avoided. These
+          halls were not built to change that. They cannot grant immortality, even through the preservation of
+          memory. Your records will be stored here, exile, for all of time. Not so that you may live on, but for the
+          fleeting joy of those who would pay good coin browse them. And for me, to make my fortune. Your legacy is
+          mine to wield now, and I am all that stands between you and oblivion.
         </p>
+        <p className="relative mx-auto mt-5 max-w-3xl text-parchment/80">Welcome... to the Halls of Exile...</p>
         <div className="relative mt-8 flex flex-wrap justify-center gap-3">
           <Link href="/players" className="btn btn-gold">
             Browse the archive
           </Link>
           <Link href="/players/new" className="btn">
-            Create a profile
+            Create a Profile
           </Link>
         </div>
       </section>

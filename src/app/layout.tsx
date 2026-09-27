@@ -64,9 +64,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </header>
           <main className="mx-auto w-full max-w-[1400px] flex-1 px-5 py-8">{children}</main>
-          <footer className="border-t border-line px-5 py-6 text-center text-xs text-muted">
-            Halls of Exile — a fan-made archive. Not affiliated with Grinding Gear Games.
-          </footer>
         </div>
       </body>
     </html>
