@@ -153,3 +153,37 @@ test("applying the record creates, updates in place, fills around a build, and s
   assert.equal(betaAfter.failed, true);
   assert.equal(characters.length, 3, "nothing was duplicated");
 });
+
+/**
+ * The game's spelling of a name is the truth, and a sheet typed from memory
+ * can only ever match it, never respell it: a row the game named
+ * "LeoSixtyNineThousand" is found by the sheet's "leosixtyninethousand" and
+ * keeps its spelling, whether it is hand-written (rewritten) or built (filled).
+ */
+test("the record matches a name in any case and never respells one the game set", async () => {
+  const { applyRecord, readRecordSheet } = await import("../src/lib/record");
+  const { db, user, leagues } = await setup("case-tester");
+  const { listPlayerCharacters } = await import("../src/lib/queries");
+  const league = leagues.find((l) => l.game === "poe1" && l.patch === "3.25" && l.kind !== "event")!;
+  const insert = db.prepare(
+    `INSERT INTO characters (user_id, league_id, slug, name, class_name, level, data, parser_version, source_payload)
+     VALUES (?, ?, ?, ?, 'Witch', 90, ?, 0, ?)`,
+  );
+  insert.run(user, league.id, "leosixtyninethousand", "LeoSixtyNineThousand", "{}", null);
+  insert.run(user, league.id, "thelocalvoid", "TheLocalVoid", JSON.stringify({ source: "poe-api", items: [{ id: 1 }] }), "{}");
+
+  const result = applyRecord(
+    user,
+    readRecordSheet(
+      [
+        "name,game,league,level,class,build,notes",
+        "leosixtyninethousand,poe1,3.25,95,Witch,seismic trap,typed from memory",
+        "THELOCALVOID,poe1,3.25,85,Witch,detonate dead,also from memory",
+      ].join("\n"),
+    ).rows,
+    leagues,
+  );
+  assert.deepEqual({ created: result.created, updated: result.updated, filled: result.filled }, { created: 0, updated: 1, filled: 1 });
+  const names = listPlayerCharacters(user).map((c) => c.name).sort();
+  assert.deepEqual(names, ["LeoSixtyNineThousand", "TheLocalVoid"]);
+});

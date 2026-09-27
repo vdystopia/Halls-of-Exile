@@ -324,9 +324,13 @@ export function applyImport(
     skillFor?: (name: string) => string | null;
   },
 ): ImportResult {
+  // The name is written too: the game's own spelling is the truth, and the
+  // record that created the row may have typed it in the wrong case
+  // ("leosixtyninethousand" for LeoSixtyNineThousand). The match is
+  // case-insensitive, so this only ever changes case, and the slug stays.
   const update = db.prepare(
     `UPDATE characters
-        SET class_name = ?, ascendancy = ?, level = ?, main_skill = ?, skill_gem = ?,
+        SET name = ?, class_name = ?, ascendancy = ?, level = ?, main_skill = ?, skill_gem = ?,
             data = ?, source_payload = ?, api_version = ?
       WHERE id = ?`,
   );
@@ -392,6 +396,7 @@ export function applyImport(
         // 89 with "Level 97" is two sources' facts presented as one.
         const fromCode = composed !== build;
         update.run(
+          character.name,
           (fromCode ? composed.className : character.baseClass) ?? known(existing.class_name) ?? "Unknown",
           (fromCode ? composed.ascendClassName : character.ascendancy) ?? known(existing.ascendancy),
           (fromCode ? composed.level : null) ?? character.level,

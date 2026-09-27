@@ -781,6 +781,14 @@ and its payload is stored in `characters.source_payload` for the same reason.
   character** (`characters.failed`, migrated): set from the sheet's status column or a build
   written "failed …" (the record's own convention, also honoured by `seed:atlas`), editable under
   Manage this character, shown as a tag and filterable out, never hidden by default.
+- **A character's name as the game's own site spells it is the absolute truth** (the owner,
+  2026-09-26). The spreadsheet's names are meant to match the game's but were typed from memory
+  and can differ in case — "leosixtyninethousand" for LeoSixtyNineThousand — so every match is
+  case-insensitive (`COLLATE NOCASE` in `matchesFor`, `findHere` and `findNamesake`), the export
+  that fills a row **writes the name back in the game's spelling** (`applyImport`'s update, tested),
+  and the record import never writes the name of a row that exists (`rewrite` and `fill` leave it
+  alone, tested), so a name the game has set is never downgraded by a later sheet. Slugs are
+  lowercase, so a case correction never changes a URL. This holds for both games' exports.
 - **A name belongs to one character per player per game.** The game enforces it per realm, so a
   second one is the same character added twice or a mistake. `findNamesake` (case-insensitive,
   within the game) is what every writer asks: the add form answers a clash with a warning naming

@@ -192,6 +192,38 @@ test("an import fills in gear without touching the record's own fields", async (
 });
 
 /**
+ * The game's spelling of a name is the truth. The owner's spreadsheet creates
+ * rows under names typed from memory, in whatever case, and the export that
+ * fills each one carries the name as the game has it — so the fill writes the
+ * name back, and only the case can change, since the match is case-insensitive.
+ * The slug, and so the URL, stays what it was.
+ */
+test("the game's spelling of a name replaces the record's when the export fills it", async () => {
+  const { applyImport } = await import("../src/lib/import");
+  const { db, user } = await setup("case-tester", null);
+  const exported = await fixture();
+
+  const league = db.prepare(`SELECT id FROM leagues WHERE game = 'poe1' LIMIT 1`).get() as { id: number };
+  const id = db
+    .prepare(
+      `INSERT INTO characters (user_id, league_id, slug, name, class_name, ascendancy, level, data, parser_version)
+       VALUES (?, ?, 'thelocalvoid', 'thelocalvoid', 'Unknown', 'Unknown', 70, '{}', 0)`,
+    )
+    .run(user.id, league.id).lastInsertRowid;
+
+  applyImport(user, exported, { include: () => true, leagueFor: () => null });
+
+  const row = db.prepare(`SELECT id, name, slug FROM characters WHERE user_id = ? AND name = 'TheLocalVoid' COLLATE BINARY`).get(user.id) as {
+    id: number;
+    name: string;
+    slug: string;
+  };
+  assert.ok(row, "the row is now spelled the game's way");
+  assert.equal(row.id, id, "the same row, corrected, not a second one");
+  assert.equal(row.slug, "thelocalvoid");
+});
+
+/**
  * Running it twice must be the same as running it once — and now for a stronger
  * reason than before: the first run fills a character, which finalises it, so
  * the second has nothing it is allowed to touch.
