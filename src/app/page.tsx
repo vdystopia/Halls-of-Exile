@@ -21,7 +21,7 @@ export default async function HomePage() {
           it - alone and with nothing. We will all be forgotten. This much is certain and cannot be avoided. These
           halls were not built to change that. They cannot grant immortality, even through the preservation of
           memory. Your records will be stored here, exile, for all of time. Not so that you may live on, but for the
-          fleeting joy of those who would pay good coin browse them. And for me, to make my fortune. Your legacy is
+          fleeting joy of those who would pay good coin to browse them. And for me, to make my fortune. Your legacy is
           mine to wield now, and I am all that stands between you and oblivion.
         </p>
         <p className="relative mx-auto mt-5 max-w-3xl text-parchment/80">Welcome... to the Halls of Exile...</p>
