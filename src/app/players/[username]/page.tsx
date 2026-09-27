@@ -220,7 +220,7 @@ export default async function PlayerPage({ params, searchParams }: Props) {
       ) : null}
 
       {hasBuilds ? (
-        <Section title="Most played builds">
+        <Section title="Most played skills">
           <BuildRanking byCharacters={buildGrid("characters")} byPlayed={buildGrid("played")} />
         </Section>
       ) : null}
