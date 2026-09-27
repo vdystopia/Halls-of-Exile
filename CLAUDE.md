@@ -574,9 +574,11 @@ and its payload is stored in `characters.source_payload` for the same reason.
   like the rest; the bundle test keeps both files out of the browser. `topTags` in `metrics.ts`
   counts each tag once per character from the gem `buildSkill` resolved — prose and unknown gems
   count for nothing — most characters first, ties to the tag played longest, and the player page
-  header draws the top five at its bottom right in `.tag` boxes, each titled with its count.
-  Tags **are** added across the two games, unlike classes and skills: "Fire" is one word in both,
-  and the header's other totals already span both.
+  header draws the top five at its bottom right in `.tag` boxes, each with its count underneath
+  in the accent. **`src/lib/hidden-tags.json` is the owner's hand-picked list of tags never
+  counted** (the ones nearly every gem carries, which say nothing about the player); it is
+  matched in any case and read by `topTags`. Tags **are** added across the two games, unlike
+  classes and skills: "Fire" is one word in both, and the header's other totals already span both.
 - **Gem art is a layered sheet, the way flask art is.** A gem's picture is a 143x48 strip
   holding the socket setting and the gem itself, meant to be stacked into one icon; drawn flat
   it reads as two smudges at the edges of the tile. `SkillIcon` composites it the way

@@ -183,16 +183,20 @@ export default async function PlayerPage({ params, searchParams }: Props) {
             </dl>
             {/* The five tags the player's builds carry most often — Spell, Fire,
                 Minion — each counted once per character from the gem it was built
-                around, in the same boxes the character banners draw their tags in. */}
+                around, in the character banners' tag boxes, each with its count
+                underneath the way every figure here sits under its label. */}
             {tags.length ? (
               <ul aria-label="Most common skill tags" className="flex flex-wrap justify-end gap-1.5">
                 {tags.map((tag) => (
                   <li
                     key={tag.name}
-                    className="tag"
+                    className="tag flex-col gap-0 px-3 py-1.5"
                     title={`${tag.name}: ${tag.characters} of ${tagged} characters with a known skill`}
                   >
-                    {tag.name}
+                    <span>{tag.name}</span>
+                    <span className="display text-base leading-tight tracking-normal" style={accentStyle}>
+                      {tag.characters}
+                    </span>
                   </li>
                 ))}
               </ul>

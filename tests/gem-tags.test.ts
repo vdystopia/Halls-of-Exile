@@ -104,3 +104,16 @@ test("the most common tags are counted once per character and ranked by characte
   assert.equal(topTags([{ tags: ["Spell"], playedMinutes: 1 }], 1).length, 1);
   assert.deepEqual(topTags([]), []);
 });
+
+/** A tag hidden by hand is never counted, whatever case it was written in. */
+test("hidden tags are left out of the count", () => {
+  const characters = [
+    { tags: ["AoE", "Spell", "Fire"], playedMinutes: 10 },
+    { tags: ["AoE", "Attack"], playedMinutes: 20 },
+  ];
+  assert.deepEqual(
+    topTags(characters, 5, new Set(["aoe", "spell"])).map((tag) => tag.name),
+    ["Attack", "Fire"],
+  );
+  assert.equal(topTags(characters, 5, new Set())[0].name, "AoE");
+});
