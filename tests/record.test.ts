@@ -41,7 +41,8 @@ test("a spreadsheet is read by its headers, in any spelling, with quotes and bla
   const [one, two, three] = sheet.rows;
   assert.equal(one.name, "Exile One");
   assert.equal(one.game, "poe1");
-  assert.equal(one.league, "3.25");
+  assert.equal(one.league, null, "the sheet has a patch column and no league column");
+  assert.equal(one.patch, "3.25");
   assert.equal(one.level, 95);
   assert.equal(one.playedMinutes, 5 * 24 * 60 + 3 * 60);
   assert.deepEqual(one.modifiers, ["hardcore", "ssf"]);
@@ -49,7 +50,7 @@ test("a spreadsheet is read by its headers, in any spelling, with quotes and bla
   assert.equal(two.game, "poe2", "a bare 2 is Path of Exile 2");
   assert.equal(two.playedMinutes, 12 * 60, "a bare number is hours");
   assert.equal(two.failed, true, "the record writes a failed build as 'failed …'");
-  assert.equal(two.mainSkill, "failed ice strike", "and the words are kept as written");
+  assert.equal(two.build, "failed ice strike", "and the words are kept as written");
   assert.equal(three.failed, true, "a status column says it outright");
   assert.equal(three.league, null);
   assert.equal(sheet.problems.length, 3);
@@ -186,4 +187,58 @@ test("the record matches a name in any case and never respells one the game set"
   assert.deepEqual({ created: result.created, updated: result.updated, filled: result.filled }, { created: 0, updated: 1, filled: 1 });
   const names = listPlayerCharacters(user).map((c) => c.name).sort();
   assert.deepEqual(names, ["LeoSixtyNineThousand", "TheLocalVoid"]);
+});
+
+/**
+ * The owner's sheet of 2026-09-27 names the league the way the archive does,
+ * with the patch in a column of its own; its "build" is the build in words,
+ * its "main skill" is the gem, and its "tags" are the modifiers — where
+ * "event" is the league's own fact and not one of them.
+ */
+test("the owner's sheet names the league as the archive does, with the patch beside it", async () => {
+  const { applyRecord, readRecordSheet, resolveLeague } = await import("../src/lib/record");
+  const { listPlayerCharacters } = await import("../src/lib/queries");
+  const { user, leagues } = await setup("sheet-tester");
+
+  const sheet = readRecordSheet(
+    [
+      "Name,Game,League Name,Patch,Main Skill,Build,Tags,Played",
+      'Wick,poe1,Ultimatum,3.14,Summon Raging Spirits,poison SRS,"ssf, hardcore",1d',
+      "Runa,poe2,Runes of Aldur (Return of the Ancients),0.5,Spark,,event,2h",
+      "Phree,poe1,Legacy of Phrecia (Settlers of Kalguur),3.25,,,event,",
+      "Blank,poe1,,3.25,,,,",
+      "Titled,poe1,3.16 Scourge,,,,,",
+      "Wrong,poe1,Ultimatum,3.15,,,,",
+    ].join("\n"),
+  );
+  assert.deepEqual(sheet.problems, []);
+  const [wick, runa, phree, blank, titled, wrong] = sheet.rows;
+  assert.equal(wick.league, "Ultimatum");
+  assert.equal(wick.patch, "3.14");
+  assert.equal(wick.skillGem, "Summon Raging Spirits", "the main skill column is the gem");
+  assert.equal(wick.build, "poison SRS", "the build column is the build in words");
+  assert.deepEqual(wick.modifiers, ["hardcore", "ssf"]);
+  assert.deepEqual(runa.modifiers, [], "event is the league's fact, not a modifier");
+
+  const resolved = (row: (typeof sheet.rows)[number]) => resolveLeague(leagues, row.game, row.league, row.patch);
+  assert.equal(resolved(wick)?.slug, "3.14");
+  assert.equal(resolved(runa)?.slug, "0.5", "a Path of Exile 2 league by its label");
+  assert.equal(resolved(phree)?.slug, "legacy-of-phrecia", "an event by its label, parent in brackets");
+  assert.equal(resolved(blank)?.slug, "3.25", "a blank league on a patch is that patch's league, not one of its events");
+  assert.equal(resolved(titled)?.slug, "3.16", "a title with the patch in front resolves on its own");
+  assert.equal(resolved(wrong), null, "a league on the wrong patch is nobody's");
+  assert.equal(
+    resolveLeague(leagues, "poe1", "legacy of phrecia  (settlers of kalguur)", "3.25")?.slug,
+    "legacy-of-phrecia",
+    "case and spacing are not spelling",
+  );
+
+  const result = applyRecord(user, sheet.rows, leagues);
+  assert.equal(result.created, 5);
+  assert.deepEqual(result.skipped.map((s) => s.name), ["Wrong"]);
+  assert.match(result.skipped[0].reason, /3\.15 Ultimatum/, "the skip names both columns");
+  const stored = listPlayerCharacters(user).find((c) => c.name === "Wick")!;
+  assert.equal(stored.mainSkill, "poison SRS", "the build lands in main_skill, the column that has always held it");
+  assert.equal(stored.skillGem, "Summon Raging Spirits");
+  assert.deepEqual(stored.leagueModifiers, ["hardcore", "ssf"]);
 });

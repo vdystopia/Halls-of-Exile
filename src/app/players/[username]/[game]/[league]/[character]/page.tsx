@@ -143,8 +143,15 @@ export default async function CharacterPage({ params }: Props) {
               <span className="tag">{leagueTitle(league)}</span>
               {/* Which variant of that league it was played in. One league is
                   several parallel leagues, and only the character knows which. */}
-              {character.leagueModifiers.length ? (
+              {character.leagueModifiers.length || league.kind === "event" ? (
                 <div className="flex flex-wrap justify-end gap-2">
+                  {/* An event is the league's own fact, not a modifier, so the
+                      tag comes from the catalogue row and is never stored twice. */}
+                  {league.kind === "event" ? (
+                    <span className="tag" title={league.parent ? `An event run inside ${league.parent}` : "An event league"}>
+                      Event
+                    </span>
+                  ) : null}
                   {character.leagueModifiers.map((modifier) => (
                     <span key={modifier} className={`tag ${leagueModifierClass(modifier)}`} title={leagueModifierTitle(modifier)}>
                       {leagueModifierLabel(modifier)}
@@ -222,6 +229,17 @@ export default async function CharacterPage({ params }: Props) {
               />
             </div>
           </section>
+
+          {/* The build in the owner's words — what the skill gem leaves out —
+              directly above Memories, where the owner asked for it (2026-09-27). */}
+          {character.mainSkill ? (
+            <section className="panel">
+              <div className="panel-header">
+                <h2 className="panel-title">Build</h2>
+              </div>
+              <p className="p-4 text-sm leading-relaxed whitespace-pre-wrap text-parchment/85">{character.mainSkill}</p>
+            </section>
+          ) : null}
 
           {character.notes ? (
             <section className="panel">

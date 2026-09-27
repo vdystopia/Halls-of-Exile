@@ -31,10 +31,12 @@ export function RecordImportForm({ username }: { username: string }) {
       />
       <p className="text-xs text-muted">
         A CSV (or tab-separated) file with a header row. Columns, any order, any of these spellings:{" "}
-        <span className="text-parchment/80">name</span> (required), game (poe1 or poe2, default poe1), league (a
-        patch like 3.25, or a league&rsquo;s name or slug; default &ldquo;unspecified&rdquo;), level, class, ascendancy,
-        skill or build, skill gem, played (&ldquo;5d 3h&rdquo;, or a bare number of hours; a column headed &ldquo;played
-        minutes&rdquo; is minutes), notes, mode (SSF, Hardcore, Ruthless), failed or status. A character is matched
+        <span className="text-parchment/80">name</span> (required), game (poe1 or poe2, default poe1), league (as
+        the archive writes it &mdash; &ldquo;Ultimatum&rdquo;, &ldquo;Runes of Aldur (Return of the Ancients)&rdquo;
+        &mdash; or a slug, or a patch like 3.25 when there is no patch column; default &ldquo;unspecified&rdquo;),
+        patch, level, class, ascendancy, build (in your own words, shown above Memories), main skill or skill gem
+        (the gem), played (&ldquo;5d 3h&rdquo;, or a bare number of hours; a column headed &ldquo;played
+        minutes&rdquo; is minutes), notes, tags or mode (SSF, Hardcore, Ruthless, Trade), failed or status. A character is matched
         by league and name and updated in place; a new one is created. One that already holds gear from the game
         or a build code keeps it and only has its blank record fields filled. A build written as &ldquo;failed
         …&rdquo; marks the character failed.

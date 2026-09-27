@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { parsePlayed } from "./format";
+import { leagueLabel, leagueTitle, parsePlayed } from "./format";
 import { emptyBuild } from "./games/poe1/pob";
 import { isGameId, type GameId } from "./games/types";
 import { formatLeagueModifiers, type LeagueModifierId } from "./league-modifiers";
@@ -20,8 +20,8 @@ import type { League } from "./types";
  * - A row is matched to a character by player, league and name. Matched, it
  *   updates in place; unmatched, it is created with a build that holds nothing.
  * - A character that holds a build (a code or an export) keeps it: the row
- *   fills the record fields it has blank — /played, notes, main skill — and
- *   sets the failed mark, and touches nothing else. Level, class and
+ *   fills the record fields it has blank — /played, notes, the build in words —
+ *   and sets the failed mark, and touches nothing else. Level, class and
  *   ascendancy on such a character came from the build and are left alone.
  * - A name already archived in another league of the same game is reported and
  *   skipped rather than duplicated or moved: a name belongs to one character
@@ -31,18 +31,36 @@ import type { League } from "./types";
  * Columns are found by header, case-insensitively, and the headers can be any
  * of the spellings in `COLUMNS`. Only the name is required; the game defaults
  * to Path of Exile and the league to "unspecified".
+ *
+ * The owner's sheet (2026-09-27) names the league the way the archive does,
+ * in two columns: the league as `leagueLabel` writes it — "Ultimatum", "Runes
+ * of Aldur (Return of the Ancients)", an event with its parent in brackets —
+ * and the patch beside it. Both are read, and either alone still resolves.
+ * Its "build" column is the build in the owner's words, what the skill gem
+ * leaves out ("poison" in front of Summon Raging Spirits); its "main skill"
+ * column is the gem. Its "tags" column is the modifiers.
  */
 
 export type RecordRow = {
   line: number;
   name: string;
   game: GameId;
-  /** The league as written: a slug, a patch or a name. Resolved against the catalogue. */
+  /**
+   * The league as written: its label ("Runes of Aldur (Return of the
+   * Ancients)"), its name, its slug, its patch, or its title with the patch
+   * in front. Resolved against the catalogue with `patch`.
+   */
   league: string | null;
+  /** The patch, when the sheet gives it a column of its own. */
+  patch: string | null;
   level: number | null;
   className: string | null;
   ascendancy: string | null;
-  mainSkill: string | null;
+  /**
+   * The build in the owner's words — what the skill gem leaves out. Stored
+   * as `main_skill` and shown above Memories on the character page.
+   */
+  build: string | null;
   skillGem: string | null;
   playedMinutes: number | null;
   notes: string | null;
@@ -68,15 +86,18 @@ export type RecordResult = {
 const COLUMNS: Record<string, string[]> = {
   name: ["name", "character", "character name"],
   game: ["game"],
-  league: ["league", "patch", "league slug"],
+  league: ["league", "league name", "league slug"],
+  patch: ["patch", "patch number", "version"],
   level: ["level", "lvl"],
   className: ["class", "classname", "class name"],
   ascendancy: ["ascendancy", "ascendancy class"],
-  mainSkill: ["main skill", "mainskill", "skill", "build"],
-  skillGem: ["skill gem", "skillgem", "gem"],
+  build: ["build", "build description", "build notes"],
+  // "Main skill" is the gem: the one the character was built around, as the
+  // game spells it. The words around it belong in the build column.
+  skillGem: ["main skill", "mainskill", "skill", "skill gem", "skillgem", "gem"],
   played: ["played", "/played", "playtime", "time played", "played minutes", "playedminutes", "hours"],
   notes: ["notes", "note", "memories"],
-  mode: ["mode", "modifiers", "how played"],
+  mode: ["mode", "modifiers", "how played", "tags", "tag"],
   failed: ["failed", "status", "outcome", "result"],
   player: ["player", "username", "user"],
 };
@@ -127,14 +148,19 @@ export function parseCsv(text: string): string[][] {
 const norm = (value: string) => value.trim().toLowerCase().replace(/[_\s]+/g, " ");
 
 /** The spreadsheet's "failed" marker, however it was written. */
-export function readFailed(value: string | null, mainSkill: string | null, notes: string | null): boolean {
+export function readFailed(value: string | null, build: string | null, notes: string | null): boolean {
   const flag = value ? norm(value) : "";
   if (flag && ["failed", "fail", "yes", "y", "true", "1", "x", "abandoned"].includes(flag)) return true;
   // The owner's record writes the build itself as "failed slammer".
-  return /^failed\b/i.test(mainSkill ?? "") || /^failed\b/i.test(notes ?? "");
+  return /^failed\b/i.test(build ?? "") || /^failed\b/i.test(notes ?? "");
 }
 
-/** "Hardcore / SSF", "SSF → league", "SSF (in league)": the words are the modifiers. */
+/**
+ * "Hardcore / SSF", "SSF → league", "ssf, event": the words are the modifiers.
+ * "Event" is not one — whether a league is an event is the catalogue's fact,
+ * carried by the league the row names, so the word is read past rather than
+ * stored twice.
+ */
 export function readModifiers(mode: string | null): LeagueModifierId[] {
   const text = (mode ?? "").toLowerCase();
   const found: LeagueModifierId[] = [];
@@ -208,37 +234,63 @@ export function readRecordSheet(text: string, options: { player?: string } = {})
       problems.push(`Line ${line} (${name}): could not read /played "${playedCell}".`);
       continue;
     }
-    const mainSkill = cell("mainSkill");
+    const build = cell("build");
     const notes = cell("notes");
     rows.push({
       line,
       name,
       game,
       league: cell("league"),
+      patch: cell("patch"),
       level,
       className: cell("className"),
       ascendancy: cell("ascendancy"),
-      mainSkill,
+      build,
       skillGem: cell("skillGem"),
       playedMinutes,
       notes,
       modifiers: readModifiers(cell("mode")),
-      failed: readFailed(cell("failed"), mainSkill, notes),
+      failed: readFailed(cell("failed"), build, notes),
     });
   }
   return { rows, problems };
 }
 
-/** A league by slug, then by patch (when one league has it), then by name. */
-export function resolveLeague(leagues: League[], game: GameId, written: string | null): League | null {
+/** Case and spacing are not spelling. */
+const key = (value: string) => value.trim().toLowerCase().replace(/\s+/g, " ");
+
+/**
+ * The league a row names, within its game.
+ *
+ * With a patch column, only leagues on that patch are candidates. The league
+ * column is then matched by slug, name, label ("Runes of Aldur (Return of the
+ * Ancients)") or title ("3.14 Ultimatum"); blank, it is the patch's league —
+ * one non-event per patch, the events beside it having to be named. Without a
+ * patch column the league column carries the whole answer, as it always did,
+ * and may itself be a patch. Nothing at all is "unspecified", which only Path
+ * of Exile has.
+ */
+export function resolveLeague(leagues: League[], game: GameId, written: string | null, patch: string | null = null): League | null {
   const mine = leagues.filter((league) => league.game === game);
-  const wanted = (written ?? "unspecified").trim().toLowerCase();
-  const bySlug = mine.find((league) => league.slug.toLowerCase() === wanted);
-  if (bySlug) return bySlug;
-  const byPatch = mine.filter((league) => league.patch?.toLowerCase() === wanted && league.kind !== "event");
-  if (byPatch.length === 1) return byPatch[0];
-  const byName = mine.filter((league) => league.name.toLowerCase() === wanted);
-  return byName.length === 1 ? byName[0] : null;
+  const wantedPatch = patch ? key(patch) : null;
+  const pool = wantedPatch ? mine.filter((league) => league.patch && key(league.patch) === wantedPatch) : mine;
+  const wanted = written ? key(written) : null;
+  if (!wanted) {
+    if (!wantedPatch) return mine.find((league) => league.slug === "unspecified") ?? null;
+    const plain = pool.filter((league) => league.kind !== "event");
+    return plain.length === 1 ? plain[0] : null;
+  }
+  const spellings = (league: League) =>
+    [league.slug, league.name, leagueLabel(league), leagueTitle(league)].map(key);
+  const hits = pool.filter((league) => spellings(league).includes(wanted));
+  if (hits.length === 1) return hits[0];
+  if (hits.length > 1) return hits.find((league) => key(league.slug) === wanted) ?? null;
+  // An older sheet writes the patch in the league column.
+  if (!wantedPatch) {
+    const byPatch = mine.filter((league) => league.patch && key(league.patch) === wanted && league.kind !== "event");
+    if (byPatch.length === 1) return byPatch[0];
+  }
+  return null;
 }
 
 function slugify(value: string): string {
@@ -282,23 +334,24 @@ export function applyRecord(userId: number, rows: RecordRow[], leagues: League[]
 
   db.transaction(() => {
     for (const row of rows) {
-      const league = resolveLeague(leagues, row.game, row.league);
+      const league = resolveLeague(leagues, row.game, row.league, row.patch);
       if (!league) {
-        result.skipped.push({ name: row.name, reason: `no ${row.game} league "${row.league ?? "unspecified"}" in the catalogue` });
+        const written = [row.patch, row.league ?? (row.patch ? null : "unspecified")].filter(Boolean).join(" ");
+        result.skipped.push({ name: row.name, reason: `no ${row.game} league "${written}" in the catalogue` });
         continue;
       }
       const modifiers = row.modifiers.length ? formatLeagueModifiers(row.modifiers) : null;
       const existing = findHere.get(userId, league.id, row.name) as { id: number; built: number } | undefined;
       if (existing) {
         if (existing.built) {
-          fill.run(row.mainSkill, row.skillGem, modifiers, row.notes, row.playedMinutes, row.failed ? 1 : 0, existing.id);
+          fill.run(row.build, row.skillGem, modifiers, row.notes, row.playedMinutes, row.failed ? 1 : 0, existing.id);
           result.filled += 1;
         } else {
           rewrite.run(
             row.className ?? "Unknown",
             row.ascendancy,
             row.level,
-            row.mainSkill,
+            row.build,
             row.skillGem,
             modifiers,
             row.notes,
@@ -327,7 +380,7 @@ export function applyRecord(userId: number, rows: RecordRow[], leagues: League[]
         row.className ?? "Unknown",
         row.ascendancy,
         row.level,
-        row.mainSkill,
+        row.build,
         row.skillGem,
         modifiers,
         row.notes,
@@ -349,6 +402,6 @@ function manualBuild(row: RecordRow) {
     className: row.className ?? undefined,
     ascendClassName: row.ascendancy ?? undefined,
     level: row.level ?? undefined,
-    mainSkill: row.mainSkill ?? undefined,
+    mainSkill: row.build ?? undefined,
   };
 }

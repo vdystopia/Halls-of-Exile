@@ -174,15 +174,6 @@ export function CharacterAdmin({
             <p className="mt-1 text-xs text-muted">Choosing another league moves the character there.</p>
           </div>
           <div>
-            <label className="label" htmlFor="edit-main-skill">
-              The build, in your own words
-            </label>
-            <input id="edit-main-skill" name="mainSkill" className="input" defaultValue={mainSkill ?? ""} />
-            <p className="mt-1 text-xs text-muted">
-              Prose, as the record names it. A pasted code fills this only when it is empty.
-            </p>
-          </div>
-          <div>
             <label className="label" htmlFor="edit-skill">
               Skill gem
             </label>
@@ -230,6 +221,15 @@ export function CharacterAdmin({
             <input id="edit-played" name="played" className="input" defaultValue={played ?? ""} />
             <p className="mt-1 text-xs text-muted">
               From <span className="font-mono">/played</span> in game. Leaving this blank clears it.
+            </p>
+          </div>
+          <div>
+            <label className="label" htmlFor="edit-main-skill">
+              Build
+            </label>
+            <input id="edit-main-skill" name="mainSkill" className="input" defaultValue={mainSkill ?? ""} />
+            <p className="mt-1 text-xs text-muted">
+              What the skill gem leaves out, in your own words. A pasted code fills this only when it is empty.
             </p>
           </div>
           <div>

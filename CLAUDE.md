@@ -769,7 +769,20 @@ and its payload is stored in `characters.source_payload` for the same reason.
   that holds a build only fill the blank record fields and set the failed mark. A name archived
   in another league of the same game is skipped and named, not moved or duplicated; a league the
   catalogue lacks is skipped and named. The exports then find each character by name and fill
-  its gear, keeping the record's answers, as they always did. **The tier is derived, never
+  its gear, keeping the record's answers, as they always did. **The sheet names the league the
+  way the archive does, in two columns** (the owner, 2026-09-27): "League name" as `leagueLabel`
+  writes it — "Ultimatum", "Runes of Aldur (Return of the Ancients)", an event with its parent in
+  brackets — and "Patch" beside it. `resolveLeague(leagues, game, written, patch)` narrows to the
+  patch first, then matches slug, name, label or title; a blank league on a patch is that patch's
+  one non-event league, and an old sheet with the patch in the league column still resolves.
+  **The sheet's "Build" column is the build in the owner's words** — what the skill gem leaves
+  out: "poison" in front of Summon Raging Spirits — and it lands in `main_skill`, which has
+  always held the record's prose; the character page shows it as a **Build panel directly above
+  Memories**, and the add and edit forms offer it as "Build" directly above Memories, in both
+  modes. Its "Main skill" column is the gem and lands in `skill_gem`. Its "Tags" column is the
+  modifiers (`readModifiers`); the word "event" there is read past, because an event is the
+  catalogue's fact about the league, and the character page draws an **Event tag from
+  `league.kind`** beside the modifiers rather than storing it twice. **The tier is derived, never
   stored** (`characterTier` in `src/lib/tier.ts`), so a character moves up the moment it
   qualifies: tier 3 while /played, notes, the main skill or a real league is missing, or nothing
   has been imported; tier 2 with all of those and the game's export; tier 1 with all of those and

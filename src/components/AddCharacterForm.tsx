@@ -124,13 +124,6 @@ export function AddCharacterForm({
             </select>
           </div>
           <div>
-            <label className="label" htmlFor="mainSkill">
-              Main skill
-            </label>
-            <input id="mainSkill" name="mainSkill" className="input" />
-            <p className="mt-1 text-xs text-muted">The build, in your own words.</p>
-          </div>
-          <div>
             <label className="label" htmlFor="level">
               Level
             </label>
@@ -211,6 +204,19 @@ export function AddCharacterForm({
           <p className="mt-1 text-xs text-muted">
             One league runs as several at once. Nothing can work this out from an export, so it is only ever
             recorded here.
+          </p>
+        </div>
+        {/* The build in the owner's words, directly above Memories (the owner,
+            2026-09-27): what the skill gem leaves out — "poison" in front of
+            Summon Raging Spirits. Offered in both modes; a code fills it only
+            when it is left empty. */}
+        <div className="sm:col-span-2">
+          <label className="label" htmlFor="mainSkill">
+            Build <span className="text-muted/60">(optional)</span>
+          </label>
+          <input id="mainSkill" name="mainSkill" className="input" />
+          <p className="mt-1 text-xs text-muted">
+            What the skill gem leaves out: poison Summon Raging Spirits, golemancer Corrupting Fever, CoC bladefall.
           </p>
         </div>
         <div className="sm:col-span-2">
