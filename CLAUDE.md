@@ -625,7 +625,13 @@ and its payload is stored in `characters.source_payload` for the same reason.
   wrong (it offers `Portal`). A skill chosen there is the one answer allowed to replace a
   recorded `skill_gem`. **The unattended caller passes no `skillFor`**, so `/api/import/poe`
   keeps the old order: fill a blank, never touch an answer. An empty field is not a request to
-  clear one.
+  clear one. **An export from the game never writes its guess into `main_skill`** (the build
+  words), blank or not, filling or creating: that guess is the gem with the most supports linked
+  and belongs in `skill_gem` alone. It did until 2026-09-28, when a blank build column let
+  "Flame Surge" become DetonateDeotard's build while the sheet's gem said Detonate Dead; only a
+  code fills blank build words. **`CharacterCard` shows the skill gem through `buildSkill`, the
+  same resolver as the header and the banner** — it used to print the build words in gem colour,
+  which read as a skill and disagreed with the header. `tests/build-words.test.ts` pins both.
 - **Path of Exile 2 characters come from the logged-in site, and it serves gear only.**
   pathofexile2.com has no public profile; `/internal-api/my-account/characters?realm=poe2` and
   `/character/<id>?realm=poe2` need the session cookie *and* `Authorization: DPoP

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AscendancyIcon } from "@/components/AscendancyIcon";
 import { classLine } from "@/lib/format";
 import { formatNumber } from "@/lib/games/shared/stats";
+import { buildSkill } from "@/lib/games/skills";
 import type { GameId } from "@/lib/games/types";
 import type { Character } from "@/lib/types";
 
@@ -31,6 +32,10 @@ export function CharacterCard({
   notes?: boolean;
 }) {
   const highlights = characterHighlights(character);
+  // The same answer as the character header and the banner: the skill gem,
+  // through one resolver. The card used to print the build words here, which
+  // read as a skill and disagreed with the header (the owner, 2026-09-28).
+  const skill = buildSkill(game, character.skillGem, character.mainSkill);
 
   return (
     <Link href={href} className="panel group flex flex-col justify-between p-4 transition-colors hover:border-gold/60">
@@ -49,9 +54,7 @@ export function CharacterCard({
           </div>
         </div>
         {meta ? <p className="mt-2 text-[0.68rem] tracking-[0.16em] text-gold/70 uppercase">{meta}</p> : null}
-        {character.mainSkill ? (
-          <p className="mt-3 text-sm text-rarity-gem">{character.mainSkill}</p>
-        ) : null}
+        {skill ? <p className="mt-3 text-sm text-rarity-gem">{skill}</p> : null}
         {notes && character.notes ? (
           <p className="mt-3 line-clamp-2 text-xs text-parchment/60 italic">{character.notes}</p>
         ) : null}

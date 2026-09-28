@@ -410,7 +410,11 @@ export function applyImport(
           (fromCode ? composed.className : character.baseClass) ?? known(existing.class_name) ?? "Unknown",
           ascendancy,
           (fromCode ? composed.level : null) ?? character.level,
-          known(existing.main_skill) ?? composed.mainSkill ?? null,
+          // The build words are the owner's. A code may fill them when blank
+          // (its main skill was chosen by a person in Path of Building); the
+          // game's export never does — its "main skill" is the gem with the
+          // most supports, a guess that belongs in skill_gem and nowhere else.
+          known(existing.main_skill) ?? (fromCode ? composed.mainSkill : null) ?? null,
           chosen ?? known(existing.skill_gem) ?? composed.mainSkill ?? null,
           JSON.stringify(composed),
           payload,
@@ -442,7 +446,8 @@ export function applyImport(
         character.baseClass ?? "Unknown",
         character.ascendancy,
         character.level,
-        build.mainSkill ?? null,
+        // Build words are never the export's to write; see the update above.
+        null,
         options.skillFor?.(character.name) ?? build.mainSkill ?? null,
         data,
         payload,
