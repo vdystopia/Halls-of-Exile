@@ -129,6 +129,7 @@ const SKILL_ALIASES: Record<string, string> = {
   "summon raging spirits": "Summon Raging Spirit",
   srs: "Summon Raging Spirit",
   la: "Lightning Arrow",
+  stormburst: "Storm Burst",
 };
 for (const [alias, name] of Object.entries(SKILL_ALIASES)) {
   if (!SKILL_BY_LOWER.has(alias)) SKILL_BY_LOWER.set(alias, name);

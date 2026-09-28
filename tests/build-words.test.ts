@@ -65,6 +65,7 @@ test("a typed gem is read in the game's spelling, and the record's plural raging
 test("the record's shorthands and a transfigured gem with 'of' in its base still reach a gem", async () => {
   const { buildSkill } = await import("../src/lib/games/skills");
   assert.equal(buildSkill("poe1", "LA", null), "Lightning Arrow");
+  assert.equal(buildSkill("poe1", "stormburst", null), "Storm Burst");
   assert.equal(buildSkill("poe1", "wave of conviction of trarthus", null), "wave of conviction of trarthus", "kept as typed, but drawn through Wave of Conviction");
   assert.equal(buildSkill("poe2", "summon raging spirits", null), "Raging Spirits", "Path of Exile 2's gem has its own name");
   assert.equal(buildSkill("poe1", "sotrmburst", null), null, "a typo is not guessed at");
