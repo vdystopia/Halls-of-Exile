@@ -616,7 +616,7 @@ and its payload is stored in `characters.source_payload` for the same reason.
   `{ art, singleFrame }` rather than a flat map.
 - **The skill field is the primary source for what a character was built around.** The add,
   edit and upload pages all offer `SkillSelect`: a native `<input list>` against one
-  `<datalist>` of the 339 active skill gems, generated into
+  `<datalist>` of the 356 active skill gems, generated into
   `src/lib/games/poe1/skill-names.json` by `npm run gems:index` beside the colours, from the
   same snapshot. Supports are excluded — nobody built a character around Increased Area of
   Effect — and the list suggests without constraining, because RePoE does not publish
@@ -727,7 +727,10 @@ and its payload is stored in `characters.source_payload` for the same reason.
   (the recorded gem, or notes that are exactly a gem's name), and the character header, the
   banners and the build rankings all go through it. When a real gem goes missing, refresh the
   index (`npm run gems:index`, `gems:art`, `gems:poe2`, then `art:fetch`) rather than loosening
-  that check; `tests/gems.test.ts` fails if an offered skill has no art. A gem the game
+  that check; `tests/gems.test.ts` fails if an offered skill has no art. The scripts drop gems
+  RePoE marks `unreleased`, and RePoE marks Blade Trap that way although it shipped in 3.23, so
+  `scripts/released-gems.ts` names the released ones it mislabels; if a real gem is missing
+  after a refresh, look there before anywhere else. A gem the game
   renamed keeps its old name through `poe1/gem-renames.json` (Dark Pact → Dark Bargain, Lesser
   Multiple Projectiles → Multiple Projectiles), because the data only knows the current name
   and the archive spans every version. Path of Exile 2's gems are its own index in

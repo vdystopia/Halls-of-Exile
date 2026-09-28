@@ -19,6 +19,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import renames from "../src/lib/games/poe1/gem-renames.json";
+import { isUnreleased } from "./released-gems";
 
 const SOURCE = "https://repoe-fork.github.io/gems.json";
 const TAGS_SOURCE = "https://repoe-fork.github.io/gem_tags.json";
@@ -73,7 +74,7 @@ async function main() {
   for (const gem of Object.values(data)) {
     const color = gem.color;
     if (!color || !COLORS.has(color)) continue;
-    if (gem.base_item?.release_state === "unreleased") continue;
+    if (isUnreleased(gem.base_item?.id, gem.base_item?.release_state)) continue;
     // A support's name is "Arcane Surge Support" here and "Arcane Surge" in an
     // export, so both spellings are indexed.
     const names = [gem.base_item?.display_name, gem.display_name].filter(Boolean) as string[];

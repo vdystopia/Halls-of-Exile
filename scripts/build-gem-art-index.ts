@@ -25,6 +25,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import renames from "../src/lib/games/poe1/gem-renames.json";
+import { isUnreleased } from "./released-gems";
 
 const SOURCE =
   "https://repoe-fork.github.io/base_items.json";
@@ -49,7 +50,7 @@ async function main() {
   const art: Record<string, string> = {};
   for (const [id, item] of Object.entries(data)) {
     if (!item.item_class || !GEM_CLASSES.has(item.item_class)) continue;
-    if (item.release_state === "unreleased") continue;
+    if (isUnreleased(id, item.release_state)) continue;
     const dds = item.visual_identity?.dds_file;
     if (!dds) continue;
     // The CDN serves .png at the path RePoE records as .dds.
