@@ -13,6 +13,7 @@ import {
   storedPayloadFor,
   type AccountExport,
 } from "./games/exports";
+import { isAlternateAscendancy } from "./games/ascendancy";
 import type { GameId } from "./games/types";
 import { getLeague } from "./queries";
 
@@ -395,10 +396,19 @@ export function applyImport(
         // export's are the character today, and heading a build saved at level
         // 89 with "Level 97" is two sources' facts presented as one.
         const fromCode = composed !== build;
+        // A character from a Phrecia-style event keeps its Phrecia ascendancy
+        // (the owner, 2026-09-27): the game reports what it is today, and one
+        // migrated out of the event was reset to a standard ascendancy, so the
+        // export would replace Scavenger with nothing or with Ascendant. A
+        // recorded alternate ascendancy is therefore the export's to confirm,
+        // never to overwrite. Only the record can put one there.
+        const recorded = known(existing.ascendancy);
+        const reported = (fromCode ? composed.ascendClassName : character.ascendancy) ?? recorded;
+        const ascendancy = recorded && isAlternateAscendancy(exported.game, recorded) ? recorded : reported;
         update.run(
           character.name,
           (fromCode ? composed.className : character.baseClass) ?? known(existing.class_name) ?? "Unknown",
-          (fromCode ? composed.ascendClassName : character.ascendancy) ?? known(existing.ascendancy),
+          ascendancy,
           (fromCode ? composed.level : null) ?? character.level,
           known(existing.main_skill) ?? composed.mainSkill ?? null,
           chosen ?? known(existing.skill_gem) ?? composed.mainSkill ?? null,

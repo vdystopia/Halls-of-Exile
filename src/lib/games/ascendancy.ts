@@ -35,6 +35,18 @@ export function ascendancyPortrait(game: GameId, ascendancy?: string | null, cla
   return ART[game].portrait(known(ascendancy), known(className));
 }
 
+/**
+ * Whether a name is one of Path of Exile's event-only ascendancies — the
+ * Phrecia set (Scavenger, Paladin, Bog Shaman …). They exist only inside the
+ * Phrecia-style events, and a character migrated out of one is reset to a
+ * standard ascendancy, so the game's own report of such a character today says
+ * nothing about what it was. Path of Exile 2 has none.
+ */
+export function isAlternateAscendancy(game: GameId, ascendancy?: string | null): boolean {
+  const name = known(ascendancy);
+  return game === "poe1" && name !== null && name in poe1.ALTERNATE_ASCENDANCIES;
+}
+
 /** The face, for a compact banner: its own file in Path of Exile 1, the portrait in Path of Exile 2. */
 export function ascendancyAvatar(game: GameId, ascendancy?: string | null, className?: string | null) {
   return ART[game].avatar(known(ascendancy), known(className));

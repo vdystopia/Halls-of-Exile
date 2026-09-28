@@ -936,6 +936,16 @@ and its payload is stored in `characters.source_payload` for the same reason.
   the field under "Manage player", or `.\collect.ps1 -Player <name> -Account "Name#1234"`,
   which the import records through `rememberAccount`. All three fill a blank and nothing more,
   so they cannot fight each other and an account changed by hand always wins.
+- **A character from a Phrecia-style event keeps its Phrecia ascendancy** (the owner, 2026-09-27:
+  "any character in a phrecia-based league must always have a phrecia ascendancy if they ever
+  ascended"). The game reports what a character is *today*, and one migrated out of Legacy of
+  Phrecia, Phrecia 2.0, Return of the Ancestors or the Merciless Gauntlet was reset to a standard
+  ascendancy, so an export taken afterwards would replace Scavenger with Ascendant. Only the record
+  puts an alternate ascendancy on a row (the sheet's "ascendancy" column, read from its build words —
+  "power siphon mines scavenger"), and `applyImport` keeps a recorded one that
+  `isAlternateAscendancy(game, name)` (in `games/ascendancy.ts`, over `ALTERNATE_ASCENDANCIES`)
+  recognises, taking the game's answer only where the record's is standard or blank.
+  `tests/phrecia-ascendancy.test.ts` pins it. Level and name stay the game's.
 - **The league never comes from the export.** Every character migrates to a permanent league
   when its own ends, so the league the API reports says nothing about where it was played. The
   collector guesses from the last login time and grades its own guess — and the owner's record
