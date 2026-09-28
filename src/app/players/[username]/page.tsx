@@ -95,8 +95,9 @@ export default async function PlayerPage({ params, searchParams }: Props) {
       leagueTitle: c.leagueTitle,
       classLine: classLine(c.className, c.ascendancy),
       level: c.level,
-      // The gem where there is one, else the record's own words; "Unknown" is neither.
-      skill: buildSkill(c.game, c.skillGem, c.mainSkill) ?? (c.mainSkill && c.mainSkill !== "Unknown" ? c.mainSkill : null),
+      // The skill gem, resolved as the header resolves it, else the gem as typed. Never
+      // the build words: "SRS Servant of Arakaali" is a build, not a skill (the owner, 2026-09-28).
+      skill: buildSkill(c.game, c.skillGem, c.mainSkill) ?? (c.skillGem?.trim() || null),
       played: formatPlayed(c.playedMinutes),
       tier: report.tier,
       missing: report.missing,

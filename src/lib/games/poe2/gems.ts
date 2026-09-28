@@ -25,8 +25,20 @@ export function gemArt(skill?: string | null): GemArt | null {
   return artPath ? { src: `/items/poe2/${artPath}.webp`, name, frames: 1 } : null;
 }
 
+/**
+ * The owner's record writes "summon raging spirits" for this game's build too,
+ * where the gem is "Raging Spirits". Read as that gem, the way Path of Exile
+ * 1's `SKILL_ALIASES` reads it as Summon Raging Spirit.
+ */
+const SKILL_ALIASES: Record<string, string> = {
+  "summon raging spirits": "Raging Spirits",
+  "summon raging spirit": "Raging Spirits",
+  srs: "Raging Spirits",
+};
+
 export function canonicalSkill(text?: string | null): string | null {
-  return SKILL_BY_LOWER.get(text?.trim().toLowerCase() ?? "") ?? null;
+  const lower = text?.trim().toLowerCase() ?? "";
+  return SKILL_BY_LOWER.get(lower) ?? SKILL_ALIASES[lower] ?? null;
 }
 
 export function skillNames(): string[] {

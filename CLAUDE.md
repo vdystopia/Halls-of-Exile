@@ -635,6 +635,11 @@ and its payload is stored in `characters.source_payload` for the same reason.
   code fills blank build words. **`CharacterCard` shows the skill gem through `buildSkill`, the
   same resolver as the header and the banner** — it used to print the build words in gem colour,
   which read as a skill and disagreed with the header. `tests/build-words.test.ts` pins both.
+  **`CharacterMatrix`'s skill column reads the same way**, falling back to the gem as typed and
+  never to the build words ("SRS Servant of Arakaali" is a build, the owner, 2026-09-28).
+  `buildSkill` canonicalises a typed gem ("sunder" is Sunder), and `SKILL_ALIASES` in
+  `poe1/gems.ts` reads the record's "Summon Raging Spirits" (and "SRS") as the game's singular
+  Summon Raging Spirit, so those builds get their gem.
 - **Path of Exile 2 characters come from the logged-in site, and it serves gear only.**
   pathofexile2.com has no public profile; `/internal-api/my-account/characters?realm=poe2` and
   `/character/<id>?realm=poe2` need the session cookie *and* `Authorization: DPoP

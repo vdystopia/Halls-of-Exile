@@ -79,11 +79,11 @@ export function gemArt(skill?: string | null): GemArt | null {
   const direct = ART[name] ?? ART_BY_LOWER[name.toLowerCase()];
   if (direct) return found(direct, name);
 
-  // "Frostblink of Wintry Blast" -> "Frostblink". Only one " of " is stripped,
-  // and only when what precedes it is itself a gem.
-  const transfigured = name.match(/^(.+?) of .+$/);
-  if (transfigured) {
-    const base = ART_BY_LOWER[transfigured[1].toLowerCase()];
+  // "Frostblink of Wintry Blast" -> "Frostblink". The base may itself hold an
+  // " of " — "Wave of Conviction of Trarthus" — so every split is tried, the
+  // longest base first, and only a prefix that is itself a gem counts.
+  for (let at = name.lastIndexOf(" of "); at > 0; at = name.lastIndexOf(" of ", at - 1)) {
+    const base = ART_BY_LOWER[name.slice(0, at).toLowerCase()];
     if (base) return found(base, name);
   }
   return null;
@@ -118,6 +118,21 @@ export function skillNames(): string[] {
 }
 
 const SKILL_BY_LOWER = new Map(SKILLS.map((name) => [name.toLowerCase(), name]));
+
+/**
+ * Spellings the owner's record uses for a gem the game names otherwise. The
+ * gem is "Summon Raging Spirit", singular, and nobody says it that way; the
+ * record writes the plural on every such build. Read the same way as a gem's
+ * own name, so the gem and its art resolve.
+ */
+const SKILL_ALIASES: Record<string, string> = {
+  "summon raging spirits": "Summon Raging Spirit",
+  srs: "Summon Raging Spirit",
+  la: "Lightning Arrow",
+};
+for (const [alias, name] of Object.entries(SKILL_ALIASES)) {
+  if (!SKILL_BY_LOWER.has(alias)) SKILL_BY_LOWER.set(alias, name);
+}
 
 /**
  * The gem's own spelling for text that is exactly a gem's name in any case —

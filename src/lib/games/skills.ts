@@ -69,7 +69,11 @@ export function skillTagClass(game: GameId, name?: string | null): string {
  * loosening this.
  */
 export function buildSkill(game: GameId, skillGem: string | null, mainSkill: string | null): string | null {
-  const candidate = skillGem?.trim() || SKILLS[game].canonical(mainSkill);
+  // The typed gem in the game's own spelling where it is one — "sunder" is
+  // Sunder, and the owner's "summon raging spirits" is Summon Raging Spirit —
+  // else as typed, so a transfigured gem the list lacks still reaches the art.
+  const typed = skillGem?.trim() || null;
+  const candidate = (typed && (SKILLS[game].canonical(typed) ?? typed)) || SKILLS[game].canonical(mainSkill);
   return candidate && SKILLS[game].art(candidate) ? candidate : null;
 }
 
