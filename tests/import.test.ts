@@ -64,7 +64,7 @@ test("a character that already holds a build is never overwritten unasked", asyn
      VALUES (?, ?, 'thelocalvoid', 'TheLocalVoid', 'Witch', ?, 0, '{"account":"x"}', 1)`,
   ).run(user.id, league.id, archived);
 
-  const result = applyImport(user, exported, { include: () => true, leagueFor: () => null });
+  const result = applyImport(user, exported, { include: (name) => name === "TheLocalVoid", leagueFor: () => null });
 
   assert.equal(result.imported, 0);
   assert.deepEqual(result.written, []);
@@ -85,7 +85,7 @@ test("a character imported from a build code is left alone as well", async () =>
      VALUES (?, ?, 'thelocalvoid', 'TheLocalVoid', 'Witch', 'a-share-code', '{"source":"pob"}', 3)`,
   ).run(user.id, league.id);
 
-  assert.deepEqual(applyImport(user, exported, { include: () => true, leagueFor: () => null }).skipped, [
+  assert.deepEqual(applyImport(user, exported, { include: (name) => name === "TheLocalVoid", leagueFor: () => null }).skipped, [
     "TheLocalVoid",
   ]);
   const row = planFor(user.id, exported, "token").rows.find((entry) => entry.name === "TheLocalVoid");
@@ -106,7 +106,7 @@ test("naming a character is what replaces it", async () => {
   ).run(user.id, league.id);
 
   const result = applyImport(user, exported, {
-    include: () => true,
+    include: (name) => name === "TheLocalVoid",
     leagueFor: () => null,
     overwrite: (name) => name === "TheLocalVoid",
   });
@@ -118,7 +118,7 @@ test("naming a character is what replaces it", async () => {
   assert.ok(build.items.length > 10, "the named character was not replaced");
 });
 
-test("an unattended import creates nothing and names what it skipped", async () => {
+test("an unattended import creates every unseen character, in the league the export is certain of or in Unspecified league", async () => {
   const { applyImport } = await import("../src/lib/import");
   const { db, user } = await setup("unattended-tester", null);
   const exported = await fixture();
@@ -133,18 +133,29 @@ test("an unattended import creates nothing and names what it skipped", async () 
   const result = applyImport(user, exported, { include: () => true, leagueFor: () => null });
   const after = db.prepare(`SELECT count(*) AS n FROM characters WHERE user_id = ?`).get(user.id) as { n: number };
 
-  assert.equal(result.imported, 1, "only the character that already existed");
-  assert.equal(result.created, 0, "an unattended run must never invent a league");
-  assert.equal(after.n, before.n, "no rows were added");
-  assert.deepEqual(result.written, ["TheLocalVoid"]);
-
-  // Everything it did not write is what the caller reports as needing a league.
-  const landed = new Set(result.written);
-  const unmatched = exported.characters.map((c) => c.name).filter((name) => !landed.has(name));
-  assert.deepEqual(unmatched.sort(), ["BEVSTCHEESE", "WelcomeToMySimulation", "vCVRSE"].sort());
-  // And the result names them by reason, which is what the endpoint reports.
-  assert.deepEqual(result.needsLeague.sort(), unmatched.sort());
+  // The owner (2026-09-28): every character with valid data from the game is
+  // imported; the league can be set or changed later.
+  assert.equal(result.imported, 4, "the one that existed, and the three it had never seen");
+  assert.equal(result.created, 3);
+  assert.equal(after.n, before.n + 3);
+  assert.deepEqual(result.written.sort(), ["BEVSTCHEESE", "TheLocalVoid", "WelcomeToMySimulation", "vCVRSE"]);
+  // Where each new one went: the league the export is certain it still sits
+  // in — an event as itself, never as the patch it ran inside — or, for a
+  // guess, Unspecified league, named so someone can move it.
+  assert.deepEqual(result.placed.sort(), ["BEVSTCHEESE", "vCVRSE"]);
+  assert.deepEqual(result.unplaced, ["WelcomeToMySimulation"]);
   assert.deepEqual(result.ambiguous, []);
+  const where = db
+    .prepare(
+      `SELECT c.name, l.slug FROM characters c JOIN leagues l ON l.id = c.league_id
+        WHERE c.user_id = ? AND c.name IN ('BEVSTCHEESE', 'vCVRSE', 'WelcomeToMySimulation') ORDER BY c.name`,
+    )
+    .all(user.id);
+  assert.deepEqual(where, [
+    { name: "BEVSTCHEESE", slug: "legacy-of-phrecia-2" },
+    { name: "WelcomeToMySimulation", slug: "unspecified" },
+    { name: "vCVRSE", slug: "3.29" },
+  ]);
 });
 
 test("an import fills in gear without touching the record's own fields", async () => {
@@ -160,7 +171,7 @@ test("an import fills in gear without touching the record's own fields", async (
              'detonate dead ignite', 'the one with the helmet', 4210, '{}', 0)`,
   ).run(user.id, league.id);
 
-  applyImport(user, exported, { include: () => true, leagueFor: () => null });
+  applyImport(user, exported, { include: (name) => name === "TheLocalVoid", leagueFor: () => null });
 
   const row = db
     .prepare(`SELECT class_name, ascendancy, level, main_skill, notes, played_minutes, league_id, data
@@ -211,7 +222,7 @@ test("the game's spelling of a name replaces the record's when the export fills 
     )
     .run(user.id, league.id).lastInsertRowid;
 
-  applyImport(user, exported, { include: () => true, leagueFor: () => null });
+  applyImport(user, exported, { include: (name) => name === "TheLocalVoid", leagueFor: () => null });
 
   const row = db.prepare(`SELECT id, name, slug FROM characters WHERE user_id = ? AND name = 'TheLocalVoid' COLLATE BINARY`).get(user.id) as {
     id: number;
@@ -242,11 +253,11 @@ test("a second run changes nothing", async () => {
   const snapshot = () =>
     db.prepare(`SELECT name, class_name, level, data, source_payload FROM characters WHERE user_id = ?`).all(user.id);
 
-  const one = applyImport(user, exported, { include: () => true, leagueFor: () => null });
+  const one = applyImport(user, exported, { include: (name) => name === "TheLocalVoid", leagueFor: () => null });
   assert.deepEqual(one.written, ["TheLocalVoid"]);
   const first = JSON.stringify(snapshot());
 
-  const two = applyImport(user, exported, { include: () => true, leagueFor: () => null });
+  const two = applyImport(user, exported, { include: (name) => name === "TheLocalVoid", leagueFor: () => null });
   assert.deepEqual(two.written, [], "the second run must write nothing at all");
   assert.deepEqual(two.skipped, ["TheLocalVoid"]);
   assert.equal(JSON.stringify(snapshot()), first);
@@ -287,7 +298,7 @@ test("an ambiguous name is left alone rather than guessed at", async () => {
     ).run(user.id, league.id, `thelocalvoid-${index}`);
   }
 
-  const result = applyImport(user, exported, { include: () => true, leagueFor: () => null });
+  const result = applyImport(user, exported, { include: (name) => name === "TheLocalVoid", leagueFor: () => null });
   assert.equal(result.imported, 0);
   assert.deepEqual(result.written, []);
   assert.deepEqual(result.ambiguous, ["TheLocalVoid"]);
@@ -415,7 +426,7 @@ test("an unattended import leaves a recorded skill alone", async () => {
              'Detonate Dead', NULL, NULL, '{}', 0)`,
   ).run(user.id, league.id);
 
-  applyImport(user, exported, { include: () => true, leagueFor: () => null });
+  applyImport(user, exported, { include: (name) => name === "TheLocalVoid", leagueFor: () => null });
 
   const row = db
     .prepare(`SELECT skill_gem FROM characters WHERE user_id = ? AND name = 'TheLocalVoid'`)

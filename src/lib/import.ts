@@ -93,8 +93,10 @@ export type ImportResult = {
   skipped: string[];
   /** The names actually written, so a caller can name the ones that were not. */
   written: string[];
-  /** New to the archive, and not written because no league was chosen for them. */
-  needsLeague: string[];
+  /** Created, nobody having chosen a league, in the league the export was certain of. */
+  placed: string[];
+  /** Created in "Unspecified league", to be moved by hand. */
+  unplaced: string[];
   /** More than one archived character has the name, so neither was touched. */
   ambiguous: string[];
   /** League keys touched, as `<game>/<slug>`, for cache revalidation. */
@@ -244,9 +246,9 @@ export function planFor(userId: number, exported: AccountExport, token: string):
       //
       // Only offered where the collector called it certain, which means the
       // character is still in a league that has not ended. Anything weaker is
-      // a prior, not a fact, and is left for the owner to answer.
-      suggested:
-        found.length === 0 && character.originConfidence === "certain" ? character.originPatch : null,
+      // a prior, not a fact, and is left for the owner to answer. As a slug,
+      // so an event is offered as itself and not as the patch it ran inside.
+      suggested: found.length === 0 ? character.originSlug : null,
       confidence: character.originConfidence,
       // What is already recorded wins over the guess, so opening the page and
       // importing without touching anything cannot quietly replace an answer
@@ -302,8 +304,11 @@ function uniqueSlug(userId: number, leagueId: number, base: string): string {
  *
  * That leaves three outcomes. A matched character with nothing in it is filled.
  * A matched character that already holds a build is skipped and named. A
- * character the archive has never seen needs a league, which is the other thing
- * an export cannot answer, so `leagueFor` decides — returning null skips it.
+ * character the archive has never seen is created (the owner, 2026-09-28: every
+ * character with valid data from the game is imported; the league can be set
+ * later). `leagueFor` names its league when a person chose one; otherwise it
+ * goes where the export is certain it still is, and failing that into the
+ * game's "Unspecified league", named in `unplaced` so someone can move it.
  */
 export function applyImport(
   user: ImportUser,
@@ -346,7 +351,10 @@ export function applyImport(
   let created = 0;
   const skipped: string[] = [];
   const written: string[] = [];
-  const needsLeague: string[] = [];
+  /** Created in the league the export was certain of, nobody having chosen one. */
+  const placed: string[] = [];
+  /** Created in "Unspecified league", to be moved by hand. */
+  const unplaced: string[] = [];
   const ambiguous: string[] = [];
   const touched = new Set<string>();
   // A record with nothing to say writes "Unknown" rather than leaving a blank,
@@ -431,13 +439,13 @@ export function applyImport(
         continue;
       }
 
-      const slug = options.leagueFor(character.name);
-      if (!slug) {
-        needsLeague.push(character.name);
-        continue;
-      }
-      const league = getLeague(exported.game, slug);
+      const chosen = options.leagueFor(character.name);
+      const league =
+        (chosen && getLeague(exported.game, chosen)) ||
+        (character.originSlug && getLeague(exported.game, character.originSlug)) ||
+        getLeague(exported.game, "unspecified");
       if (!league) continue;
+      if (!chosen) (league.slug === "unspecified" ? unplaced : placed).push(character.name);
       insert.run(
         user.id,
         league.id,
@@ -461,5 +469,5 @@ export function applyImport(
   });
   run();
 
-  return { imported, created, skipped, written, needsLeague, ambiguous, touched };
+  return { imported, created, skipped, written, placed, unplaced, ambiguous, touched };
 }

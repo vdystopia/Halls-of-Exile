@@ -154,6 +154,7 @@ function readCharacter(entry: Json): PoeExportCharacter | null {
     lastLogin: lastLoginTime ? new Date(lastLoginTime * 1000).toISOString() : null,
     originPatch: origin.slug,
     originConfidence: origin.confidence,
+    originSlug: origin.confidence === "certain" ? origin.slug : null,
     // The site has no skill slots, and the skills an item grants — a spear's
     // Spear Throw — are not what a character was built around. No guess is
     // better than that one.

@@ -243,6 +243,11 @@ export const LEAGUE_SEED: LeagueSeed[] = [
   // without a league.
   { game: "poe1", slug: "unspecified", patch: null, name: "Unspecified league", kind: "event",
     startDate: null, endDate: null, datesUncertain: true, challengeTotal: null },
+  // Since 2026-09-28 an unattended import creates every character it reads,
+  // and one whose league the export cannot be certain of lands here, in its
+  // own game, to be moved by hand. So each game has one of these.
+  { game: "poe2", slug: "unspecified", patch: null, name: "Unspecified league", kind: "event",
+    startDate: null, endDate: null, datesUncertain: true, challengeTotal: null },
 ];
 
 /**

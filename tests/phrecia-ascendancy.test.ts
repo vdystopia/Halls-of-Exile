@@ -46,7 +46,7 @@ test("an export never replaces a recorded Phrecia ascendancy, and still fills on
   assert.equal(beast.ascendancy, "Herald", "the fixture was collected inside the event");
   beast.ascendancy = "Necromancer";
 
-  const result = applyImport({ id: user, username: "phrecia-tester" }, exported, { include: () => true, leagueFor: () => null });
+  const result = applyImport({ id: user, username: "phrecia-tester" }, exported, { include: (name) => name === "BEVSTCHEESE" || name === "TheLocalVoid", leagueFor: () => null });
   assert.ok(result.written.includes("BEVSTCHEESE"));
   const rows = db
     .prepare(`SELECT name, ascendancy, level FROM characters WHERE user_id = ? ORDER BY name`)

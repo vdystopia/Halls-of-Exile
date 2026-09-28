@@ -164,9 +164,12 @@ and its payload is stored in `characters.source_payload` for the same reason.
   `getLeague(game, slug)` is the only lookup; there is no patch-keyed one. A username is the
   segment after `/players/`, so a page there (`new`) is a reserved name: `src/lib/usernames.ts`
   refuses it, and a test fails if a page is added under `src/app/players/` without joining the list.
-- **"Unspecified league" is Path of Exile 1 only, and closed.** The twenty-three characters
-  whose league the owner's record does not name are all Path of Exile 1, and no more are
-  coming — a new character arrives with its league. A second such row would put two
+- **Each game has one "Unspecified league", and it is where an import files what it cannot
+  place.** It held only the owner's record rows with no league until 2026-09-28, when the owner
+  ruled that every character with valid data from the game is imported and its league set or
+  changed later; an unattended import now creates a character it has never seen in the league
+  the export is *certain* it still sits in, else here, named in the response as `unplaced`. Path
+  of Exile 2 gained its own row for that. One per game, never a second in a game: two
   identically-titled leagues in one list.
 - **The owner's own record is `scripts/data/character-atlas.json`**, imported by
   `npm run seed:atlas`. 99 characters across two players, most predating any Path of Building
@@ -776,12 +779,18 @@ and its payload is stored in `characters.source_payload` for the same reason.
   decide which one may re-derive the row; the other is only marked current so it stops being
   re-read every boot. Without that, a `PARSER_VERSION` bump would silently replace a build that
   came from the game with one derived from a stale share code.
-- **An unattended import fills, and neither creates nor overwrites.** `collect.ps1` and
-  `/api/import/poe` run with nobody watching, and the two questions an export cannot answer both
-  need a person: which league a character the archive has never seen belongs in, and whether a
-  finished character should be replaced. So `applyImport` is given a `leagueFor` that always
-  returns null and an `overwrite` that always returns false, and the response names what it
-  skipped for each reason. Both need the upload page.
+- **An unattended import fills and creates, and never overwrites.** `collect.ps1` and
+  `/api/import/poe` run with nobody watching. Whether a finished character should be replaced
+  needs a person, so `applyImport` is given an `overwrite` that always returns false. Which
+  league a new character belongs in used to need one too, and the unattended path skipped such
+  characters; the owner ruled on 2026-09-28 that **every character with valid data from the
+  game is imported** and its league set later. So with a `leagueFor` that returns null, a new
+  character goes into the league the export is certain it still sits in (`originSlug`: the
+  collector's certain grade, an event by its own slug — "Phrecia 2.0" is
+  `legacy-of-phrecia-2`, never the 3.27 it ran inside — and Path of Exile 2's running-league
+  match), else into its game's "Unspecified league". The response names them as `placed` and
+  `unplaced`; the unplaced ones sit at tier 3 wanting a league until moved under Manage this
+  character. The upload page still lets a person choose, with the certain league offered.
   **A character the export holds nothing for is never imported**, attended or not: no items, no
   skills and no allocated passives (`isEmptyBuild`) — stripped for the next league, or never
   geared. Writing one would record an empty build as archived, and every later import would skip
@@ -956,8 +965,9 @@ and its payload is stored in `characters.source_payload` for the same reason.
   when its own ends, so the league the API reports says nothing about where it was played. The
   collector guesses from the last login time and grades its own guess — and the owner's record
   is first-hand and beats it. So the importer matches on name and fills a character in where it
-  already sits; a character the archive has never seen is created only in a league chosen by
-  hand, with the guess offered as a default only where the collector called it `certain`. An
+  already sits; a character the archive has never seen is created in a league chosen by hand
+  on the upload page, else where the collector called it `certain`, else "Unspecified league"
+  (since 2026-09-28; it used to be skipped). An
   import also leaves notes, `/played` and the main skill alone: the record names the build
   ("golemancer corrupting fever exsanguinate") where the export can only name the gem with the
   most supports linked to it.

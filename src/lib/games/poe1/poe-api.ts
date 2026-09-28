@@ -51,6 +51,28 @@ export class PoeExportError extends Error {}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Json = any;
 
+/**
+ * The collector names an event by the game's own league name, and gives the
+ * patch it ran inside as the version — so "Phrecia 2.0" at 3.27 must not be
+ * filed under Keepers of the Flame. Events the catalogue has, by the name the
+ * collector uses; a certain origin it does not list resolves to nothing rather
+ * than to the wrong patch.
+ */
+const EVENT_SLUGS: Record<string, string> = {
+  Phrecia: "legacy-of-phrecia",
+  "Phrecia 2.0": "legacy-of-phrecia-2",
+  Ancestors: "return-of-the-ancestors",
+};
+
+/** The origin league as a catalogue slug, where the collector was certain and the catalogue knows it. */
+export function originSlug(origin: Json): string | null {
+  if (!origin || origin.confidence !== "certain") return null;
+  const name = str(origin.league);
+  if (name && EVENT_SLUGS[name]) return EVENT_SLUGS[name];
+  // A challenge league's slug is its patch.
+  return str(origin.version);
+}
+
 export type PoeExportCharacter = {
   name: string;
   league: string;
@@ -61,6 +83,12 @@ export type PoeExportCharacter = {
   /** The league the exporter guessed the character was made in, and how sure it is. */
   originPatch: string | null;
   originConfidence: string | null;
+  /**
+   * That guess as a catalogue slug, only where the exporter was certain — the
+   * character is still in a league that has not ended — and only where the
+   * name it gives is one the catalogue has. Null otherwise; see `originSlug`.
+   */
+  originSlug: string | null;
   /**
    * The exporter's guess at the skill: the active gem with the most supports
    * linked to it. A guess, and frequently the wrong one — a Vaal variant, or a
@@ -111,6 +139,7 @@ export function readPoeExport(text: string): PoeExport {
       lastLogin: str(character?.last_login),
       originPatch: str(character?.origin_league?.version),
       originConfidence: str(character?.origin_league?.confidence),
+      originSlug: originSlug(character?.origin_league),
       mainSkill: str(character?.main_skill?.skill),
       raw: character,
     })),
@@ -677,6 +706,7 @@ export function rebuildFromStoredExport(stored: StoredPoeExport): BuildData {
       lastLogin: str(character.last_login),
       originPatch: str(character.origin_league?.version),
       originConfidence: str(character.origin_league?.confidence),
+      originSlug: originSlug(character.origin_league),
       mainSkill: str(character.main_skill?.skill),
       raw: character,
     },

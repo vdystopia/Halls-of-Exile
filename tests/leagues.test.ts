@@ -149,7 +149,7 @@ test("renders played time the way the game talks about it", () => {
 
 test("the Path of Exile 2 catalogue covers early access and the closed beta", () => {
   const poe2 = LEAGUE_SEED.filter((league) => league.game === "poe2").map((league) => league.slug);
-  assert.deepEqual(poe2, ["beta-1", "beta-2", "0.1", "0.2", "0.3", "0.4", "0.5", "0.5.5"]);
+  assert.deepEqual(poe2, ["beta-1", "beta-2", "0.1", "0.2", "0.3", "0.4", "0.5", "0.5.5", "unspecified"]);
 });
 
 /** Path of Exile 2 had no challenges before 0.5, and 0.5's count is unrecorded. */
@@ -178,7 +178,7 @@ test("a Path of Exile 2 league names its update separately", () => {
 /** The only Path of Exile 2 row still without dates is the closed beta. */
 test("only the closed beta has unconfirmed dates", () => {
   const flagged = LEAGUE_SEED.filter((league) => league.datesUncertain).map((league) => league.slug);
-  assert.deepEqual(flagged, ["real-fake-doryani", "unspecified"]);
+  assert.deepEqual(flagged, ["real-fake-doryani", "unspecified", "unspecified"]);
 });
 
 /**
@@ -216,9 +216,9 @@ test("a league with no patch of its own reads as ###", () => {
   assert.equal(leagueTitle({ patch: null, name: "Unspecified league" }), "### Unspecified league");
 });
 
-test("the only seeded league without a patch is the unspecified one", () => {
+test("the only seeded leagues without a patch are the unspecified ones", () => {
   const missing = LEAGUE_SEED.filter((league) => !league.patch).map((league) => league.name);
-  assert.deepEqual(missing, ["Unspecified league"]);
+  assert.deepEqual(missing, ["Unspecified league", "Unspecified league"]);
 });
 
 test("both December 2021 events ran inside 3.16", () => {
@@ -251,10 +251,9 @@ test("every seeded event names a parent, or has none to name", () => {
  * and no more are coming: the record is closed and a new character arrives with
  * its league. A second such row would only make two identically-titled leagues.
  */
-test("only Path of Exile 1 has an unspecified league", () => {
+test("each game has exactly one unspecified league, where an import files what it cannot place", () => {
   const unspecified = LEAGUE_SEED.filter((league) => league.slug === "unspecified");
-  assert.equal(unspecified.length, 1);
-  assert.equal(unspecified[0].game, "poe1");
+  assert.deepEqual(unspecified.map((league) => league.game).sort(), ["poe1", "poe2"]);
 });
 
 /**

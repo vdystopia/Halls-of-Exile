@@ -208,7 +208,7 @@ test("an import only ever matches characters in its own game", async () => {
   assert.equal(plan.rows.find((entry) => entry.name === "vSXVXRv")?.suggested, "0.5");
 
   const result = applyImport({ id: userId, username: "poe2-tester" }, exported, {
-    include: () => true,
+    include: (name) => name === "PsevdoCrvb",
     leagueFor: () => null,
   });
   assert.deepEqual(result.written, ["PsevdoCrvb"]);

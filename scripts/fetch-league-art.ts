@@ -101,6 +101,7 @@ const PICKS: Record<string, Pick> = {
   "poe1/legacy-of-phrecia-2": poe1("Legacy of Phrecia event logo.jpg"),
 
   "poe2/beta-1": POE2_LOGO,
+  "poe2/unspecified": POE2_LOGO,
   "poe2/beta-2": POE2_LOGO,
   "poe2/0.1": POE2_LOGO,
   "poe2/0.2": poe2("Dawn of the Hunt logo.png"),

@@ -375,5 +375,12 @@
     "height": 222,
     "file": "Path of Exile logo.png",
     "generic": true
+  },
+  "poe2/unspecified": {
+    "src": "/leagues/path-of-exile-2-logo.webp",
+    "width": 276,
+    "height": 222,
+    "file": "Path of Exile 2 logo.png",
+    "generic": true
   }
 }

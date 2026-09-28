@@ -72,10 +72,11 @@ export async function POST(request: Request) {
   // needed again.
   rememberAccount(user.id, exported.account);
 
-  const { imported, skipped, written, needsLeague, ambiguous, touched } = applyImport(user, exported, {
+  const { imported, created, skipped, written, placed, unplaced, ambiguous, touched } = applyImport(user, exported, {
     include: () => true,
-    // Never invent a league, and never rewrite a character that is already
-    // archived. Both need someone to ask.
+    // Nobody here to choose a league: a new character goes where the export is
+    // certain it still is, else into "Unspecified league" to be moved by hand.
+    // Never rewrite a character that is already archived.
     leagueFor: () => null,
     overwrite: () => false,
   });
@@ -84,13 +85,11 @@ export async function POST(request: Request) {
   revalidatePath("/");
   revalidatePath(`/players/${user.username}`);
 
-  // Every character in the file is accounted for by name, one reason each: filled
-  // in; already archived and left alone; new, so it needs a league chosen on the
-  // upload page; sharing a name with more than one archived character; holding
-  // nothing to archive; or unreadable when it was exported. `unmatched` is the
-  // two that need the upload page, kept for callers that read it.
-  const unmatched = [...needsLeague, ...ambiguous];
-
+  // Every character in the file is accounted for by name, one reason each:
+  // filled in or created (`filledNames` is both); created in the league the
+  // export was certain of; created in "Unspecified league" to be moved by hand;
+  // already archived and left alone; sharing a name with more than one archived
+  // character; holding nothing to archive; or unreadable when it was exported.
   return NextResponse.json({
     status: "ok",
     player: user.username,
@@ -99,13 +98,13 @@ export async function POST(request: Request) {
     characters: exported.characters.length,
     filled: imported,
     filledNames: written,
+    created,
+    placed,
+    unplaced,
     alreadyArchived: skipped.length,
     alreadyArchivedNames: skipped,
-    needsLeague,
     ambiguous,
     empty: exported.emptyCharacters,
     unreadable: exported.skippedCharacters,
-    unmatched: unmatched.length,
-    unmatchedNames: unmatched,
   });
 }
