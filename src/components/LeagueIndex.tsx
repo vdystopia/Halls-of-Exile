@@ -182,10 +182,11 @@ export function LeagueIndex({
   const [games, setGames] = useState<Set<string>>(new Set());
   const [patches, setPatches] = useState<Set<string>>(new Set());
   const [names, setNames] = useState<Set<string>>(new Set());
+  const [kinds, setKinds] = useState<Set<string>>(new Set());
 
-  // Each filter offers only what the other two leave in the table, so no
+  // Each filter offers only what the others leave in the table, so no
   // combination can empty it (see `facetValues`).
-  const filters = { games, patches, names };
+  const filters = { games, patches, names, kinds };
   const gameOptions = facetValues(leagues, filters, "games")
     .sort()
     .map((game) => ({ value: game, label: `Path of Exile ${gameNumber(game)}` }));
@@ -195,6 +196,11 @@ export function LeagueIndex({
   const nameOptions = facetValues(leagues, filters, "names")
     .sort((a, b) => a.localeCompare(b))
     .map((name) => ({ value: name, label: name }));
+  // Core leagues or events (the owner, 2026-09-28): leagues alone is one row
+  // per patch; see `leagueKind` for where 0.5.5 falls.
+  const kindOptions = facetValues(leagues, filters, "kinds")
+    .sort((a, b) => (a === "league" ? -1 : b === "league" ? 1 : 0))
+    .map((kind) => ({ value: kind, label: kind === "league" ? "Core leagues" : "Events" }));
 
   const onSort = (column: Column) => {
     setSort((was) =>
@@ -243,7 +249,7 @@ export function LeagueIndex({
       return byDate || a.name.localeCompare(b.name);
     });
 
-  const filtered = games.size || patches.size || names.size;
+  const filtered = games.size || patches.size || names.size || kinds.size;
 
   return (
     <div className="panel">
@@ -261,8 +267,15 @@ export function LeagueIndex({
           {/* Narrow like the other two rather than as wide as the column it
               heads: it is a control, and stretching it to fourteen rems only
               makes the word "all" sit in a lot of empty box. */}
-          <div className="w-28">
-            <FilterMenu label="league" options={nameOptions} selected={names} onChange={setNames} />
+          <div className="flex gap-2">
+            <div className="w-28">
+              <FilterMenu label="league" options={nameOptions} selected={names} onChange={setNames} />
+            </div>
+            {/* League or event, beside the names: the one filter the owner
+                reaches for most, so it is not buried in a list of sixty. */}
+            <div className="w-28">
+              <FilterMenu label="kind" options={kindOptions} selected={kinds} onChange={setKinds} />
+            </div>
           </div>
         </div>
         <div className="w-32 shrink-0">
@@ -350,6 +363,7 @@ export function LeagueIndex({
               setGames(new Set());
               setPatches(new Set());
               setNames(new Set());
+              setKinds(new Set());
             }}
             className="link-gold"
           >

@@ -376,7 +376,7 @@ test("the catalogue orders by when each league ran, across both games", () => {
 test("the league index's filters can never empty the table", async () => {
   const { facetValues, passes } = await import("../src/lib/league-filter");
   const rows = LEAGUE_SEED;
-  const none = { games: new Set<string>(), patches: new Set<string>(), names: new Set<string>() };
+  const none = { games: new Set<string>(), patches: new Set<string>(), names: new Set<string>(), kinds: new Set<string>() };
   const poe2 = { ...none, games: new Set(["poe2"]) };
   const patches = facetValues(rows, poe2, "patches");
   assert.ok(!patches.includes("3.25"), "a Path of Exile 1 patch is not offered with Path of Exile 2 ticked");
@@ -390,4 +390,29 @@ test("the league index's filters can never empty the table", async () => {
   const ticked = { ...none, patches: new Set(["3.25"]) };
   assert.deepEqual(facetValues(rows, ticked, "games"), ["poe1"]);
   assert.ok(facetValues(rows, { ...ticked, games: new Set(["poe1"]) }, "patches").includes("3.25"));
+});
+
+/**
+ * Filtered to core leagues, the index is one row per patch: Path of Exile 1
+ * from 1.0 to 3.29 and Path of Exile 2 from 0.1 to 0.5.5 — 0.5.5 ran as an
+ * event but has challenges, which makes it a league by the owner's definition
+ * (2026-09-28). Everything else — gauntlets, Phrecia, the betas, "Unspecified
+ * league" — is an event.
+ */
+test("the league index's kind filter leaves one core league per patch", async () => {
+  const { leagueKind, passes } = await import("../src/lib/league-filter");
+  const none = { games: new Set<string>(), patches: new Set<string>(), names: new Set<string>(), kinds: new Set<string>() };
+  const core = LEAGUE_SEED.filter((row) => passes(row, { ...none, kinds: new Set(["league"]) }));
+  const poe1 = core.filter((row) => row.game === "poe1").map((row) => row.patch);
+  const poe2 = core.filter((row) => row.game === "poe2").map((row) => row.patch);
+  assert.equal(new Set(poe1).size, poe1.length, "one Path of Exile 1 row per patch");
+  assert.equal(poe1.length, 41);
+  assert.ok(poe1.includes("1.0") && poe1.includes("3.29"));
+  assert.deepEqual(poe2.sort(), ["0.1", "0.2", "0.3", "0.4", "0.5", "0.5.5"]);
+  assert.equal(leagueKind({ game: "poe2", slug: "0.5.5", kind: "event" }), "league");
+  assert.equal(leagueKind({ game: "poe2", slug: "beta-1", kind: "event" }), "event");
+  assert.equal(leagueKind({ game: "poe1", slug: "legacy-of-phrecia", kind: "event" }), "event");
+  assert.equal(leagueKind({ game: "poe1", slug: "unspecified", kind: "event" }), "event");
+  const events = LEAGUE_SEED.filter((row) => passes(row, { ...none, kinds: new Set(["event"]) }));
+  assert.equal(core.length + events.length, LEAGUE_SEED.length, "every row is one or the other");
 });
