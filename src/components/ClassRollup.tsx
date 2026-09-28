@@ -41,8 +41,23 @@ export function ClassRollup({ game, classes }: { game: GameId; classes: Rollup[]
       const style = classNameStyle(game, row.name);
       const bar = (style as Record<string, string> | undefined)?.["--gem-fill"] ?? GOLD_BAR;
       const parent = toRow(row, bar, style);
+      // A child named after its class holds the characters that never
+      // ascended; it is drawn as the class, the way a character with no
+      // ascendancy is drawn everywhere else.
       parent.children = row.children.map((child) =>
-        toRow(child, bar, undefined, child.known ? <AscendancyIcon game={game} ascendancy={child.name} size={22} /> : undefined),
+        toRow(
+          child,
+          bar,
+          undefined,
+          child.known ? (
+            <AscendancyIcon
+              game={game}
+              ascendancy={child.name === row.name ? null : child.name}
+              characterClass={row.name}
+              size={22}
+            />
+          ) : undefined,
+        ),
       );
       return parent;
     });

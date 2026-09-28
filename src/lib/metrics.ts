@@ -117,9 +117,15 @@ export function rollupByClass(characters: MetricCharacter[]): { game: GameId; cl
   return games.map((game) => {
     const mine = characters.filter((c) => c.game === game);
     const classes = groupBy(mine, (c) => known(c.className)).map(({ members }) => {
-      const row = summarise(known(members[0].className), members, "Unknown class");
+      const className = known(members[0].className);
+      const row = summarise(className, members, "Unknown class");
+      // Characters that never ascended are a row called by the class itself
+      // — "Templar", not "Ascendancy unknown" (the owner, 2026-09-28) — the
+      // same way a character page calls such a character by its class. It is
+      // a known row: these are real characters of that class, sorted and
+      // coloured like any ascendancy of it.
       row.children = groupBy(members, (c) => known(c.ascendancy))
-        .map((group) => summarise(known(group.members[0].ascendancy), group.members, "Ascendancy unknown"))
+        .map((group) => summarise(known(group.members[0].ascendancy) ?? className, group.members, "Ascendancy unknown"))
         .sort(byWeight);
       return row;
     });

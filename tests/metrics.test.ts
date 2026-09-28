@@ -45,7 +45,8 @@ test("unknown classes and ascendancies are a bucket of their own, listed last", 
     classes.map((row) => [row.name, row.known, row.characters]),
     [["Templar", true, 1], ["Unknown class", false, 2]],
   );
-  assert.equal(classes[0].children[0].name, "Ascendancy unknown");
+  // Never ascended: called by the class, a known row (the owner, 2026-09-28).
+  assert.deepEqual([classes[0].children[0].name, classes[0].children[0].known], ["Templar", true]);
 });
 
 test("the two games are never added together, even for a shared class name", () => {
