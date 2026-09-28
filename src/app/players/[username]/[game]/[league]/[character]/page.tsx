@@ -19,6 +19,7 @@ import { ascendanciesFor } from "@/lib/games/classes";
 import { buildSkill, skillArt, skillNamesFor, skillTagClass } from "@/lib/games/skills";
 import { gearFor } from "@/lib/games/gear";
 import { applySlotItems } from "@/lib/slot-items";
+import { shorterSide, skillColumnHeight, statColumnHeight } from "@/lib/column-balance";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +51,20 @@ export default async function CharacterPage({ params }: Props) {
   const hasStats = Object.keys(stats).length > 0;
   const hasLeftColumn = hasStats || Boolean(build.passives);
   const played = formatPlayed(character.playedMinutes);
+  const gear = gearFor(league.game);
+  // Resistances and attributes go under whichever side column ends first:
+  // Path of Exile 2's skill list outruns the stats, Path of Exile 1's falls
+  // short of them, and either way the gap sat above the passive tree.
+  const smallPanelsSide = shorterSide(
+    statColumnHeight(stats, gear.defencePanels) + statColumnHeight(stats, gear.offencePanels),
+    skillColumnHeight(build.skillGroups),
+  );
+  const smallPanels = (
+    <>
+      <ResistanceBar stats={stats} resistances={gear.resistances} />
+      <AttributeStrip stats={stats} attributeStats={gear.attributeStats} chargeStats={gear.chargeStats} />
+    </>
+  );
   // Resolved here, on the server, because the gem art index must not be shipped
   // to the browser. `buildSkill` only returns a gem this game's index can draw,
   // so the skill is shown with its picture or not at all — the rule the player
@@ -63,7 +78,6 @@ export default async function CharacterPage({ params }: Props) {
   // Which generated tree this build is drawn on, resolved here because the
   // index of what has been generated is server-side data.
   const treeNodes = tree?.nodes ?? [];
-  const gear = gearFor(league.game);
   const treeArt = treeNodes.length ? gear.treeAsset(tree?.treeVersion) : null;
   // Clusters are laid out here, against the tree actually being drawn, and
   // handed to the client as finished geometry: the tree data they need stays on
@@ -203,8 +217,7 @@ export default async function CharacterPage({ params }: Props) {
                     stacked on it the right column ran a screen past the rest and
                     left a gap above the tree. */}
                 <StatColumn title="Offence" panels={gear.offencePanels} stats={stats} />
-                <ResistanceBar stats={stats} resistances={gear.resistances} />
-                <AttributeStrip stats={stats} attributeStats={gear.attributeStats} chargeStats={gear.chargeStats} />
+                {smallPanelsSide === "left" ? smallPanels : null}
               </>
             ) : null}
             {/* The game's own export computes nothing, so a character read from it
@@ -274,8 +287,8 @@ export default async function CharacterPage({ params }: Props) {
           ) : null}
         </div>
 
-        {/* The skills alone: they run long, and anything under them only
-            lengthened the column that decides where the tree starts. */}
+        {/* The skills, and the resistances and attributes when this is the
+            shorter side (column-balance.ts). */}
         <div className="space-y-4 lg:col-span-3">
           <section className="panel">
             <div className="panel-header">
@@ -284,6 +297,7 @@ export default async function CharacterPage({ params }: Props) {
             </div>
             <SkillGroups groups={build.skillGroups} game={league.game} />
           </section>
+          {hasStats && smallPanelsSide === "right" ? smallPanels : null}
         </div>
       </div>
 

@@ -544,8 +544,11 @@ and its payload is stored in `characters.source_payload` for the same reason.
   the passive tree summary. **Below the header, the right column is Skills alone** (the owner,
   2026-09-28): a Path of Exile 2 skill list runs long, and with Offence, a tree summary and
   Configuration stacked on it the column ended a screen below the others and left dead space
-  above the tree. Offence sits directly under Defence on the left (then resistances, then
-  attributes), Configuration under Memories in the
+  above the tree. Offence sits directly under Defence on the left, and **Resistances and
+  Attributes & charges go under whichever side column is shorter** — the stats for Path of
+  Exile 2's long skill lists, the skills for Path of Exile 1's short ones. That is decided on the
+  server by `src/lib/column-balance.ts`, from the stylesheet's row heights, so the page never
+  jumps after load; `tests/column-balance.test.ts` pins one build of each game. Otherwise, Configuration under Memories in the
   middle, and the tree summary panel is gone: its count, masteries, bandit and version are one
   line at the tree's top right, the weapon-set counts are in its legend, and the source account
   and tree link are in its header. **Dates are written one way everywhere: "May 13, 2022"**, from
