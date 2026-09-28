@@ -198,12 +198,13 @@ export default async function CharacterPage({ params }: Props) {
             {hasStats ? (
               <>
                 <StatColumn title="Defence" panels={gear.defencePanels} stats={stats} />
+                {/* Offence directly under Defence (the owner, 2026-09-28), not
+                    above the skills: Path of Exile 2's skill list is long, and
+                    stacked on it the right column ran a screen past the rest and
+                    left a gap above the tree. */}
+                <StatColumn title="Offence" panels={gear.offencePanels} stats={stats} />
                 <ResistanceBar stats={stats} resistances={gear.resistances} />
                 <AttributeStrip stats={stats} attributeStats={gear.attributeStats} chargeStats={gear.chargeStats} />
-                {/* Offence sits under Defence rather than above the skills: Path of
-                    Exile 2's skill list is long, and stacked on it the right column
-                    ran a screen past the rest and left a gap above the tree. */}
-                <StatColumn title="Offence" panels={gear.offencePanels} stats={stats} />
               </>
             ) : null}
             {/* The game's own export computes nothing, so a character read from it
