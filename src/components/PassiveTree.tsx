@@ -42,6 +42,7 @@ export function PassiveTree({
   ascendancy,
   allocatedCount,
   treeVersion,
+  details = [],
   className = "",
 }: {
   /** The generated tree for this build's version, under /trees. */
@@ -75,6 +76,8 @@ export function PassiveTree({
   ascendancy?: string | null;
   allocatedCount: number;
   treeVersion?: string | null;
+  /** Further facts for the summary beside the count (masteries, bandit); empty ones are skipped. */
+  details?: (string | null)[];
   className?: string;
 }) {
   const host = useRef<HTMLObjectElement>(null);
@@ -323,6 +326,13 @@ export function PassiveTree({
         </div>
       ) : null}
 
+      {/* What the tree holds, top right; the legend stays bottom right. */}
+      <span className="pointer-events-none absolute top-2 right-2 text-right text-[11px] text-muted">
+        {[`${allocatedCount} passives`, ...details, treeVersion ? `tree ${treeVersion}` : null]
+          .filter(Boolean)
+          .join(" · ")}
+      </span>
+
       <div className="pointer-events-none absolute right-2 bottom-2 flex flex-col items-end gap-0.5 text-right">
         {/* What the two extra colours mean, shown only when the tree uses them. */}
         {weaponSets && (weaponSets[1].length || weaponSets[2].length) ? (
@@ -330,7 +340,7 @@ export function PassiveTree({
             {([1, 2] as const).filter((set) => weaponSets?.[set]?.length).map((set) => (
               <span key={set} className="flex items-center gap-1">
                 <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: WEAPON_SET_COLOR[set] }} />
-                weapon set {set}
+                weapon set {set} ({weaponSets?.[set]?.length})
               </span>
             ))}
           </span>
@@ -355,9 +365,6 @@ export function PassiveTree({
             )}
           </span>
         ) : null}
-        <span className="text-[11px] text-muted">
-          {allocatedCount} passives{treeVersion ? ` · tree ${treeVersion}` : ""}
-        </span>
         {/* Clusters are drawn, so a gap here is a passive this tree cannot
             place — a jewel whose text could not be read, or a build drawn on a
             tree version that lacks one of its notables. Said rather than hidden,

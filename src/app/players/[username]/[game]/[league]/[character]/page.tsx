@@ -200,6 +200,10 @@ export default async function CharacterPage({ params }: Props) {
                 <StatColumn title="Defence" panels={gear.defencePanels} stats={stats} />
                 <ResistanceBar stats={stats} resistances={gear.resistances} />
                 <AttributeStrip stats={stats} attributeStats={gear.attributeStats} chargeStats={gear.chargeStats} />
+                {/* Offence sits under Defence rather than above the skills: Path of
+                    Exile 2's skill list is long, and stacked on it the right column
+                    ran a screen past the rest and left a gap above the tree. */}
+                <StatColumn title="Offence" panels={gear.offencePanels} stats={stats} />
               </>
             ) : null}
             {/* The game's own export computes nothing, so a character read from it
@@ -251,84 +255,6 @@ export default async function CharacterPage({ params }: Props) {
               </p>
             </section>
           ) : null}
-        </div>
-
-        <div className="space-y-4 lg:col-span-3">
-          {hasStats ? <StatColumn title="Offence" panels={gear.offencePanels} stats={stats} /> : null}
-
-          <section className="panel">
-            <div className="panel-header">
-              <h2 className="panel-title">Skills</h2>
-              <span className="text-xs text-muted">{build.skillGroups.length} groups</span>
-            </div>
-            <SkillGroups groups={build.skillGroups} game={league.game} />
-          </section>
-
-          {tree ? (
-            <section className="panel">
-              <div className="panel-header">
-                <h2 className="panel-title">Passive tree</h2>
-              </div>
-              <div className="space-y-1 p-4 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted">Allocated</span>
-                  <span className="tabular-nums">{tree.nodeCount}</span>
-                </div>
-                {tree.masteryCount ? (
-                  <div className="flex justify-between">
-                    <span className="text-muted">Masteries</span>
-                    <span className="tabular-nums">{tree.masteryCount}</span>
-                  </div>
-                ) : null}
-                {build.bandit ? (
-                  <div className="flex justify-between">
-                    <span className="text-muted">Bandit</span>
-                    <span className="capitalize">{build.bandit}</span>
-                  </div>
-                ) : null}
-                {tree.weaponSets ? (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-muted">Weapon set 1</span>
-                      <span className="tabular-nums">{tree.weaponSets[1].length}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted">Weapon set 2</span>
-                      <span className="tabular-nums">{tree.weaponSets[2].length}</span>
-                    </div>
-                  </>
-                ) : null}
-                {tree.treeVersion ? (
-                  <div className="flex justify-between">
-                    <span className="text-muted">Tree version</span>
-                    <span className="tabular-nums">{tree.treeVersion}</span>
-                  </div>
-                ) : null}
-                {build.trees.length > 1 ? (
-                  <div className="flex justify-between">
-                    <span className="text-muted">Saved trees</span>
-                    <span className="tabular-nums">{build.trees.length}</span>
-                  </div>
-                ) : null}
-                {tree.url ? (
-                  <a
-                    href={tree.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="link-gold mt-3 inline-block text-xs tracking-[0.16em] uppercase"
-                  >
-                    Open the tree ↗
-                  </a>
-                ) : null}
-                {build.origin ? (
-                  <p className="pt-2 text-xs text-muted">
-                    Read from {build.origin.account}
-                    {build.origin.fetchedAt ? ` on ${build.origin.fetchedAt.slice(0, 10)}` : ""}.
-                  </p>
-                ) : null}
-              </div>
-            </section>
-          ) : null}
 
           {build.config.length ? (
             <section className="panel">
@@ -346,6 +272,18 @@ export default async function CharacterPage({ params }: Props) {
             </section>
           ) : null}
         </div>
+
+        {/* The skills alone: they run long, and anything under them only
+            lengthened the column that decides where the tree starts. */}
+        <div className="space-y-4 lg:col-span-3">
+          <section className="panel">
+            <div className="panel-header">
+              <h2 className="panel-title">Skills</h2>
+              <span className="text-xs text-muted">{build.skillGroups.length} groups</span>
+            </div>
+            <SkillGroups groups={build.skillGroups} game={league.game} />
+          </section>
+        </div>
       </div>
 
       {/* The page column's width, like every other panel. It used to break out
@@ -359,10 +297,25 @@ export default async function CharacterPage({ params }: Props) {
         <section className="panel">
           <div className="panel-header">
             <h2 className="panel-title">Passive tree</h2>
-            <span className="text-xs text-muted">
-              {treeArt.exact
-                ? "scroll to zoom, drag to pan"
-                : `drawn on the ${treeArt.version} tree — this build is ${tree?.treeVersion}, so some nodes sit elsewhere`}
+            <span className="flex flex-wrap items-baseline justify-end gap-x-4 gap-y-1 text-right text-xs text-muted">
+              {/* Where the build was read from and the tree link, which had a
+                  panel of their own beside the skills until 2026-09-28. */}
+              {build.origin ? (
+                <span>
+                  Read from {build.origin.account}
+                  {build.origin.fetchedAt ? ` on ${build.origin.fetchedAt.slice(0, 10)}` : ""}
+                </span>
+              ) : null}
+              {tree?.url ? (
+                <a href={tree.url} target="_blank" rel="noreferrer" className="link-gold tracking-[0.16em] uppercase">
+                  Open the tree ↗
+                </a>
+              ) : null}
+              <span>
+                {treeArt.exact
+                  ? "scroll to zoom, drag to pan"
+                  : `drawn on the ${treeArt.version} tree — this build is ${tree?.treeVersion}, so some nodes sit elsewhere`}
+              </span>
             </span>
           </div>
           <div className="p-4">
@@ -378,6 +331,11 @@ export default async function CharacterPage({ params }: Props) {
               ascendancy={gear.treeAscendancy(character.ascendancy, treeArt.version)}
               allocatedCount={tree?.nodeCount ?? treeNodes.length}
               treeVersion={tree?.treeVersion || treeArt.version}
+              details={[
+                tree?.masteryCount ? `${tree.masteryCount} masteries` : null,
+                build.bandit ? `bandit: ${build.bandit}` : null,
+                build.trees.length > 1 ? `${build.trees.length} saved trees` : null,
+              ]}
               className="h-[max(420px,min(calc(100svh_-_8rem),calc(100vw_-_4.5rem),1355px))]"
             />
           </div>

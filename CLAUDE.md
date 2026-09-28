@@ -541,7 +541,13 @@ and its payload is stored in `characters.source_payload` for the same reason.
   dot") never gets a tag there. **The right side is three boxes, league, dates and /played,
   centred on the logo's height** (`minHeight: PORTRAIT_HEIGHT` with `justify-center`), so they
   sit level with the middle of the header rather than hanging from its top; the bandit moved to
-  the passive tree summary. **Dates are written one way everywhere: "May 13, 2022"**, from
+  the passive tree summary. **Below the header, the right column is Skills alone** (the owner,
+  2026-09-28): a Path of Exile 2 skill list runs long, and with Offence, a tree summary and
+  Configuration stacked on it the column ended a screen below the others and left dead space
+  above the tree. Offence sits under Defence on the left, Configuration under Memories in the
+  middle, and the tree summary panel is gone: its count, masteries, bandit and version are one
+  line at the tree's top right, the weapon-set counts are in its legend, and the source account
+  and tree link are in its header. **Dates are written one way everywhere: "May 13, 2022"**, from
   `formatDate`, full month, unpadded day, comma. The league index used to pad the day and drop
   the comma to line dates up in a column, and the rest of the site wrote "13 May 2022"; the
   owner asked for one format on 2026-09-26 and there is no second order left to reach for. The name is coloured by its class's starting attributes
