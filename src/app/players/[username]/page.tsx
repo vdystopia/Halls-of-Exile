@@ -13,7 +13,7 @@ import { avatarUrl, playerAccent } from "@/lib/avatars";
 import { Section } from "@/components/Section";
 import { classLine, formatPlayed, formatPlayedTotal } from "@/lib/format";
 import { characterTier } from "@/lib/tier";
-import { buildSkill, skillArt, skillTags } from "@/lib/games/skills";
+import { buildSkill, skillArt, skillBorderClass, skillTags } from "@/lib/games/skills";
 import { GAME_NAMES } from "@/lib/games/types";
 import { rollupByClass, rollupBySkill, topTags } from "@/lib/metrics";
 import { getUser, getUserTotals, listLeaguesForUser, listPlayerCharacters, listRecentCharacters } from "@/lib/queries";
@@ -71,7 +71,10 @@ export default async function PlayerPage({ params, searchParams }: Props) {
     return (
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {top.map((build, index) => (
-          <BuildCard key={`${build.game}/${build.name}`} build={build} art={skillArt(build.game, build.name)} rank={index + 1} />
+          <BuildCard key={`${build.game}/${build.name}`} build={build} art={skillArt(build.game, build.name)}
+            rank={index + 1}
+            border={skillBorderClass(build.game, build.name)}
+          />
         ))}
       </div>
     );

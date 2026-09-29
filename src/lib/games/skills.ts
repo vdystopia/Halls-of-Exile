@@ -49,14 +49,34 @@ const TAG_CLASS: Record<GemColor, string> = {
   w: "border-socket-w/60 text-socket-w",
 };
 
-export function skillTagClass(game: GameId, name?: string | null): string {
-  // The recorded gem may be typed in any case ("ice crash"), and a transfigured
-  // gem ("Frostblink of Wintry Blast") takes its base gem's colour: the index
-  // is keyed on the gem's own spelling, so both are resolved before the lookup.
+/**
+ * A skill's gem colour. The recorded gem may be typed in any case ("ice crash"),
+ * and a transfigured gem ("Frostblink of Wintry Blast") takes its base gem's
+ * colour: the index is keyed on the gem's own spelling, so both are resolved
+ * before the lookup.
+ */
+function skillColor(game: GameId, name?: string | null): GemColor | null {
   const proper = (SKILLS[game].canonical(name) ?? name ?? "").trim();
   const base = proper.split(" of ")[0];
-  const color = proper ? (SKILLS[game].color({ name: proper }) ?? SKILLS[game].color({ name: base })) : null;
+  return proper ? (SKILLS[game].color({ name: proper }) ?? SKILLS[game].color({ name: base })) : null;
+}
+
+export function skillTagClass(game: GameId, name?: string | null): string {
+  const color = skillColor(game, name);
   return color ? TAG_CLASS[color] : "border-rarity-gem/60 text-rarity-gem";
+}
+
+/** The border alone, for a card framed in its skill's attribute colour. */
+const BORDER_CLASS: Record<GemColor, string> = {
+  r: "border-socket-r/70",
+  g: "border-socket-g/70",
+  b: "border-socket-b/70",
+  w: "border-socket-w/70",
+};
+
+export function skillBorderClass(game: GameId, name?: string | null): string | null {
+  const color = skillColor(game, name);
+  return color ? BORDER_CLASS[color] : null;
 }
 
 /**
